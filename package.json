@@ -250,7 +250,7 @@
 		"meteor-node-stubs": "^1.0.3",
 		"mime-db": "^1.48.0",
 		"mime-type": "^3.1.0",
-		"mkdirp": "^0.5.5",
+		"mkdirp": "^1.0.4",
 		"moleculer": "^0.14.14",
 		"moment": "^2.29.1",
 		"moment-timezone": "^0.5.33",
