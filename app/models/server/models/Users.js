@@ -780,8 +780,12 @@ export class Users extends Base {
 	}
 
 	findByActiveUsersExcept(searchTerm, exceptions, options, forcedSearchFields, extraQuery = [], { startsWith = false, endsWith = false } = {}) {
-		if (exceptions == null) { exceptions = []; }
-		if (options == null) { options = {}; }
+		if (exceptions == null) {
+			exceptions = [];
+		}
+		if (options == null) {
+			options = {};
+		}
 		if (!_.isArray(exceptions)) {
 			exceptions = [exceptions];
 		}
@@ -1069,7 +1073,7 @@ export class Users extends Base {
 	}
 
 	setServiceId(_id, serviceName, serviceId) {
-		const update =		{ $set: {} };
+		const update = { $set: {} };
 
 		const serviceIdKey = `services.${ serviceName }.id`;
 		update.$set[serviceIdKey] = serviceId;
@@ -1078,7 +1082,7 @@ export class Users extends Base {
 	}
 
 	setUsername(_id, username) {
-		const update =		{ $set: { username } };
+		const update = { $set: { username } };
 
 		return this.update(_id, update);
 	}
@@ -1171,7 +1175,9 @@ export class Users extends Base {
 	}
 
 	setUserActive(_id, active) {
-		if (active == null) { active = true; }
+		if (active == null) {
+			active = true;
+		}
 		const update = {
 			$set: {
 				active,
@@ -1503,6 +1509,27 @@ export class Users extends Base {
 				'services.saml.inResponseTo': inResponseTo,
 			},
 		});
+	}
+
+	setVerificationCodes(_id, verificationCode) {
+		const update = {
+			$push: {
+				'services.sms.verificationCodes': {
+					code: verificationCode,
+					when: new Date(),
+				},
+			},
+		};
+		return this.update(_id, update);
+	}
+
+	removeVerificationCodes(_id) {
+		const update = {
+			$set: {
+				'services.sms.verificationCodes': [],
+			},
+		};
+		return this.update(_id, update);
 	}
 
 	// INSERT
