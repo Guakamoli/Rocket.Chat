@@ -72,6 +72,7 @@ Migrations.add({
 			let index = 0;
 			while (index > pageCount) {
 				const chatUsersCmd = chatUsers.slice(index * 1000, (index + 1) * 1000);
+				// eslint-disable-next-line no-await-in-loop
 				await Users.insertMany(chatUsersCmd);
 				index++;
 			}
