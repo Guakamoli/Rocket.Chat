@@ -209,7 +209,7 @@
 		"emojione": "^4.5.0",
 		"eslint-plugin-import": "^2.22.0",
 		"eventemitter3": "^4.0.7",
-		"exif-be-gone": "^1.2.0",
+		"exif-be-gone": "^1.2.2",
 		"express": "^4.17.1",
 		"express-rate-limit": "^5.2.6",
 		"fflate": "^0.7.1",
