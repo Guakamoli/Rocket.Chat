@@ -14,6 +14,7 @@ import './startup/instance';
 import './startup/presence';
 import './startup/serverRunning';
 import './startup/coreApps';
+import './startup/kameoSms';
 import './configuration/accounts_meld';
 import './methods/OEmbedCacheCleanup';
 import './methods/addAllUserToRoom';
