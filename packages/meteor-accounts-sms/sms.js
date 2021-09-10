@@ -1,2 +1,2 @@
-// eslint-disable-next-line no-undef
+/* eslint-disable no-undef */
 Accounts.kameoSms = {};

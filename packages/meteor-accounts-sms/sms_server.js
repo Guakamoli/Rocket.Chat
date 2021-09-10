@@ -1,22 +1,19 @@
-// eslint-disable-next-line no-undef
+/* eslint-disable no-undef */
 const Twilio = Npm.require('twilio');
-// eslint-disable-next-line no-undef
+
 const SMSClient = Npm.require('@alicloud/sms-sdk');
 
-// eslint-disable-next-line no-undef
+
 const NonEmptyString = Match.Where((str) => {
-	// eslint-disable-next-line no-undef
 	check(str, String);
 	return str.length > 0;
 });
 
-// eslint-disable-next-line no-undef
+
 Meteor.methods({
 	'kameo-sms.sendCode'(phone) {
-		// eslint-disable-next-line no-undef
 		check(
 			phone,
-			// eslint-disable-next-line no-undef
 			Match.OneOf(
 				{
 					phoneNumber: String,
@@ -26,22 +23,19 @@ Meteor.methods({
 			),
 		);
 
-		// eslint-disable-next-line no-undef
 		return Accounts.kameoSms.sendCode(phone);
 	},
 });
 
 // Handler to login with a phone number and code.
-// eslint-disable-next-line no-undef
+
 Accounts.registerLoginHandler('kameoSms', function(options) {
 	if (!options.kameoSms) {
 		return;
 	}
 
-	// eslint-disable-next-line no-undef
 	check(options, {
 		kameoSms: true,
-		// eslint-disable-next-line no-undef
 		phone: Match.OneOf(
 			{
 				phoneNumber: String,
@@ -49,11 +43,9 @@ Accounts.registerLoginHandler('kameoSms', function(options) {
 			},
 			String,
 		),
-		// eslint-disable-next-line no-undef
 		verificationCode: Match.Optional(NonEmptyString),
 	});
 
-	// eslint-disable-next-line no-undef
 	return Accounts.kameoSms.verifyCode(options.phone, options.verificationCode);
 });
 
@@ -72,12 +64,10 @@ Accounts.registerLoginHandler('kameoSms', function(options) {
  * Given a phone number and verification code return the { userId: '' }
  * to log that user in or throw an error.
  */
-// eslint-disable-next-line no-undef
+
 Accounts.kameoSms.configure = function(options) {
-	// eslint-disable-next-line no-undef
 	check(
 		options,
-		// eslint-disable-next-line no-undef
 		Match.OneOf(
 			{
 				aliyun: {
@@ -98,31 +88,24 @@ Accounts.kameoSms.configure = function(options) {
 		),
 	);
 	if (options.aliyun) {
-		// eslint-disable-next-line no-undef
 		Accounts.kameoSms.client = new SMSClient({
 			accessKeyId: options.aliyun.accessKeyId,
 			secretAccessKey: options.aliyun.secretAccessKey,
 		});
-		// eslint-disable-next-line no-undef
 		Accounts.kameoSms.params = {
 			signName: options.aliyun.signName,
 			templateCode: options.aliyun.templateCode,
 			productCode: 'PAIYA',
 		};
 	} else if (options.twilio) {
-		// eslint-disable-next-line no-undef
 		Accounts.kameoSms.client = new Twilio({
 			sid: options.twilio.sid,
 			token: options.twilio.token,
 		});
-		// eslint-disable-next-line no-undef
 		Accounts.kameoSms.params = { productCode: 'GODUCK', from: options.twilio.from };
 	} else {
-		// eslint-disable-next-line no-undef
 		Accounts.kameoSms.env = options.env;
-		// eslint-disable-next-line no-undef
 		Accounts.kameoSms.sendVerificationCode = options.sendVerificationCode;
-		// eslint-disable-next-line no-undef
 		Accounts.kameoSms.verifyCode = options.verifyCode;
 	}
 };
@@ -134,12 +117,9 @@ Accounts.kameoSms.configure = function(options) {
  * @returns {Object} this sms response
  */
 async function sendSMSService(phoneNumber, templateParam) {
-	// eslint-disable-next-line no-undef
 	return Accounts.kameoSms.client.sendSMS({
 		PhoneNumbers: phoneNumber,
-		// eslint-disable-next-line no-undef
 		SignName: Accounts.kameoSms.params.signName,
-		// eslint-disable-next-line no-undef
 		TemplateCode: Accounts.kameoSms.params.templateCode,
 		TemplateParam: templateParam,
 	});
@@ -152,10 +132,8 @@ async function sendSMSService(phoneNumber, templateParam) {
  *  @returns {void}
  */
 async function sendGoDuckSms(phoneNumber, verificationCode) {
-	// eslint-disable-next-line no-undef
 	await Accounts.kameoSms.client.messages.create({
 		body: `GoDuck: Your verification code is ${ verificationCode }. Please fill it in within 10 minutes. `,
-		// eslint-disable-next-line no-undef
 		from: Accounts.kameoSms.params.from,
 		to: phoneNumber,
 	});
@@ -171,12 +149,9 @@ async function sendGoDuckSms(phoneNumber, verificationCode) {
  *  @returns {Object} this phoneNumber and regionCode
  */
 async function sendSms({ userId, phoneNumber, verificationCode, countryCode }) {
-	// eslint-disable-next-line no-undef
 	if (Accounts.kameoSms.env !== 'development') {
 		try {
-			// eslint-disable-next-line no-undef
 			Accounts.users.setVerificationCodes(userId, verificationCode);
-			// eslint-disable-next-line no-undef
 			if (Accounts.kameoSms.params.productCode === 'GODUCK') {
 				await sendGoDuckSms(`${ countryCode }${ phoneNumber }`, verificationCode);
 			} else {
@@ -188,18 +163,14 @@ async function sendSms({ userId, phoneNumber, verificationCode, countryCode }) {
 			console.log(`send sms success ${ countryCode }${ phoneNumber }`);
 		} catch (err) {
 			if (err.message.includes('invalid mobile number')) {
-				// eslint-disable-next-line no-undef
 				throw new Meteor.Error('Incorrect number format');
 			}
 			if (err.message.includes('触发分钟级流控Permits:1')) {
-				// eslint-disable-next-line no-undef
 				throw new Meteor.Error('Minute limit');
 			}
-			// eslint-disable-next-line no-undef
 			throw new Meteor.Error('send faild!');
 		}
 	} else {
-		// eslint-disable-next-line no-undef
 		Accounts.users.setVerificationCodes(userId, '111111');
 	}
 }
@@ -208,18 +179,15 @@ async function sendSms({ userId, phoneNumber, verificationCode, countryCode }) {
  * Send a 4 digit verification sms with twilio.
  * @param phone
  */
-// eslint-disable-next-line no-undef
+
 Accounts.kameoSms.sendCode = async function(phone) {
-	// eslint-disable-next-line no-undef
 	if (!Accounts.kameoSms.client) {
-		// eslint-disable-next-line no-undef
 		throw new Meteor.Error('accounts-sms has not been configured');
 	}
 	const verificationCode = Math.random().toString().slice(-6);
 	const { phoneNumber, countryCode: regionCode } = phone;
 	const countryCode = `+${ regionCode }`;
 	let userId;
-	// eslint-disable-next-line no-undef
 	const user = await Meteor.users.findOne({
 		'services.sms.realPhoneNumber': phone,
 	});
@@ -228,7 +196,6 @@ Accounts.kameoSms.sendCode = async function(phone) {
 		// 创建用户
 		// userId = Meteor.call('registerSmsUser', { phoneNumber, countryCode });
 		// userId = Meteor.call('registerSmsUser', { phoneNumber, countryCode });
-		// eslint-disable-next-line no-undef
 		userId = Meteor.call('registerSmsUser', { phoneNumber, countryCode });
 	}
 	// 暂时不做电话长度校验
@@ -240,32 +207,26 @@ Accounts.kameoSms.sendCode = async function(phone) {
  * @param phone
  * @param code
  */
-// eslint-disable-next-line no-undef
+
 Accounts.kameoSms.verifyCode = function(phone, code) {
-	// eslint-disable-next-line no-undef
 	const user = Meteor.users.findOne({ 'services.sms.realPhoneNumber': phone });
 	if (!user) {
-		// eslint-disable-next-line no-undef
 		throw new Meteor.Error('Invalid phone number');
 	}
 	if (!user.services || !user.services.sms || user.services.sms.verificationCodes.length < 1) {
-		// eslint-disable-next-line no-undef
 		throw new Meteor.Error('Invalid verification code');
 	}
 	// 校验验证码
 	const verificationCode = user.services.sms.verificationCodes.pop();
 	if (verificationCode.when.getTime() + 10 * 60 * 1000 < new Date()) {
-		// eslint-disable-next-line no-undef
 		throw new Meteor.Error('Expired verification code');
 	}
 
 	if (verificationCode.code !== code) {
-		// eslint-disable-next-line no-undef
 		throw new Meteor.Error('Expired verification code');
 	}
 
 	// 删除验证码
-	// eslint-disable-next-line no-undef
 	Accounts.users.removeVerificationCodes(user._id);
 	const loginToken = user.services.resume.loginTokens.pop();
 
