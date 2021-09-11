@@ -3,7 +3,6 @@ const Twilio = Npm.require('twilio');
 
 const SMSClient = Npm.require('@alicloud/sms-sdk');
 
-
 const NonEmptyString = Match.Where((str) => {
 	check(str, String);
 	return str.length > 0;
@@ -22,7 +21,6 @@ Meteor.methods({
 				String,
 			),
 		);
-
 		return Accounts.kameoSms.sendCode(phone);
 	},
 });
@@ -151,7 +149,15 @@ async function sendGoDuckSms(phoneNumber, verificationCode) {
 async function sendSms({ userId, phoneNumber, verificationCode, countryCode }) {
 	if (Accounts.kameoSms.env !== 'development') {
 		try {
-			Accounts.users.setVerificationCodes(userId, verificationCode);
+			const modifier = {
+				$push: {
+					'services.sms.verificationCodes': {
+						code: verificationCode,
+						when: new Date(),
+					},
+				},
+			};
+			Meteor.users.update({ _id: userId }, modifier);
 			if (Accounts.kameoSms.params.productCode === 'GODUCK') {
 				await sendGoDuckSms(`${ countryCode }${ phoneNumber }`, verificationCode);
 			} else {
@@ -176,6 +182,44 @@ async function sendSms({ userId, phoneNumber, verificationCode, countryCode }) {
 }
 
 /**
+ * @name insertUser
+ * @param data -
+ * @return {string}
+ */
+function insertUser(data) {
+	const { phoneNumber, countryCode } = data;
+	const userId = Random.id();
+	let user;
+
+	user = Meteor.users.findOne({ 'services.sms.realPhoneNumber': `${ countryCode }${ phoneNumber }` });
+	if (user) {
+		return user._id;
+	}
+
+	user = {
+		_id: userId,
+		services: {
+			sms: {
+				realPhoneNumber: `${ countryCode }${ phoneNumber }`,
+				purePhoneNumber: phoneNumber,
+				countryCode,
+				verificationCodes: [],
+			},
+		},
+		username: userId,
+		emails: [],
+		type: 'user',
+		roles: [
+			'user',
+		],
+		name: `User${ phoneNumber.slice(-8) }`,
+	};
+	Accounts.users.insert(user);
+
+	return userId;
+}
+
+/**
  * Send a 4 digit verification sms with twilio.
  * @param phone
  */
@@ -188,15 +232,12 @@ Accounts.kameoSms.sendCode = async function(phone) {
 	const { phoneNumber, countryCode: regionCode } = phone;
 	const countryCode = `+${ regionCode }`;
 	let userId;
-	const user = await Meteor.users.findOne({
+	const user = Meteor.users.findOne({
 		'services.sms.realPhoneNumber': phone,
 	});
 	userId = user && user._id;
 	if (!user) {
-		// 创建用户
-		// userId = Meteor.call('registerSmsUser', { phoneNumber, countryCode });
-		// userId = Meteor.call('registerSmsUser', { phoneNumber, countryCode });
-		userId = Meteor.call('registerSmsUser', { phoneNumber, countryCode });
+		userId = insertUser({ phoneNumber, countryCode });
 	}
 	// 暂时不做电话长度校验
 	await sendSms({ userId, phoneNumber, verificationCode, countryCode });
