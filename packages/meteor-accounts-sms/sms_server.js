@@ -198,6 +198,7 @@ function insertUser(data) {
 
 	user = {
 		_id: userId,
+		createdAt: new Date(),
 		services: {
 			sms: {
 				realPhoneNumber: `${ countryCode }${ phoneNumber }`,
@@ -250,7 +251,12 @@ Accounts.kameoSms.sendCode = async function(phone) {
  */
 
 Accounts.kameoSms.verifyCode = function(phone, code) {
-	const user = Meteor.users.findOne({ 'services.sms.realPhoneNumber': phone });
+	const { phoneNumber, countryCode: regionCode } = phone;
+	const countryCode = `+${ regionCode }`;
+	const modifier = {
+		'services.sms.verificationCodes': [],
+	};
+	const user = Meteor.users.findOne({ 'services.sms.realPhoneNumber': `${ countryCode }${ phoneNumber }` });
 	if (!user) {
 		throw new Meteor.Error('Invalid phone number');
 	}
@@ -259,17 +265,24 @@ Accounts.kameoSms.verifyCode = function(phone, code) {
 	}
 	// 校验验证码
 	const verificationCode = user.services.sms.verificationCodes.pop();
+	if (verificationCode.code !== code) {
+		throw new Meteor.Error('Verification code error');
+	}
+
 	if (verificationCode.when.getTime() + 10 * 60 * 1000 < new Date()) {
 		throw new Meteor.Error('Expired verification code');
 	}
 
-	if (verificationCode.code !== code) {
-		throw new Meteor.Error('Expired verification code');
+	if (!user.active) {
+		modifier.active = true;
 	}
 
 	// 删除验证码
-	Accounts.users.removeVerificationCodes(user._id);
-	const loginToken = user.services.resume.loginTokens.pop();
+	Accounts.users.update({ _id: user._id }, {
+		$set: {
+			...modifier,
+		},
+	});
 
-	return { userId: user._id, loginToken: loginToken.hashedToken };
+	return { userId: user._id };
 };
