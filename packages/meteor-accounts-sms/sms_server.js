@@ -10,16 +10,13 @@ const NonEmptyString = Match.Where((str) => {
 
 
 Meteor.methods({
-	'kameo-sms.sendCode'(phone) {
+	'sendCode'(phone) {
 		check(
 			phone,
-			Match.OneOf(
-				{
-					phoneNumber: String,
-					countryCode: String,
-				},
-				String,
-			),
+			{
+				phoneNumber: String,
+				countryCode: String,
+			},
 		);
 		return Accounts.kameoSms.sendCode(phone);
 	},
@@ -82,6 +79,7 @@ Accounts.kameoSms.configure = function(options) {
 					token: String,
 					from: String,
 				},
+				env: String,
 			},
 		),
 	);
@@ -95,12 +93,14 @@ Accounts.kameoSms.configure = function(options) {
 			templateCode: options.aliyun.templateCode,
 			productCode: 'PAIYA',
 		};
+		Accounts.kameoSms.env = options.env;
 	} else if (options.twilio) {
 		Accounts.kameoSms.client = new Twilio({
 			sid: options.twilio.sid,
 			token: options.twilio.token,
 		});
 		Accounts.kameoSms.params = { productCode: 'GODUCK', from: options.twilio.from };
+		Accounts.kameoSms.env = options.env;
 	} else {
 		Accounts.kameoSms.env = options.env;
 		Accounts.kameoSms.sendVerificationCode = options.sendVerificationCode;
@@ -177,7 +177,15 @@ async function sendSms({ userId, phoneNumber, verificationCode, countryCode }) {
 			throw new Meteor.Error('send faild!');
 		}
 	} else {
-		Accounts.users.setVerificationCodes(userId, '111111');
+		const modifier = {
+			$push: {
+				'services.sms.verificationCodes': {
+					code: verificationCode,
+					when: new Date(),
+				},
+			},
+		};
+		Meteor.users.update({ _id: userId }, modifier);
 	}
 }
 

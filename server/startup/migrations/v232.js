@@ -32,6 +32,7 @@ function chatUserHandler(user) {
 			countryCode: '+86', // 国别码
 			verificationCodes: [],
 		};
+		emails = [];
 	} else {
 		emails = user.emails;
 	}

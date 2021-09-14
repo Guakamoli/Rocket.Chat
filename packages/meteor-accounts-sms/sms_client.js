@@ -5,13 +5,14 @@
  * @param code The verification code.
  * @param [callback]
  */
-Meteor.loginWithKameoSms = function(phone, code, callback) {
+Meteor.loginWithKameoSms = function(phone, code, validateResult, callback) {
 	Accounts.callLoginMethod({
 		methodArguments: [{
 			kameoSms: true,
 			phone,
 			verificationCode: code,
 		}],
+		validateResult: (result) => validateResult(result),
 		userCallback: callback,
 	});
 };
@@ -22,5 +23,5 @@ Meteor.loginWithKameoSms = function(phone, code, callback) {
  * @param [callback]
  */
 Meteor.sendKameoCode = function(phone, callback) {
-	Meteor.call('kameo-sms.sendCode', phone, callback);
+	Meteor.call('sendCode', phone, callback);
 };
