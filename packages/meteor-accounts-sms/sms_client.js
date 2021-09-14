@@ -22,6 +22,6 @@ Meteor.loginWithKameoSms = function(phone, code, validateResult, callback) {
  * @param phone The phone number to verify.
  * @param [callback]
  */
-Meteor.sendKameoCode = function(phone, callback) {
-	Meteor.call('sendCode', phone, callback);
+Meteor.kameoSendCode = function(phone, callback) {
+	Meteor.call('kameoSendCode', phone, callback);
 };

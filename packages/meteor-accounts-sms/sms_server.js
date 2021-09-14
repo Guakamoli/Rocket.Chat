@@ -10,7 +10,7 @@ const NonEmptyString = Match.Where((str) => {
 
 
 Meteor.methods({
-	'sendCode'(phone) {
+	kameoSendCode: (phone) => {
 		check(
 			phone,
 			{
