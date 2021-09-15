@@ -137,15 +137,6 @@ Template.loginForm.events({
 			if (settings.get('CROWD_Enable')) {
 				loginMethod = 'loginWithCrowd';
 			}
-			// console.log(4124234322);
-			// try {
-			// 	console.log(11111111);
-			// 	Meteor.sendKameoCode({ phoneNumber: '15170674326', countryCode: '86' }, (data) => {
-			// 		console.log(data, 88899);
-			// 	});
-			// } catch (e) {
-			// 	console.log(e, 1199888);
-			// }
 			return Meteor[loginMethod](s.trim(formData.emailOrUsername), formData.pass, function(error) {
 				instance.loading.set(false);
 				if (error != null) {

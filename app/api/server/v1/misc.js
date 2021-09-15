@@ -270,6 +270,11 @@ const methodCall = () => ({
 			}
 
 			const result = Meteor.call(method, ...params);
+			// TODO 登录发送mq
+			if (method === 'login' && result.id) {
+				const user = Meteor.users.findOne({ _id: result.id });
+				Meteor.call('rocketmqSend', user, 'mqLoginUser', { id: result.id });
+			}
 			return API.v1.success(mountResult({ id, result }));
 		} catch (error) {
 			SystemLogger.error(`Exception while invoking method ${ method }`, error.message);

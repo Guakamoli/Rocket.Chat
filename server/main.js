@@ -70,6 +70,7 @@ import './methods/setUserPassword';
 import './methods/toogleFavorite';
 import './methods/unmuteUserInRoom';
 import './methods/userSetUtcOffset';
+import './methods/rocketmq';
 import './publications/messages';
 import './publications/room';
 import './publications/settings';

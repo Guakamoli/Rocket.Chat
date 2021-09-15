@@ -151,6 +151,7 @@
 		"webpack": "^4.44.1"
 	},
 	"dependencies": {
+		"@aliyunmq/mq-http-sdk": "^1.0.3",
 		"@babel/runtime": "^7.14.6",
 		"@google-cloud/language": "^3.8.0",
 		"@google-cloud/storage": "^2.5.0",

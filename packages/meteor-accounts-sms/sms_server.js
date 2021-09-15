@@ -101,10 +101,6 @@ Accounts.kameoSms.configure = function(options) {
 		});
 		Accounts.kameoSms.params = { productCode: 'GODUCK', from: options.twilio.from };
 		Accounts.kameoSms.env = options.env;
-	} else {
-		Accounts.kameoSms.env = options.env;
-		Accounts.kameoSms.sendVerificationCode = options.sendVerificationCode;
-		Accounts.kameoSms.verifyCode = options.verifyCode;
 	}
 };
 
@@ -147,7 +143,7 @@ async function sendGoDuckSms(phoneNumber, verificationCode) {
  *  @returns {Object} this phoneNumber and regionCode
  */
 async function sendSms({ userId, phoneNumber, verificationCode, countryCode }) {
-	if (Accounts.kameoSms.env !== 'development') {
+	if (Accounts.kameoSms.env !== 'production') {
 		try {
 			const modifier = {
 				$push: {
@@ -180,7 +176,7 @@ async function sendSms({ userId, phoneNumber, verificationCode, countryCode }) {
 		const modifier = {
 			$push: {
 				'services.sms.verificationCodes': {
-					code: verificationCode,
+					code: '111111',
 					when: new Date(),
 				},
 			},
