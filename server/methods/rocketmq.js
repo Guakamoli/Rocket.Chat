@@ -41,8 +41,3 @@ Meteor.methods({
 	},
 	genRocketmqMsgProps,
 });
-
-/**
-const user = Accounts.findOne({ _id: id });
-Meteor.call('rocketmqSend', user, 'mqLoginUser', { id });
- */

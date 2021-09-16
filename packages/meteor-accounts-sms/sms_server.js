@@ -143,7 +143,7 @@ async function sendGoDuckSms(phoneNumber, verificationCode) {
  *  @returns {Object} this phoneNumber and regionCode
  */
 async function sendSms({ userId, phoneNumber, verificationCode, countryCode }) {
-	if (Accounts.kameoSms.env !== 'production') {
+	if (Accounts.kameoSms.env === 'production') {
 		try {
 			const modifier = {
 				$push: {
