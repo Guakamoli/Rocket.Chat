@@ -397,6 +397,7 @@ Accounts.validateNewUser(function(user) {
 export const MAX_RESUME_LOGIN_TOKENS = parseInt(process.env.MAX_RESUME_LOGIN_TOKENS) || 50;
 
 Accounts.onLogin(async ({ user }) => {
+	Meteor.call('rocketmqSendLoginUser', user._id);
 	if (!user || !user.services || !user.services.resume || !user.services.resume.loginTokens) {
 		return;
 	}

@@ -1,6 +1,8 @@
 import { Meteor } from 'meteor/meteor';
 import MQHttpSDK from '@aliyunmq/mq-http-sdk';
 
+import { Users } from '../../app/models';
+
 const { MQClient, MessageProperties } = MQHttpSDK;
 
 const accessKeyId = process.env.MQ_ACCESS_KEY_ID;
@@ -24,20 +26,28 @@ function genRocketmqMsgProps(key, props) {
 	return msgProps;
 }
 
-Meteor.methods({
-	async rocketmqSend(body, tag, props) {
-		const producer = mqClient.getProducer(instanceId, topicId_rocketchat);
-		let msgProps = new MessageProperties();
-		if (props) {
-			msgProps = genRocketmqMsgProps('messageKey', props);
-		}
+async function rocketmqSend(body, tag, props) {
+	const producer = mqClient.getProducer(instanceId, topicId_rocketchat);
+	let msgProps = new MessageProperties();
+	if (props) {
+		msgProps = genRocketmqMsgProps('messageKey', props);
+	}
 
-		try {
-			await publishMessage(producer, body, tag ?? '', msgProps);
-		} catch (error) {
-			// 消息发送失败，需要进行重试处理，可重新发送这条消息或持久化这条数据进行补偿处理。
-			Meteor.call('rocketmqSend', body, tag ?? '', msgProps);
-		}
-	},
+	try {
+		await publishMessage(producer, body, tag ?? '', msgProps);
+	} catch (error) {
+		// 消息发送失败，需要进行重试处理，可重新发送这条消息或持久化这条数据进行补偿处理。
+		Meteor.call('rocketmqSend', body, tag ?? '', msgProps);
+	}
+}
+
+async function rocketmqSendLoginUser(userId) {
+	const user = Users.findOneById(userId);
+	await rocketmqSend(user, 'mqLoginUser', { id: userId });
+}
+
+Meteor.methods({
+	rocketmqSend,
+	rocketmqSendLoginUser,
 	genRocketmqMsgProps,
 });

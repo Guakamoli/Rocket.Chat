@@ -8,6 +8,25 @@ const NonEmptyString = Match.Where((str) => {
 	return str.length > 0;
 });
 
+Accounts.registerLoginHandler('kameoSms', function(options) {
+	if (!options.kameoSms) {
+		return;
+	}
+
+	check(options, {
+		kameoSms: true,
+		phone: Match.OneOf(
+			{
+				phoneNumber: String,
+				countryCode: String,
+			},
+			String,
+		),
+		verificationCode: Match.Optional(NonEmptyString),
+	});
+
+	return Accounts.kameoSms.verifyCode(options.phone, options.verificationCode);
+});
 
 Meteor.methods({
 	kameoSendCode: (phone) => {
