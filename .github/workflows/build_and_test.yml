@@ -1,13 +1,11 @@
 name: Build and Test
 
 on:
-  release:
-    types: [published]
-  pull_request:
-    branches: '**'
   push:
     branches:
       - develop
+      - kameo/develop
+      - master
 
 env:
   CI: true
