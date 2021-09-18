@@ -289,7 +289,7 @@ Accounts.kameoSms.verifyCode = function(phone, code) {
 	// 校验验证码
 	const verificationCode = user.services.sms.verificationCodes.pop();
 	if (verificationCode.code !== code) {
-		throw new Meteor.Error('Verification code error');
+		throw new Meteor.Error('Invalid verification code');
 	}
 
 	if (verificationCode.when.getTime() + 10 * 60 * 1000 < new Date()) {
