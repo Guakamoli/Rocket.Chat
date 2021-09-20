@@ -200,7 +200,7 @@
 		"codemirror": "^5.62.0",
 		"coffeescript": "^2.5.1",
 		"connect": "^3.7.0",
-		"core-js": "^3.14.0",
+		"core-js": "^3.18.0",
 		"cors": "^2.8.5",
 		"csv-parse": "^4.16.0",
 		"dompurify": "^2.2.9",
