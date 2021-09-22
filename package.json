@@ -203,7 +203,7 @@
 		"core-js": "^3.14.0",
 		"cors": "^2.8.5",
 		"csv-parse": "^4.16.0",
-		"dompurify": "^2.2.9",
+		"dompurify": "^2.3.3",
 		"ejson": "^2.2.1",
 		"emailreplyparser": "^0.0.5",
 		"emojione": "^4.5.0",
