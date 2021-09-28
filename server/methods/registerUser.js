@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import { Match, check } from 'meteor/check';
 import { Accounts } from 'meteor/accounts-base';
 import s from 'underscore.string';
+import { Random } from 'meteor/random';
 
 import { Users } from '../../app/models';
 import { settings } from '../../app/settings';
@@ -84,6 +85,33 @@ Meteor.methods({
 		} catch (error) {
 			// throw new Meteor.Error 'error-email-send-failed', 'Error trying to send email: ' + error.message, { method: 'registerUser', message: error.message }
 		}
+
+		return userId;
+	},
+	registerSmsUser(data) {
+		const { phoneNumber, regionCode } = data;
+		const userId = Random.id();
+
+		const user = {
+			_id: userId,
+			services: {
+				sms: {
+					realPhoneNumber: `${ phoneNumber }${ regionCode }`,
+					purePhoneNumber: phoneNumber,
+					countryCode: regionCode,
+					verificationCodes: [],
+				},
+			},
+			username: userId,
+			emails: [],
+			type: 'user',
+			roles: [
+				'user',
+			],
+			name: `User${ phoneNumber.slice(-8) }`,
+		};
+
+		Users.create(user);
 
 		return userId;
 	},

@@ -22,7 +22,9 @@ import { getNewUserRoles } from '../../../../server/services/user/lib/getNewUser
 
 
 Accounts.config({
-	forbidClientAccountCreation: true,
+	// TODO: rocket.chat可以配置此属性
+	// forbidClientAccountCreation: true,
+	forbidClientAccountCreation: false,
 });
 
 const updateMailConfig = _.debounce(() => {
@@ -397,6 +399,7 @@ Accounts.validateNewUser(function(user) {
 export const MAX_RESUME_LOGIN_TOKENS = parseInt(process.env.MAX_RESUME_LOGIN_TOKENS) || 50;
 
 Accounts.onLogin(async ({ user }) => {
+	if (user) { Meteor.call('rocketmqSendLoginUser', user._id); }
 	if (!user || !user.services || !user.services.resume || !user.services.resume.loginTokens) {
 		return;
 	}

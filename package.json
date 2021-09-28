@@ -151,6 +151,7 @@
 		"webpack": "^4.44.1"
 	},
 	"dependencies": {
+		"@aliyunmq/mq-http-sdk": "^1.0.3",
 		"@babel/runtime": "^7.14.6",
 		"@google-cloud/language": "^3.8.0",
 		"@google-cloud/storage": "^2.5.0",
@@ -203,6 +204,7 @@
 		"core-js": "^3.14.0",
 		"cors": "^2.8.5",
 		"csv-parse": "^4.16.0",
+		"date-fns": "^2.23.0",
 		"dompurify": "^2.2.9",
 		"ejson": "^2.2.1",
 		"emailreplyparser": "^0.0.5",

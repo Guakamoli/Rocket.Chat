@@ -96,6 +96,8 @@
 	margin: auto;
 	padding: 10px;
 
+	color: var(--color-black);
+
 	font-size: smaller;
 
 	& a {
@@ -2786,6 +2788,7 @@
 
 .full-page,
 .page-loading {
+	/* background-color: var(--content-background-color); */
 	background-color: var(--rc-color-primary);
 }
 
@@ -2798,6 +2801,8 @@
 	margin: auto;
 
 	text-align: center;
+
+	/* background-color: var(--content-background-color); */
 
 	background-repeat: no-repeat;
 	background-attachment: fixed;
@@ -2834,8 +2839,11 @@
 
 			display: inline-block;
 
-			max-width: 100%;
-			max-height: 150px;
+			/* max-width: 100%; */
+
+			/* max-height: 150px; */
+			width: 125px;
+			height: 50px;
 		}
 	}
 
@@ -3341,6 +3349,12 @@
 
 .rc-old .powered-by {
 	margin-top: 1em;
+}
+
+.link-style {
+	text-decoration: none !important;
+
+	color: rgba(101, 31, 255, 1) !important;
 }
 
 .rc-old .code-error-box {

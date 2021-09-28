@@ -14,6 +14,7 @@ Template.username.onCreated(function() {
 	const self = this;
 	self.customFields = new ReactiveVar();
 	self.username = new ReactiveVar();
+	self.active = new ReactiveVar(false);
 
 	Tracker.autorun(() => {
 		const Accounts_CustomFields = settings.get('Accounts_CustomFields');
@@ -97,6 +98,10 @@ Template.username.helpers({
 		return Template.instance().username.get();
 	},
 
+	active() {
+		return Template.instance().active.get();
+	},
+
 	backgroundUrl() {
 		const asset = settings.get('Assets_background');
 		const prefix = __meteor_runtime_config__.ROOT_URL_PATH_PREFIX || '';
@@ -118,6 +123,9 @@ Template.username.events({
 	},
 	'reset #login-card'() {
 		Meteor.logout();
+	},
+	'login #login-card'() {
+		window.location.href = Meteor.settings.public.LOGIN_ACTIVE_SUCCESS_URL;
 	},
 	'submit #login-card'(event, instance) {
 		event.preventDefault();
@@ -167,7 +175,11 @@ Template.username.events({
 
 			Button.reset(button);
 			instance.username.set(username);
+			Template.instance().username.set(true);
+			toastr.success(t('Accounts_Email_Activated_Subject'));
 			return callbacks.run('usernameSet');
 		});
+
+		window.location.href = Meteor.settings.public.LOGIN_ACTIVE_SUCCESS_URL;
 	},
 });
