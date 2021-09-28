@@ -72,10 +72,10 @@ Template.loginForm.helpers({
 		return t('Input_code');
 	},
 	userAgreement() {
-		return 'https://store.paiyaapp.com/cn/userAgreement';
+		return Meteor.settings.public.BLACKBOARD_USER_AGREEMENT_URL;
 	},
 	privacy() {
-		return 'https://store.paiyaapp.com/cn/privacy';
+		return Meteor.settings.public.BLACKBOARD_PRIVACY_URL;
 	},
 	secs() {
 		return `${ t('After_second_send', Template.instance().secs.get()) }`;
@@ -266,8 +266,8 @@ Template.loginForm.events({
 
 Template.loginForm.onCreated(function() {
 	const instance = this;
-	const PHONE_MATCHER = /^1\d{10}$/;
-	const CODE_MATCHER = /\d{6}$/;
+	const PHONE_MATCHER = /^(\+?86)?1[3-9]\d{9}$/;
+	const CODE_MATCHER = /^\d{6}$/;
 	this.loading = new ReactiveVar(false);
 	this.secs = new ReactiveVar(0);
 

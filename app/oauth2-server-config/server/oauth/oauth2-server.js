@@ -95,23 +95,19 @@ API.v1.addAuthMethod(function() {
 		return;
 	}
 
-	const accessToken = Users.findOneByToken(bearerToken);
-	if (accessToken == null) {
-		return;
-	}
-
-	const user = Users.findOneById(accessToken._id);
+	const user = Users.findOneByToken(bearerToken);
 	if (user == null) {
 		return;
 	}
+
 	return { user };
 });
 
-const frameWhiteList = ['https://admin.paiyaapp.com', 'https://admin-dev.paiyaapp.com', 'https://store.paiyaapp.com', 'https://store-dev.paiyaapp.com', 'http://localhost:4080', 'http://localhost'];
+const iframeWhiteList = ['https://admin.paiyaapp.com', 'https://admin-dev.paiyaapp.com', 'https://store.paiyaapp.com', 'https://store-dev.paiyaapp.com'];
 WebApp.connectHandlers.use((req, res, next) => {
 	if (req.headers.referer) {
 		const referer = new URL(req.headers.referer);
-		if (frameWhiteList.includes(referer.origin)) {
+		if (iframeWhiteList.includes(referer.origin)) {
 			res.setHeader('x-frame-options', `allow-from ${ referer.origin }/`);
 		}
 	}

@@ -75,28 +75,29 @@ function chatUserHandler(user) {
 	return { ...user, ...addtionalUser, services: userService };
 }
 
-Migrations.add({
-	version: 232,
-	up() {
-		const usersBuf = fs.readFileSync('./users.json');
+// TODO: 这个脚本不推荐写 migration
+// Migrations.add({
+// 	version: 232,
+// 	up() {
+// 		const usersBuf = fs.readFileSync('./users.json');
 
-		const users = JSON.parse(usersBuf.toString('utf8'));
-		const chatUsers = users.map((user) => chatUserHandler(user)).filter((item) => item);
-		const pageCount = Math.ceil(chatUsers.length / 1000);
-		async function main() {
-			const queue = [];
-			let index = 0;
-			while (index > pageCount) {
-				const chatUsersCmd = chatUsers.slice(index * 1000, (index + 1) * 1000);
-				// eslint-disable-next-line no-await-in-loop
-				queue.push(Users.insertMany(chatUsersCmd));
-				index++;
-			}
+// 		const users = JSON.parse(usersBuf.toString('utf8'));
+// 		const chatUsers = users.map((user) => chatUserHandler(user)).filter((item) => item);
+// 		const pageCount = Math.ceil(chatUsers.length / 1000);
+// 		async function main() {
+// 			const queue = [];
+// 			let index = 0;
+// 			while (index > pageCount) {
+// 				const chatUsersCmd = chatUsers.slice(index * 1000, (index + 1) * 1000);
+// 				// eslint-disable-next-line no-await-in-loop
+// 				queue.push(Users.insertMany(chatUsersCmd));
+// 				index++;
+// 			}
 
-			for await (const a of queue) {
-				console.log('------------- a:', a);
-			}
-		}
-		main().catch(console.error);
-	},
-});
+// 			for await (const a of queue) {
+// 				console.log('------------- a:', a);
+// 			}
+// 		}
+// 		main().catch(console.error);
+// 	},
+// });

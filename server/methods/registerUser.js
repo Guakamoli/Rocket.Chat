@@ -89,7 +89,6 @@ Meteor.methods({
 		return userId;
 	},
 	registerSmsUser(data) {
-		console.log(data, 'data');
 		const { phoneNumber, regionCode } = data;
 		const userId = Random.id();
 
