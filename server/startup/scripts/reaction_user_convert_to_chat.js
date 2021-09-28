@@ -11,7 +11,7 @@ function binarySearch(arr, key, field) {
 
 function createName() {
 	const randomNumber = Math.random().toString().slice(-6);
-	return `User-${ randomNumber }`;
+	return `User${ randomNumber }`;
 }
 
 function chatUserHandler(user) {
