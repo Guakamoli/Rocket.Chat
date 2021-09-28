@@ -87,7 +87,7 @@ button {
 
 	display: flex;
 
-	visibility: hidden;
+	/* visibility: hidden; */
 
 	overflow: hidden;
 

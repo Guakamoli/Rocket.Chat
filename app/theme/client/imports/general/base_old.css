@@ -2788,7 +2788,7 @@
 
 .full-page,
 .page-loading {
-	background-color: var(--content-background-color);
+	/* background-color: var(--content-background-color); */
 	background-color: var(--rc-color-primary);
 }
 
@@ -2802,7 +2802,7 @@
 
 	text-align: center;
 
-	background-color: var(--content-background-color);
+	/* background-color: var(--content-background-color); */
 
 	background-repeat: no-repeat;
 	background-attachment: fixed;
