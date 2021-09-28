@@ -42,6 +42,8 @@ Template.loginForm.helpers({
 				return t('Send_confirmation_email');
 			case 'forgot-password':
 				return t('Reset_password');
+			case 'email-login':
+				return t('Login');
 		}
 	},
 	loginTerms() {
@@ -62,6 +64,24 @@ Template.loginForm.helpers({
 	},
 	emailOrUsernamePlaceholder() {
 		return settings.get('Accounts_EmailOrUsernamePlaceholder') || t('Email_or_username');
+	},
+	phoneNumberPlaceholder() {
+		return t('Input_mobile');
+	},
+	codePlaceholder() {
+		return t('Input_code');
+	},
+	userAgreement() {
+		return 'https://store.paiyaapp.com/cn/userAgreement';
+	},
+	privacy() {
+		return 'https://store.paiyaapp.com/cn/privacy';
+	},
+	secs() {
+		return `${ t('After_second_send', Template.instance().secs.get()) }`;
+	},
+	getSecs() {
+		return Template.instance().secs.get() <= 0;
 	},
 	passwordPlaceholder() {
 		return settings.get('Accounts_PasswordPlaceholder') || t('Password');
@@ -120,14 +140,18 @@ Template.loginForm.events({
 						return;
 					}
 					callbacks.run('userRegistered');
-					return Meteor.loginWithPassword(s.trim(formData.email), formData.pass, function(error) {
-						if (error && error.error === 'error-invalid-email') {
-							return instance.state.set('wait-email-activation');
-						} if (error && error.error === 'error-user-is-not-activated') {
-							return instance.state.set('wait-activation');
-						}
-						Session.set('forceLogin', false);
-					});
+					toastr.success(t('Active_user_description'));
+					// eslint-disable-next-line no-return-assign
+					return window.location.href = Meteor.settings.public.LOGIN_ACTIVE_SUCCESS_URL;
+					// return Meteor.loginWithPassword(s.trim(formData.email), formData.pass, function(error) {
+					// 	if (error && error.error === 'error-invalid-email') {
+					// 		return instance.state.set('wait-email-activation');
+					// 	}
+					// 	if (error && error.error === 'error-user-is-not-activated') {
+					// 		return instance.state.set('wait-activation');
+					// 	}
+					// 	Session.set('forceLogin', false);
+					// });
 				});
 			}
 			let loginMethod = 'loginWithPassword';
@@ -137,15 +161,43 @@ Template.loginForm.events({
 			if (settings.get('CROWD_Enable')) {
 				loginMethod = 'loginWithCrowd';
 			}
+
+			if (state === 'login') {
+				const phoneNumber = s.trim(formData.phoneNumber);
+				const phone = {
+					phoneNumber,
+					countryCode: '86',
+				};
+				return Meteor.loginWithKameoSms(phone, s.trim(formData.code), function(error) {
+					instance.loading.set(false);
+					if (error != null) {
+						if (error.error === 'Invalid phone number') {
+							// eslint-disable-next-line no-mixed-spaces-and-tabs
+							 toastr.error(t('Mobile_format_error'));
+						} else if (error.error === 'Invalid verification code') {
+							// eslint-disable-next-line no-mixed-spaces-and-tabs
+							 toastr.error(t('Code_failed'));
+						} else if (error.error === 'Expired verification code') {
+							toastr.error(t('Code_expired'));
+						} else {
+							return toastr.error(t('Code_expired'));
+						}
+					}
+					Session.set('forceLogin', false);
+				});
+			}
+
 			return Meteor[loginMethod](s.trim(formData.emailOrUsername), formData.pass, function(error) {
 				instance.loading.set(false);
 				if (error != null) {
 					if (error.error === 'error-user-is-not-activated') {
 						return toastr.error(t('Wait_activation_warning'));
-					} if (error.error === 'error-invalid-email') {
+					}
+					if (error.error === 'error-invalid-email') {
 						instance.typedEmail = formData.emailOrUsername;
 						return instance.state.set('email-verification');
-					} if (error.error === 'error-user-is-not-activated') {
+					}
+					if (error.error === 'error-user-is-not-activated') {
 						toastr.error(t('Wait_activation_warning'));
 					} else if (error.error === 'error-app-user-is-not-allowed-to-login') {
 						toastr.error(t('App_user_not_allowed_to_login'));
@@ -173,11 +225,51 @@ Template.loginForm.events({
 		Template.instance().state.set('forgot-password');
 		return callbacks.run('loginPageStateChange', Template.instance().state.get());
 	},
+	'click .email-login'() {
+		Template.instance().state.set('email-login');
+		return callbacks.run('loginPageStateChange', Template.instance().state.get());
+	},
+	'click .send-code'(event, instance) {
+		event.preventDefault();
+		const formData = instance.validatePhoneNumber();
+		if (formData) {
+			const phoneNumber = s.trim(formData.phoneNumber);
+			const phone = {
+				phoneNumber,
+				countryCode: '86',
+			};
+			return Meteor.kameoSendCode(phone, (error) => {
+				if (error) {
+					if (error.error === 'Incorrect number format') {
+						toastr.error(t('Mobile_format_error'));
+					} else if (error.error === 'Minute limit') {
+						toastr.error(t('Retry_send'));
+					} else {
+						toastr.error(t('Code_send_fail'));
+					}
+					return;
+				}
+				toastr.success(t('Code_send_success'));
+				instance.secs.set(60);
+				const timer = setInterval(() => {
+					if (instance.secs.get() < 1) {
+						clearInterval(timer);
+						return;
+					}
+
+					instance.secs.set(instance.secs.get() - 1);
+				}, 1000);
+			});
+		}
+	},
 });
 
 Template.loginForm.onCreated(function() {
 	const instance = this;
+	const PHONE_MATCHER = /^1\d{10}$/;
+	const CODE_MATCHER = /\d{6}$/;
 	this.loading = new ReactiveVar(false);
+	this.secs = new ReactiveVar(0);
 
 	if (Session.get('loginDefaultState')) {
 		this.state = new ReactiveVar(Session.get('loginDefaultState'));
@@ -193,6 +285,35 @@ Template.loginForm.onCreated(function() {
 	});
 
 	this.validSecretURL = new ReactiveVar(false);
+	this.validatePhoneNumber = function() {
+		const formData = $('#login-card').serializeArray();
+		const formObj = {};
+		const validationObj = {};
+		formData.forEach((field) => {
+			formObj[field.name] = field.value;
+		});
+		const state = instance.state.get();
+		if (state === 'login') {
+			if (!formObj.phoneNumber || !PHONE_MATCHER.test(formObj.phoneNumber)) {
+				validationObj.phoneNumber = t('mobileLengtLimit');
+			}
+		}
+		$('#login-card h2').removeClass('error');
+		$('#login-card input.error, #login-card select.error').removeClass('error');
+		$('#login-card .input-error').text('');
+		if (!_.isEmpty(validationObj)) {
+			$('#login-card h2').addClass('error');
+
+			Object.keys(validationObj).forEach((key) => {
+				const value = validationObj[key];
+				$(`#login-card input[name=${ key }], #login-card select[name=${ key }]`).addClass('error');
+				$(`#login-card input[name=${ key }]~.input-error, #login-card select[name=${ key }]~.input-error`).text(value);
+			});
+			instance.loading.set(false);
+			return false;
+		}
+		return formObj;
+	};
 	this.validate = function() {
 		const formData = $('#login-card').serializeArray();
 		const formObj = {};
@@ -201,17 +322,25 @@ Template.loginForm.onCreated(function() {
 			formObj[field.name] = field.value;
 		});
 		const state = instance.state.get();
-		if (state !== 'login') {
+		if (state !== 'login' && state !== 'email-login') {
 			if (!(formObj.email && /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]+\b/i.test(formObj.email))) {
 				validationObj.email = t('Invalid_email');
 			}
 		}
 		if (state === 'login') {
+			if (!formObj.phoneNumber || !PHONE_MATCHER.test(formObj.phoneNumber)) {
+				validationObj.phoneNumber = t('mobileLengtLimit');
+			}
+			if (!formObj.code || !CODE_MATCHER.test(formObj.code)) {
+				validationObj.code = t('mobileCodeLimit');
+			}
+		}
+		if (state === 'email-login') {
 			if (!formObj.emailOrUsername) {
 				validationObj.emailOrUsername = t('Invalid_email');
 			}
 		}
-		if (state !== 'forgot-password' && state !== 'email-verification') {
+		if (state !== 'forgot-password' && state !== 'email-verification' && state !== 'login') {
 			if (!formObj.pass) {
 				validationObj.pass = t('Invalid_pass');
 			}
@@ -255,6 +384,7 @@ Template.loginForm.onRendered(function() {
 		switch (this.state.get()) {
 			case 'login':
 			case 'forgot-password':
+			case 'email-login':
 			case 'email-verification':
 				return Meteor.defer(function() {
 					return $('input[name=email]').select().focus();

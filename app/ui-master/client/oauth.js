@@ -3,7 +3,6 @@ import { Tracker } from 'meteor/tracker';
 import { FlowRouter } from 'meteor/kadira:flow-router';
 import { Session } from 'meteor/session';
 import { Template } from 'meteor/templating';
-import { Accounts } from 'meteor/accounts-base';
 
 import { getUserPreference } from '../../utils/client';
 import { mainReady, Layout, iframeLogin } from '../../ui-utils';
@@ -117,11 +116,5 @@ Template.main.onRendered(function() {
 
 		$(document.body).off('mouseenter', 'button.thumb');
 		$(document.body).off('mouseleave', 'button.thumb');
-
-		window.addEventListener('message', (e) => {
-			if (e.data && e.data === 'logout') {
-				Meteor._localStorage.removeItem(Accounts.LOGIN_TOKEN_KEY);
-			}
-		}, false);
 	});
 });

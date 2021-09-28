@@ -1,7 +1,7 @@
 import { Button, TextInput, Field, Modal, Box, Throbber } from '@rocket.chat/fuselage';
 import { useSafely } from '@rocket.chat/fuselage-hooks';
-import { Meteor } from 'meteor/meteor';
 import React, { useState, useCallback, useMemo } from 'react';
+import toastr from 'toastr';
 
 import { useRouteParameter, useRoute } from '../../../contexts/RouterContext';
 import { useMethod } from '../../../contexts/ServerContext';
@@ -60,9 +60,10 @@ const ResetPassword = () => {
 			setIsLoading(true);
 			try {
 				if (token && resetPassword) {
-					const result = await resetPassword(token, newPassword);
-					await Meteor.loginWithToken(result.token);
-					router.push({});
+					await resetPassword(token, newPassword);
+					toastr.success('密码已重置成功！');
+					// await Meteor.loginWithToken(result.token);
+					// router.push({});
 				} else {
 					await setUserPassword(newPassword);
 				}

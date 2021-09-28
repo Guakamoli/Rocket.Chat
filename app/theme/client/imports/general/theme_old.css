@@ -12,6 +12,7 @@
 
 .color-primary-font-color {
 	color: var(--primary-font-color);
+	background-color: var(--color-white);
 }
 
 .color-primary-action-color {
@@ -295,6 +296,8 @@ textarea {
 
 .full-page,
 .page-loading {
+	background-color: var(--content-background-color);
+
 	a {
 		color: var(--tertiary-font-color);
 	}

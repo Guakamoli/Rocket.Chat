@@ -1,0 +1,22 @@
+.btn-code {
+	display: flex;
+
+	width: 120px;
+
+	color: #651fff;
+	background-color: #ffffff;
+
+	font-size: 13px;
+	font-weight: 500;
+	align-items: center;
+	justify-content: center;
+}
+
+.inputNumber::-webkit-outer-spin-button,
+.inputNumber::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+}
+
+.inputNumber[type="number"] {
+	-moz-appearance: textfield;
+}

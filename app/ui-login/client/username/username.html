@@ -42,7 +42,12 @@
         {{>customFieldsForm}}
 				{{#if username.ready}}
 					<div class="rc-button__group rc-button__group--vertical">
-						<button data-loading-text="{{_ " Please_wait "}}..." class='rc-button rc-button--primary login'>{{_ "Use_this_username"}}</button>
+						{{#if active}}
+							<button type="login" class='rc-button rc-button--primary login'>{{_ "Go_login"}}</button>
+						{{else}}
+							<button data-loading-text="{{_ " Please_wait "}}..." class='rc-button rc-button--primary login'>{{_
+								"Use_this_username_active"}}</button>
+						{{/if}}
 						<button type="reset" class='rc-button rc-button--nude'>{{_ "Logout"}}</button>
 					</div>
 				{{/if}}

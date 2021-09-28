@@ -11,4 +11,5 @@ Meteor.startup(function() {
 		},
 		env: process.env.NODE_ENV,
 	});
+	Meteor.settings.public.LOGIN_ACTIVE_SUCCESS_URL = process.env.LOGIN_ACTIVE_SUCCESS_URL;
 });

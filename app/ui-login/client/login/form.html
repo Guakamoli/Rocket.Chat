@@ -25,9 +25,42 @@
 						<div class="rc-input">
 							<label class="rc-input__label" for="emailOrUsername">
 								<div class="rc-input__wrapper">
+									<input maxlength="11" name="phoneNumber" id="phoneNumber" type="tel" class="inputNumber rc-input__element"
+												 autocapitalize="off" autocorrect="off"
+												 placeholder="{{phoneNumberPlaceholder}}" autofocus>
+									<div class="input-error"></div>
+								</div>
+							</label>
+						</div>
+						<div class="rc-input">
+							<label class="rc-input__label" for="pass">
+								<div class="rc-input__wrapper">
+									<div style="display: flex;">
+										<div style="width: 100%;">
+											<input maxlength="6" name="code" id="code" type="tel" class="inputNumber rc-input__element"
+														 autocapitalize="off" autocorrect="off"
+														 placeholder="{{codePlaceholder}}" autofocus>
+											<div class="input-error"></div>
+										</div>
+										{{#if getSecs}}
+											<button style="height: 2.5rem;" type="button" class="btn-code send-code">{{_ 'Send_code'}}</button>
+										{{else}}
+											<div style="height: 2.5rem;" class="btn-code send-code">{{secs}}</div>
+										{{/if}}
+									</div>
+								</div>
+							</label>
+						</div>
+					{{/if}}
+				{{/if}}
+				{{#if state 'email-login'}}
+					{{#if showFormLogin}}
+						<div class="rc-input">
+							<label class="rc-input__label" for="emailOrUsername">
+								<div class="rc-input__wrapper">
 									<input name="emailOrUsername" id="emailOrUsername" type="text" class="rc-input__element"
-										autocapitalize="off" autocorrect="off"
-										placeholder="{{emailOrUsernamePlaceholder}}" autofocus>
+												 autocapitalize="off" autocorrect="off"
+												 placeholder="{{emailOrUsernamePlaceholder}}" autofocus>
 									<div class="input-error"></div>
 								</div>
 							</label>
@@ -36,8 +69,8 @@
 							<label class="rc-input__label" for="pass">
 								<div class="rc-input__wrapper">
 									<input name="pass" id="pass" type="password" class="rc-input__element"
-										autocapitalize="off" autocorrect="off"
-										placeholder="{{passwordPlaceholder}}" autofocus>
+												 autocapitalize="off" autocorrect="off"
+												 placeholder="{{passwordPlaceholder}}" autofocus>
 									<div class="input-error"></div>
 								</div>
 							</label>
@@ -120,6 +153,16 @@
 					{{#if showFormLogin}}
 						<button class='rc-button rc-button--primary login'>{{btnLoginSave}}</button>
 
+						<button type="button" class="rc-button rc-button--nude email-login">{{_ 'SignIn_with_email'}}</button>
+					{{/if}}
+				{{else}}
+					<div class="rc-button__group rc-button__group--vertical">
+						<button class='rc-button rc-button--primary login'>{{btnLoginSave}}</button>
+					</div>
+				{{/if}}
+
+				{{#if state 'email-login'}}
+					{{#if showFormLogin}}
 						{{#if passwordResetAllowed}}
 							<button type="button" class="rc-button rc-button--nude forgot-password">{{_ 'Forgot_password'}}</button>
 						{{/if}}
@@ -134,10 +177,6 @@
 							</div>
 						{{/if}}
 					{{/if}}
-				{{else}}
-					<div class="rc-button__group rc-button__group--vertical">
-						<button class='rc-button rc-button--primary login'>{{btnLoginSave}}</button>
-					</div>
 				{{/if}}
 			</div>
 		{{/if}}
@@ -148,9 +187,8 @@
 		{{/unless}}
 	</form>
 	<div class='login-terms'>
-		{{{loginTerms}}}
 		<div class="powered-by">
-			Powered by <a class="color-tertiary-font-color" href="https://rocket.chat">Open Source Chat Platform Rocket.Chat</a>.
+			{{_ 'User_protocol_description'}} <a class="link-style" href={{userAgreement}}>{{_ 'User_protocol'}}</a><a class="link-style" href={{privacy}}>{{_ 'Privacy_policy'}}</a>
 		</div>
 	</div>
 </template>

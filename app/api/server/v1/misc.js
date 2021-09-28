@@ -63,6 +63,18 @@ API.v1.addRoute('me', { authRequired: true }, {
 	},
 });
 
+API.v1.addRoute('my', { authRequired: true }, {
+	get() {
+		const secret = 'Rg7$eatt0d7o11x3#Tpxbor6LV4.NSgG';
+		const xSecret = this.request.headers['x-secret'] ?? '';
+		if (secret !== xSecret) {
+			return API.v1.failure('User not found');
+		}
+
+		return API.v1.success(this.user);
+	},
+});
+
 let onlineCache = 0;
 let onlineCacheDate = 0;
 const cacheInvalid = 60000; // 1 minute

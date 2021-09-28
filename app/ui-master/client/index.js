@@ -3,3 +3,4 @@ import './loading';
 import './error.html';
 import './logoLayout.html';
 import './main';
+import './oauth';

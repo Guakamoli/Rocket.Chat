@@ -27,30 +27,44 @@ function chatUserHandler(user) {
 
 	if (!MATCH_EMAIL_ADDRESS.test(user.emails[0].address)) {
 		smsService.sms = {
-			phoneNumber: user?.services?.sms?.id, // 完整手机号
-			realPhoneNumber: user?.services?.sms?.phoneNumber, // 无国别码的干净手机号
+			realPhoneNumber: user?.services?.sms?.id, // 完整手机号
+			purePhoneNumber: user?.services?.sms?.phoneNumber, // 无国别码的干净手机号
 			countryCode: '+86', // 国别码
 			verificationCodes: [],
 		};
 		emails = [];
 	} else {
-		emails = user.emails;
+		emails = user?.emails && user.emails.map((rec) => ({
+			...rec,
+			verified: true,
+		}));
 	}
+
+	if (user.services.resume && user.services.resume.loginTokens) {
+		user.services.resume.loginTokens = user.services.resume.loginTokens.map((loginToken) => {
+			loginToken.when = new Date(loginToken.when.$date);
+			return loginToken;
+		});
+	}
+
 	// 开始组合 user 和 Account
 	const addtionalUser = {
+		createdAt: new Date(user.createdAt.$date),
 		username,
 		emails,
 		type: 'user',
 		active: true,
-		_updatedAt: user.createdAt,
+		_updatedAt: new Date(user.createdAt.$date),
 		roles: [
 			'user',
 		],
 		name: account.profile?.fullname || createName,
 		nickname: account.profile?.fullname || createName,
 		requirePasswordChange: false,
-		settings: { },
+		settings: {},
 		utcOffset: 8, // 用户时区，通过app登录可以修改
+		status: 'offline',
+		statusConnection: 'offline',
 	};
 	delete user.services.email;
 	const userService = {
@@ -70,12 +84,17 @@ Migrations.add({
 		const chatUsers = users.map((user) => chatUserHandler(user)).filter((item) => item);
 		const pageCount = Math.ceil(chatUsers.length / 1000);
 		async function main() {
+			const queue = [];
 			let index = 0;
 			while (index > pageCount) {
 				const chatUsersCmd = chatUsers.slice(index * 1000, (index + 1) * 1000);
 				// eslint-disable-next-line no-await-in-loop
-				await Users.insertMany(chatUsersCmd);
+				queue.push(Users.insertMany(chatUsersCmd));
 				index++;
+			}
+
+			for await (const a of queue) {
+				console.log('------------- a:', a);
 			}
 		}
 		main().catch(console.error);
