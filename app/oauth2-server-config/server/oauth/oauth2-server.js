@@ -27,7 +27,7 @@ oauth2server.routes.get('/oauth/userinfo', function(req, res) {
 	if (req.headers.authorization == null) {
 		return res.status(401).send('No token');
 	}
-	const accessToken = req.headers.authorization.replace('Bearer ', '');
+	const accessToken = req.headers?.authorization.replace(/Bearer\s/i, '');
 	const token = oauth2server.oauth.model.AccessTokens.findOne({
 		accessToken,
 	});
@@ -55,7 +55,7 @@ API.v1.addAuthMethod(function() {
 	let headerToken = this.request.headers.authorization;
 	const getToken = this.request.query.access_token;
 	if (headerToken != null) {
-		const matches = headerToken.match(/Bearer\s(\S+)/);
+		const matches = headerToken.match(/Bearer\s(\S+)/i);
 		if (matches) {
 			headerToken = matches[1];
 		} else {
@@ -84,7 +84,7 @@ API.v1.addAuthMethod(function() {
 API.v1.addAuthMethod(function() {
 	let bearerToken = this.request.headers.authorization;
 	if (bearerToken != null) {
-		const matches = bearerToken.match(/meteor\s(\S+)/);
+		const matches = bearerToken.match(/meteor\s(\S+)/i);
 		if (matches) {
 			bearerToken = matches[1];
 		} else {
@@ -103,11 +103,11 @@ API.v1.addAuthMethod(function() {
 	return { user };
 });
 
-const iframeWhiteList = ['https://admin.paiyaapp.com', 'https://admin-dev.paiyaapp.com', 'https://store.paiyaapp.com', 'https://store-dev.paiyaapp.com'];
+const iframeAllowOrigin = process.env.IFRAME_ALLOW_ORIGIN.split(',').filter(Boolean);
 WebApp.connectHandlers.use((req, res, next) => {
 	if (req.headers.referer) {
 		const referer = new URL(req.headers.referer);
-		if (iframeWhiteList.includes(referer.origin)) {
+		if (iframeAllowOrigin.includes(referer.origin)) {
 			res.setHeader('x-frame-options', `allow-from ${ referer.origin }/`);
 		}
 	}

@@ -63,6 +63,7 @@ API.v1.addRoute('me', { authRequired: true }, {
 	},
 });
 
+// 用于支持 meteor token及 oauth token，返回当前用户
 API.v1.addRoute('my', { authRequired: true }, {
 	get() {
 		const secret = process.env.INTERNAL_X_SECRET || '';
