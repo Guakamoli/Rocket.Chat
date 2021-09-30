@@ -4,8 +4,9 @@ on:
   push:
     branches:
       - develop
-      - kameo/develop
       - master
+      - kameo/develop
+      - kameo/master
 
 env:
   CI: true
