@@ -7,6 +7,7 @@ on:
       - master
       - kameo/develop
       - kameo/master
+      - test
 
 env:
   CI: true
@@ -546,16 +547,16 @@ jobs:
     - name: Build Docker image for tag
       run: |
         cd /tmp/build
-        echo "TAG_NAME=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
-        if [ "$GITHUB_REF" == "refs/heads/master" ]; then
-          echo "TAG_NAME=production" >> $GITHUB_ENV
+        TAG_NAME=$(date +'%Y%m%d%H%M%S')
+        if [ "$GITHUB_REF" == "refs/heads/kameo/master" ] || [ "$GITHUB_REF" == "refs/heads/master" ]; then
+          TAG_NAME=production
         fi
-        if [ "$GITHUB_REF" == "refs/heads/develop" ]; then
-          echo "TAG_NAME=dev" >> $GITHUB_ENV
+        if [ "$GITHUB_REF" == "refs/heads/kameo/develop" ] || [ "$GITHUB_REF" == "refs/heads/develop" ]; then
+          TAG_NAME=dev
         fi
 
-        IMAGE=${{env.ALIYUN_CR}}/${{env.ALIYUN_NS}}/${{env.IMAGE_NAME}}:${{env.TAG_NAME}}
-        echo "Build Docker image '${IMAGE}'"
+        IMAGE=${{env.ALIYUN_CR}}/${{env.ALIYUN_NS}}/${{env.IMAGE_NAME}}:${TAG_NAME}
+        echo "Build Docker image: '${IMAGE}', tag: '${TAG_NAME}'"
 
         docker build -t ${IMAGE} .
         docker push ${IMAGE}
