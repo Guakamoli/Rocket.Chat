@@ -204,7 +204,7 @@
 		"core-js": "^3.14.0",
 		"cors": "^2.8.5",
 		"csv-parse": "^4.16.0",
-		"date-fns": "^2.23.0",
+		"date-fns": "^2.25.0",
 		"dompurify": "^2.2.9",
 		"ejson": "^2.2.1",
 		"emailreplyparser": "^0.0.5",
