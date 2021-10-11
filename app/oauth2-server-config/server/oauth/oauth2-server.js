@@ -13,10 +13,10 @@ const oauth2server = new OAuth2Server({
 	debug: true,
 });
 
-if (process.env.OAUTH2_SILENT_CLIENTS) {
-	const silentClients = process.env.OAUTH2_SILENT_CLIENTS.split(',').filter(Boolean);
-	silentClients.forEach((clientId) => oauth2server.addSilentClient(clientId));
-}
+// if (process.env.OAUTH2_SILENT_CLIENTS) {
+// 	const silentClients = process.env.OAUTH2_SILENT_CLIENTS.split(',').filter(Boolean);
+// 	silentClients.forEach((clientId) => oauth2server.addSilentClient(clientId));
+// }
 
 oauth2server.app.disable('x-powered-by');
 oauth2server.routes.disable('x-powered-by');
