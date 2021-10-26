@@ -1,5 +1,6 @@
 import { Match, check } from 'meteor/check';
 import { parser } from '@rocket.chat/message-parser';
+// import { Meteor } from 'meteor/meteor';
 
 import { settings } from '../../../settings';
 import { callbacks } from '../../../callbacks';
@@ -240,6 +241,12 @@ export const sendMessage = function(user, message, room, upsert = false) {
 				return;
 			}
 			message._id = Messages.insert(message);
+		}
+
+		console.log('-----------rocketmqSendPostMessage--------------');
+		if (message.t === 'post') {
+			// 发送mq事件给到Java
+			// Meteor.call('rocketmqSendPostMessage', { postId: message._id, ts: message.ts });
 		}
 
 		if (Apps && Apps.isLoaded()) {

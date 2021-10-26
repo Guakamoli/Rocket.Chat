@@ -9,7 +9,10 @@ const accessKeyId = process.env.MQ_ACCESS_KEY_ID;
 const accessKeySecret = process.env.MQ_ACCESS_KEY_SECRET;
 const endpoint = process.env.MQ_ENDPOINT;
 const instanceId = process.env.MQ_INSTANCE_ID;
-const topicId_rocketchat = process.env.MQ_TOPIC_ID_ROCKETCHAT;
+// const topic = {
+// 	rocketchat: process.env.MQ_TOPIC_ID_ROCKETCHAT,
+// 	rocketpost: process.env.MQ_TOPIC_ID_ROCKETPOST,
+// };
 
 const mqClient = new MQClient(endpoint, accessKeyId, accessKeySecret);
 
@@ -26,28 +29,43 @@ function genRocketmqMsgProps(key, props) {
 	return msgProps;
 }
 
-async function rocketmqSend(body, tag, props) {
-	const producer = mqClient.getProducer(instanceId, topicId_rocketchat);
+async function rocketmqSend(topicId, body, tag, props = {}, retry) {
+	const producer = mqClient.getProducer(instanceId, topicId);
 	let msgProps = new MessageProperties();
 	if (props) {
 		msgProps = genRocketmqMsgProps('messageKey', props);
 	}
 
 	try {
-		await publishMessage(producer, body, tag ?? '', msgProps);
+		// console.time('rocketmq-done');
+		await publishMessage(producer, body, tag, msgProps);
+		// console.timeEnd('rocketmq-done');
 	} catch (error) {
+		if (retry > 2) {
+			console.log('重试次数已结束', error);
+			return;
+		}
+		retry++;
+		console.log('小贤贤----------------rocketmqSend---------', error);
 		// 消息发送失败，需要进行重试处理，可重新发送这条消息或持久化这条数据进行补偿处理。
-		Meteor.call('rocketmqSend', body, tag ?? '', msgProps);
+		Meteor.call('rocketmqSend', topicId, body, msgProps, tag);
 	}
 }
 
 async function rocketmqSendLoginUser(userId) {
 	const user = Users.findOneById(userId);
-	await rocketmqSend(user, 'mqLoginUser', { id: userId });
+	await rocketmqSend(process.env.MQ_TOPIC_ID_ROCKETCHAT, user, 'mqLoginUser', { id: userId }, 3);
 }
+
+// async function rocketmqSendPostMessage(message) {
+// 	console.log(message, '-----------------------------------rocketmqSend---------------------');
+// 	if (!message) { return; }
+// 	await rocketmqSend(process.env.MQ_TOPIC_ID_ROCKETPOST, message, 'mqPostMessage');
+// }
 
 Meteor.methods({
 	rocketmqSend,
 	rocketmqSendLoginUser,
 	genRocketmqMsgProps,
+	// rocketmqSendPostMessage,
 });

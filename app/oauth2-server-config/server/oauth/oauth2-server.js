@@ -103,6 +103,21 @@ API.v1.addAuthMethod(function() {
 	return { user };
 });
 
+if (process.env.ROCKETCHAT_INTERNAL_API_ENABLE === 'true') {
+	API.v1.addAuthMethod(function() {
+		if (this.request.headers.authorization) { return; }
+		if (this.request.headers.env !== 'local') { return; }
+		const user = Users.findOneById(process.env.INTERNAL_X_USER_ID);
+		console.log(process.env.INTERNAL_X_USER_ID);
+		if (user == null) {
+			return;
+		}
+
+		return { user };
+	});
+}
+
+
 const iframeAllowOrigin = process.env.IFRAME_ALLOW_ORIGIN.split(',').filter(Boolean);
 WebApp.connectHandlers.use((req, res, next) => {
 	if (req.headers.referer) {

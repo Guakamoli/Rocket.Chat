@@ -1383,6 +1383,12 @@ export class Rooms extends Base {
 	countDiscussions() {
 		return this.find({ prid: { $exists: true } }).count();
 	}
+
+	findByTypeAndUserId(userId, type, options = {}) {
+		const query = { 'u._id': userId, t: type };
+
+		return this.find(query, options);
+	}
 }
 
 export default new Rooms('room', true);

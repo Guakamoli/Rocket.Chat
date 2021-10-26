@@ -3,7 +3,7 @@ import { useSafely } from '@rocket.chat/fuselage-hooks';
 import React, { useState, useCallback, useMemo } from 'react';
 import toastr from 'toastr';
 
-import { useRouteParameter, useRoute } from '../../../contexts/RouterContext';
+import { useRouteParameter } from '../../../contexts/RouterContext';
 import { useMethod } from '../../../contexts/ServerContext';
 import { useTranslation } from '../../../contexts/TranslationContext';
 import { useUser } from '../../../contexts/UserContext';
@@ -36,7 +36,7 @@ const ResetPassword = () => {
 		params,
 	);
 
-	const router = useRoute('home');
+	// const router = useRoute('home');
 
 	const changePasswordReason = getChangePasswordReason(user || {});
 
@@ -73,16 +73,7 @@ const ResetPassword = () => {
 				setIsLoading(false);
 			}
 		},
-		[
-			isSubmitDisabled,
-			setIsLoading,
-			token,
-			resetPassword,
-			newPassword,
-			router,
-			setUserPassword,
-			setError,
-		],
+		[isSubmitDisabled, setIsLoading, token, resetPassword, newPassword, setUserPassword, setError],
 	);
 
 	return (
