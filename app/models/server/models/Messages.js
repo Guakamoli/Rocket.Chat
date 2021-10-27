@@ -1253,6 +1253,17 @@ export class Messages extends Base {
 		};
 		return this.update(query, update);
 	}
+
+	attachDiscussion(_id, drid) {
+		const update = {
+			$set: {
+				drid,
+				_updatedAt: new Date(),
+			},
+		};
+
+		return Messages.update({ _id }, update);
+	}
 }
 
 export default new Messages();

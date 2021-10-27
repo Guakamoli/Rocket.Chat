@@ -9,6 +9,7 @@ import { createRoom, addUserToRoom, sendMessage, attachMessage } from '../../../
 import { settings } from '../../../settings/server';
 import { roomTypes } from '../../../utils/server';
 import { callbacks } from '../../../callbacks/server';
+import { msgStream } from '../../../lib';
 
 const getParentRoom = (rid) => {
 	const room = Rooms.findOne(rid);
@@ -125,12 +126,19 @@ const create = ({ prid, pmid, t_name, reply, users, user, encrypted }) => {
 		}
 		mentionMessage(discussion._id, user, attachMessage(message, p_room));
 
-		discussionMsg = createDiscussionMessage(message.rid, user, discussion._id, t_name, attachMessage(message, p_room));
+		if (message.t === 'post') {
+			Messages.attachDiscussion(message._id, discussion._id);
+			msgStream.emit(message.rid, message);
+		} else {
+			discussionMsg = createDiscussionMessage(message.rid, user, discussion._id, t_name, attachMessage(message, p_room));
+		}
 	} else {
 		discussionMsg = createDiscussionMessage(prid, user, discussion._id, t_name);
 	}
 
-	callbacks.runAsync('afterSaveMessage', discussionMsg, p_room, user._id);
+	if (discussionMsg) {
+		callbacks.runAsync('afterSaveMessage', discussionMsg, p_room, user._id);
+	}
 
 	if (reply) {
 		sendMessage(user, { msg: reply }, discussion);

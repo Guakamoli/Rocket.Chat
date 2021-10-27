@@ -103,7 +103,7 @@ API.v1.addAuthMethod(function() {
 	return { user };
 });
 
-const iframeAllowOrigin = process.env.IFRAME_ALLOW_ORIGIN.split(',').filter(Boolean);
+const iframeAllowOrigin = process.env.IFRAME_ALLOW_ORIGIN?.split(',').filter(Boolean);
 WebApp.connectHandlers.use((req, res, next) => {
 	if (req.headers.referer) {
 		const referer = new URL(req.headers.referer);
