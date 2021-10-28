@@ -106,9 +106,7 @@ API.v1.addAuthMethod(function() {
 if (process.env.ROCKETCHAT_INTERNAL_API_ENABLE === 'true') {
 	API.v1.addAuthMethod(function() {
 		if (this.request.headers.authorization) { return; }
-		if (this.request.headers.env !== 'local') { return; }
 		const user = Users.findOneById(process.env.INTERNAL_X_USER_ID);
-		console.log(process.env.INTERNAL_X_USER_ID);
 		if (user == null) {
 			return;
 		}
