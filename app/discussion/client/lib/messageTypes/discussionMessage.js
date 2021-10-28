@@ -13,4 +13,22 @@ Meteor.startup(function() {
 			};
 		},
 	});
+
+	MessageTypes.registerType({
+		id: 'post',
+		system: false,
+		message: 'Post_message',
+		data(message) {
+			return message;
+		},
+	});
+
+	MessageTypes.registerType({
+		id: 'story',
+		system: false,
+		message: 'Story_message',
+		data(message) {
+			return message;
+		},
+	});
 });
