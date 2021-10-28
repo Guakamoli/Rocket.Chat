@@ -66,7 +66,7 @@ API.v1.addRoute('me', { authRequired: true }, {
 // 用于支持 meteor token及 oauth token，返回当前用户
 API.v1.addRoute('my', { authRequired: true }, {
 	get() {
-		let user;
+		let user = this.user;
 		const { userId } = this.requestParams();
 		if (userId) {
 			user = Users.findOneById(userId);
