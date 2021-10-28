@@ -15,8 +15,8 @@ export class Rooms extends Base {
 		this.tryEnsureIndex({ default: 1 }, { sparse: true });
 		this.tryEnsureIndex({ featured: 1 }, { sparse: true });
 		this.tryEnsureIndex({ muted: 1 }, { sparse: true });
-		this.tryEnsureIndex({ t: 1 });
-		this.tryEnsureIndex({ 'u._id': 1 });
+		this.tryEnsureIndex({ t: 1 }, { sparse: true });
+		this.tryEnsureIndex({ 'u._id': 1 }, { sparse: true });
 		this.tryEnsureIndex({ ts: 1 });
 		// Tokenpass
 		this.tryEnsureIndex({ 'tokenpass.tokens.token': 1 }, { sparse: true });
@@ -1384,10 +1384,13 @@ export class Rooms extends Base {
 		return this.find({ prid: { $exists: true } }).count();
 	}
 
-	findByTypeAndUserId(userId, type, options = {}) {
-		const query = { 'u._id': userId, t: type };
+	findByUserIdAndType(userId, type, options) {
+		const query = {
+			'u._id': userId,
+			t: type,
+		};
 
-		return this.find(query, options);
+		return this.findOne(query, options);
 	}
 }
 
