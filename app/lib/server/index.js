@@ -66,7 +66,6 @@ import './methods/unarchiveRoom';
 import './methods/unblockUser';
 import './methods/updateMessage';
 import './methods/saveCustomFields';
-import './methods/kameoPostMessages';
 
 export * from './lib';
 export * from './functions';

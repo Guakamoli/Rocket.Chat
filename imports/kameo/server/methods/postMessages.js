@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
 
-import { Messages } from '../../../models';
+import { Messages } from '../../../../app/models';
 
 Meteor.methods({
 	kameoPostMessages(messages) {
