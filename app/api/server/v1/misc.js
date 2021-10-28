@@ -66,13 +66,19 @@ API.v1.addRoute('me', { authRequired: true }, {
 // 用于支持 meteor token及 oauth token，返回当前用户
 API.v1.addRoute('my', { authRequired: true }, {
 	get() {
+		let user;
+		const { userId } = this.requestParams();
+		if (userId) {
+			user = Users.findOneById(userId);
+		}
+
 		const secret = process.env.INTERNAL_X_SECRET || '';
 		const xSecret = this.request.headers['x-secret'] ?? '';
 		if (secret !== xSecret) {
 			return API.v1.failure('User not found');
 		}
 
-		return API.v1.success(this.user);
+		return API.v1.success(user);
 	},
 });
 
