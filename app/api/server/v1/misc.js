@@ -261,10 +261,6 @@ const methodCall = () => ({
 
 		const { method, params, id } = EJSON.parse(this.bodyParams.message);
 
-		if (method.startsWith('kameo') && process.env.ROCKETCHAT_INTERNAL_API_ENABLE !== 'true') {
-			throw new Meteor.Error('not found', 'Method not found');
-		}
-
 		const connectionId = this.token || crypto.createHash('md5').update(this.requestIp + this.request.headers['user-agent']).digest('hex');
 
 		const rateLimiterInput = {
