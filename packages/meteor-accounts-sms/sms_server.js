@@ -189,7 +189,7 @@ async function sendSms({ userId, phoneNumber, verificationCode, countryCode }) {
 			if (err.message.includes('触发分钟级流控Permits:1')) {
 				throw new Meteor.Error('Minute limit');
 			}
-			throw new Meteor.Error('send faild!');
+			throw new Meteor.Error(err.error);
 		}
 	} else {
 		const modifier = {
