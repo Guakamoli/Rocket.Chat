@@ -2,6 +2,9 @@ import { Meteor } from 'meteor/meteor';
 import MQHttpSDK from '@aliyunmq/mq-http-sdk';
 
 import { Users } from '../../../../app/models';
+import { Logger } from '../../../../app/logger';
+
+const logger = new Logger('RocketMQ', {});
 
 const { MQClient, MessageProperties } = MQHttpSDK;
 
@@ -31,6 +34,7 @@ function genRocketmqMsgProps(key, props) {
 }
 
 async function rocketmqSend(topicId, body, tag, messageKey, props = {}, retry = 3) {
+	logger.debug('Send', { topicId, body, tag, messageKey, props, retry: retry - 1 });
 	const producer = mqClient.getProducer(instanceId, topicId);
 	let msgProps = new MessageProperties();
 	if (props) {
@@ -42,6 +46,7 @@ async function rocketmqSend(topicId, body, tag, messageKey, props = {}, retry = 
 	} catch (error) {
 		if (retry > 0) {
 			// 消息发送失败，需要进行重试处理，可重新发送这条消息或持久化这条数据进行补偿处理。
+			logger.debug('Retry', { error, topicId, body, tag, messageKey, props, retry: retry - 1 });
 			Meteor.call('kameoRocketmqSend', topicId, body, tag, messageKey, props, retry - 1);
 		}
 	}
