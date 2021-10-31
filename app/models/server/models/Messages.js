@@ -1262,7 +1262,7 @@ export class Messages extends Base {
 			},
 		};
 
-		return Messages.update({ _id }, update);
+		return this.update({ _id }, update);
 	}
 }
 
