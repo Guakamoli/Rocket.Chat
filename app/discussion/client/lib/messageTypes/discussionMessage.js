@@ -19,7 +19,9 @@ Meteor.startup(function() {
 		system: false,
 		message: 'Post_message',
 		data(message) {
-			return message;
+			return {
+				message: message.msg,
+			};
 		},
 	});
 
@@ -28,7 +30,9 @@ Meteor.startup(function() {
 		system: false,
 		message: 'Story_message',
 		data(message) {
-			return message;
+			return {
+				message: message.msg,
+			};
 		},
 	});
 });
