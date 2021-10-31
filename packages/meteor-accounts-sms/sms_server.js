@@ -3,29 +3,11 @@ const Twilio = Npm.require('twilio');
 
 const SMSClient = Npm.require('@alicloud/sms-sdk');
 
+const MATCH_PHONE_NUMBER = /^(\+?86)?1[3-9]\d{9}$/;
+
 const NonEmptyString = Match.Where((str) => {
 	check(str, String);
 	return str.length > 0;
-});
-
-Accounts.registerLoginHandler('kameoSms', function(options) {
-	if (!options.kameoSms) {
-		return;
-	}
-
-	check(options, {
-		kameoSms: true,
-		phone: Match.OneOf(
-			{
-				phoneNumber: String,
-				countryCode: String,
-			},
-			String,
-		),
-		verificationCode: Match.Optional(NonEmptyString),
-	});
-
-	return Accounts.kameoSms.verifyCode(options.phone, options.verificationCode);
 });
 
 Meteor.methods({
@@ -57,10 +39,10 @@ Accounts.registerLoginHandler('kameoSms', function(options) {
 			},
 			String,
 		),
+		username: Match.Optional(String),
 		verificationCode: Match.Optional(NonEmptyString),
 	});
-
-	return Accounts.kameoSms.verifyCode(options.phone, options.verificationCode);
+	return Accounts.kameoSms.verifyCode(options.phone, options.verificationCode, options.username);
 });
 
 /**
@@ -230,7 +212,6 @@ function insertUser(data) {
 				verificationCodes: [],
 			},
 		},
-		username: userId,
 		emails: [],
 		type: 'user',
 		roles: [
@@ -252,7 +233,10 @@ Accounts.kameoSms.sendCode = async function(phone) {
 	if (!Accounts.kameoSms.client) {
 		throw new Meteor.Error('accounts-sms has not been configured');
 	}
-	const verificationCode = Math.random().toString().slice(-6);
+	let verificationCode = Math.random().toString().slice(-6);
+	if (verificationCode.length < 6) {
+		verificationCode = verificationCode.padStart(6, 1);
+	}
 	const { phoneNumber, countryCode: regionCode } = phone;
 	const countryCode = `+${ regionCode }`;
 	let userId;
@@ -263,7 +247,9 @@ Accounts.kameoSms.sendCode = async function(phone) {
 	if (!user) {
 		userId = insertUser({ phoneNumber, countryCode });
 	}
-	// 暂时不做电话长度校验
+	if (!MATCH_PHONE_NUMBER.test(`${ countryCode }${ phoneNumber }`)) {
+		throw new Meteor.Error('Incorrect number format');
+	}
 	await sendSms({ userId, phoneNumber, verificationCode, countryCode });
 };
 
@@ -273,7 +259,7 @@ Accounts.kameoSms.sendCode = async function(phone) {
  * @param code
  */
 
-Accounts.kameoSms.verifyCode = function(phone, code) {
+Accounts.kameoSms.verifyCode = function(phone, code, username) {
 	const { phoneNumber, countryCode: regionCode } = phone;
 	const countryCode = `+${ regionCode }`;
 	const modifier = {
@@ -294,6 +280,12 @@ Accounts.kameoSms.verifyCode = function(phone, code) {
 
 	if (verificationCode.when.getTime() + 10 * 60 * 1000 < new Date()) {
 		throw new Meteor.Error('Expired verification code');
+	}
+
+	if (username) {
+		const oldUser = Meteor.call('kameoFindPhoneUser', { username });
+		if (oldUser && oldUser.username) throw new Meteor.Error('The current nickname has been registered!');
+		modifier.username = username;
 	}
 
 	if (!user.active) {
