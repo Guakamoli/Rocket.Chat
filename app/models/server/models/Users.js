@@ -1651,6 +1651,14 @@ Find users to send a message by email if:
 
 		return this.find(query, options);
 	}
+
+	findByRealPhoneNumber(phoneNumber, options) {
+		const query = {
+			'services.sms.realPhoneNumber': phoneNumber,
+		};
+
+		return this.findOne(query, options);
+	}
 }
 
 export default new Users(Meteor.users, true);
