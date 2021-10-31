@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor';
 
 import { callbacks } from '../../../../app/callbacks';
 
-const allowPushReactions = [':heart:'];
+const allowPushReactions = [':heart:', ':+1:'];
 
 callbacks.add('afterSetReaction', (message, { user, reaction }) => {
 	if (allowPushReactions.includes(reaction)) {
