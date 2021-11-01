@@ -99,6 +99,11 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 
 		delete fields.description;
 
+		const messageType = this.request['x-upload-type'] || null;
+		if (messageType && ['post', 'story'].includes(messageType)) {
+			fields.t = messageType;
+		}
+
 		Meteor.call('sendFileMessage', this.urlParams.rid, null, uploadedFile, fields);
 
 		return API.v1.success({ message: Messages.getMessageByFileIdAndUsername(uploadedFile._id, this.userId) });
