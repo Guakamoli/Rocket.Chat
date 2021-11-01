@@ -143,6 +143,7 @@ const validateMessage = (message, room, user) => {
 		avatar: ValidPartialURLParam,
 		attachments: [Match.Any],
 		blocks: [Match.Any],
+		t: Match.Optional(String),
 	}));
 
 	if (message.alias || message.avatar) {
