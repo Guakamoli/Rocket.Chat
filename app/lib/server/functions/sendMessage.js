@@ -246,7 +246,11 @@ export const sendMessage = function(user, message, room, upsert = false) {
 
 		if (message.t === 'post') {
 			// 发送mq事件给到Java
-			Meteor.call('kameoRocketmqSendPostMessage', { postId: message._id, ts: message.ts });
+			Meteor.call('kameoRocketmqSendPostMessage', {
+				messageId: message._id,
+				ts: message.ts,
+				influencerId: message.u._id,
+			});
 		}
 
 		if (Apps && Apps.isLoaded()) {
