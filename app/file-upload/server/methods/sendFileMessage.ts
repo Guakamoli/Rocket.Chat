@@ -26,6 +26,7 @@ Meteor.methods({
 		}
 
 		check(msgData, {
+			t: Match.Optional(String),
 			avatar: Match.Optional(String),
 			emoji: Match.Optional(String),
 			alias: Match.Optional(String),
