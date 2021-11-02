@@ -9,6 +9,7 @@ import { canAccessRoom, hasPermission } from '../../../authorization/server';
 import { Media } from '../../../../server/sdk';
 import { settings } from '../../../settings/server/index';
 import { getUploadFormData } from '../lib/getUploadFormData';
+import { SystemLogger } from '../../../logger/server';
 
 function findRoomByIdOrName({ params, checkedArchived = true }) {
 	if ((!params.roomId || !params.roomId.trim()) && (!params.roomName || !params.roomName.trim())) {
@@ -99,10 +100,11 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 
 		delete fields.description;
 
-		const messageType = this.request['x-upload-type'] || null;
+		const messageType = this.request.headers['x-upload-type'] || null;
 		if (messageType && ['post', 'story'].includes(messageType)) {
 			fields.t = messageType;
 		}
+		SystemLogger.debug('rooms.upload/:rid', this.request.headers, messageType, fields);
 
 		Meteor.call('sendFileMessage', this.urlParams.rid, null, uploadedFile, fields);
 
