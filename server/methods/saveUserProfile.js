@@ -122,7 +122,6 @@ const saveUserProfileWithTwoFactor = twoFactorRequired(saveUserProfile, {
 
 Meteor.methods({
 	saveUserProfile(settings, customFields, ...args) {
-		console.log(settings, customFields, { ...args }, '------------------settings, customFields, ...args----------');
 		check(settings, Object);
 		check(customFields, Match.Maybe(Object));
 
