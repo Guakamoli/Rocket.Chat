@@ -1294,6 +1294,21 @@ export class Users extends Base {
 		return this.update(_id, update);
 	}
 
+	setNote(_id, note = '') {
+		const update = {
+			...note.trim() ? {
+				$set: {
+					note,
+				},
+			} : {
+				$unset: {
+					note: 1,
+				},
+			},
+		};
+		return this.update(_id, update);
+	}
+
 	setNickname(_id, nickname = '') {
 		const update = {
 			...nickname.trim() ? {
