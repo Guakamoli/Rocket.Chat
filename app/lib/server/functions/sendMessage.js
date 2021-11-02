@@ -251,6 +251,15 @@ export const sendMessage = function(user, message, room, upsert = false) {
 				ts: message.ts,
 				influencerId: message.u._id,
 			});
+
+			Meteor.runAsUser(user._id, () => Meteor.call('createDiscussion', {
+				prid: room._id,
+				pmid: message._id,
+				t_name: message._id,
+				reply: '',
+				users: [],
+				encrypted: false,
+			}));
 		}
 
 		if (Apps && Apps.isLoaded()) {
