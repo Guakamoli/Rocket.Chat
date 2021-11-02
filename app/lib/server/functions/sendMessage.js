@@ -261,6 +261,7 @@ export const sendMessage = function(user, message, room, upsert = false) {
 				encrypted: false,
 			}));
 		}
+		console.log('Meteor sendMessage message ->', message);
 
 		if (Apps && Apps.isLoaded()) {
 			// This returns a promise, but it won't mutate anything about the message
