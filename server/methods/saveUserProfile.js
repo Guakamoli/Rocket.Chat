@@ -25,6 +25,8 @@ function saveUserProfile(settings, customFields) {
 
 	const user = Users.findOneById(this.userId);
 
+	const mqProfile = { _id: this.userId };
+
 	if (settings.realname || settings.username) {
 		if (!saveUserIdentity({
 			_id: this.userId,
@@ -33,6 +35,9 @@ function saveUserProfile(settings, customFields) {
 		})) {
 			throw new Meteor.Error('error-could-not-save-identity', 'Could not save user identity', { method: 'saveUserProfile' });
 		}
+
+		mqProfile.name = settings.realname;
+		mqProfile.username = settings.username;
 	}
 
 	if (settings.statusText || settings.statusText === '') {
@@ -50,6 +55,8 @@ function saveUserProfile(settings, customFields) {
 			});
 		}
 		Users.setBio(user._id, settings.bio.trim());
+
+		mqProfile.bio = settings.bio.trim();
 	}
 
 	if (settings.note != null) {
@@ -68,6 +75,8 @@ function saveUserProfile(settings, customFields) {
 			});
 		}
 		Users.setNickname(user._id, settings.nickname.trim());
+
+		mqProfile.nickname = settings.nickname.trim();
 	}
 
 	if (settings.email) {
@@ -111,7 +120,13 @@ function saveUserProfile(settings, customFields) {
 
 	if (customFields && Object.keys(customFields).length) {
 		saveCustomFields(this.userId, customFields);
+
+		if (customFields.note) {
+			mqProfile.note = customFields.note;
+		}
 	}
+
+	Meteor.call('kameoRocketmqSendUpdateProfile', this.userId, mqProfile);
 
 	return true;
 }

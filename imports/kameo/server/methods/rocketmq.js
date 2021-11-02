@@ -16,6 +16,7 @@ const topicIds = {
 	login: process.env.MQ_TOPIC_ID_ROCKETCHAT_LOGIN,
 	postMessage: process.env.MQ_TOPIC_ID_ROCKETCHAT_POST_MESSAGE,
 	notification: process.env.MQ_TOPIC_ID_ROCKETCHAT_NOTIFICATION,
+	account: process.env.MQ_TOPIC_ID_ROCKETCHAT_ACCOUNT,
 };
 
 const mqClient = new MQClient(endpoint, accessKeyId, accessKeySecret);
@@ -73,9 +74,18 @@ async function rocketmqSendNotification(notification) {
 	await rocketmqSend(topicIds.notification, { ...notification }, 'mqNotification', 'Notification', props);
 }
 
+async function rocketmqSendUpdateProfile(userId, profile) {
+	const props = {
+		id: userId,
+	};
+
+	await rocketmqSend(topicIds.account, { ...profile }, 'mqUpdateAccount', 'Account', props);
+}
+
 Meteor.methods({
 	kameoRocketmqSend: rocketmqSend,
 	kameoRocketmqSendLoginUser: rocketmqSendLoginUser,
 	kameoRocketmqSendPostMessage: rocketmqSendPostMessage,
 	kameoRocketmqSendNotification: rocketmqSendNotification,
+	kameoRocketmqSendUpdateProfile: rocketmqSendUpdateProfile,
 });
