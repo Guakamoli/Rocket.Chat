@@ -32,4 +32,5 @@ export const getDefaultUserFields = () => ({
 	'oauth.authorizedClients': 1,
 	_updatedAt: 1,
 	avatarETag: 1,
+	note: 1,
 });

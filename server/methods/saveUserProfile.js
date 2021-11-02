@@ -52,6 +52,15 @@ function saveUserProfile(settings, customFields) {
 		Users.setBio(user._id, settings.bio.trim());
 	}
 
+	if (settings.note != null) {
+		if (typeof settings.note !== 'string' || settings.note.length > 12) {
+			throw new Meteor.Error('error-invalid-field', 'note', {
+				method: 'saveUserProfile',
+			});
+		}
+		Users.setNote(user._id, settings.note.trim());
+	}
+
 	if (settings.nickname != null) {
 		if (typeof settings.nickname !== 'string' || settings.nickname.length > 120) {
 			throw new Meteor.Error('error-invalid-field', 'nickname', {
@@ -113,6 +122,7 @@ const saveUserProfileWithTwoFactor = twoFactorRequired(saveUserProfile, {
 
 Meteor.methods({
 	saveUserProfile(settings, customFields, ...args) {
+		console.log(settings, customFields, { ...args }, '------------------settings, customFields, ...args----------');
 		check(settings, Object);
 		check(customFields, Match.Maybe(Object));
 
