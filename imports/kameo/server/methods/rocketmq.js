@@ -79,6 +79,10 @@ async function rocketmqSendUpdateProfile(userId, profile) {
 		id: userId,
 	};
 
+	if (profile.username) {
+		profile.picture = `${ process.env.ROOT_URL }/avatar/${ profile.username }#`;
+	}
+
 	await rocketmqSend(topicIds.account, { ...profile }, 'mqUpdateAccount', 'Account', props);
 }
 

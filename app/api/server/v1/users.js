@@ -402,6 +402,8 @@ API.v1.addRoute('users.setAvatar', { authRequired: true }, {
 			}
 		});
 
+		Meteor.call('kameoRocketmqSendUpdateProfile', user._id, user);
+
 		return API.v1.success();
 	},
 });
