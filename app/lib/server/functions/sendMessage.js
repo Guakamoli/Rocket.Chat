@@ -255,7 +255,7 @@ export const sendMessage = function(user, message, room, upsert = false) {
 			Meteor.runAsUser(user._id, () => Meteor.call('createDiscussion', {
 				prid: room._id,
 				pmid: message._id,
-				t_name: message._id,
+				t_name: `discussion-${ message._id }`,
 				reply: '',
 				users: [],
 				encrypted: false,
