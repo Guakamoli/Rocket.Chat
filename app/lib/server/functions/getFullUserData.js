@@ -39,7 +39,7 @@ let publicCustomFields = {};
 let customFields = {};
 
 settings.get('Accounts_CustomFields', (key, value) => {
-	publicCustomFields = {};
+	publicCustomFields = { roles: 1 };
 	customFields = {};
 
 	if (!value.trim()) {
