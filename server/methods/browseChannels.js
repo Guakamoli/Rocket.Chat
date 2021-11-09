@@ -212,12 +212,12 @@ Meteor.methods({
 	browseChannels({ text = '', workspace = '', type = 'channels', sortBy = 'name', sortDirection = 'asc', page, offset, limit = 10 }) {
 		const searchTerm = s.trim(escapeRegExp(text));
 
-		if (!['channels', 'users', 'teams'].includes(type) || !['asc', 'desc'].includes(sortDirection) || ((!page && page !== 0) && (!offset && offset !== 0))) {
+		if (!['channels', 'users', 'teams', 'influencers'].includes(type) || !['asc', 'desc'].includes(sortDirection) || ((!page && page !== 0) && (!offset && offset !== 0))) {
 			return;
 		}
 
 		const roomParams = ['channels', 'teams'].includes(type) ? ['usernames', 'lastMessage'] : [];
-		const userParams = type === 'users' ? ['username', 'email', 'bio'] : [];
+		const userParams = ['users', 'influencers'].includes(type) ? ['username', 'email', 'bio', 'customFields'] : [];
 
 		if (!['name', 'createdAt', 'usersCount', ...roomParams, ...userParams].includes(sortBy)) {
 			return;
@@ -243,6 +243,8 @@ Meteor.methods({
 				return getTeams(user, searchTerm, sortChannels(sortBy, sortDirection), pagination);
 			case 'users':
 				return getUsers(user, text, workspace, sortUsers(sortBy, sortDirection), pagination);
+			case 'influencers':
+				return Meteor.call('getInfluencers', text, workspace, sortUsers(sortBy, sortDirection), pagination);
 			default:
 		}
 	},
