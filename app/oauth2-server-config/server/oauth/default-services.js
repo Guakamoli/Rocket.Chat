@@ -47,3 +47,19 @@ if (!OAuthApps.findOne('kameo-front')) {
 		},
 	});
 }
+
+if (!OAuthApps.findOne('kameo-front-next')) {
+	OAuthApps.insert({
+		_id: 'kameo-front-next',
+		name: 'kameo-front-next',
+		active: true,
+		clientId: 'kameo-front-next',
+		clientSecret: 'KAMEO_FRONT_NEXT',
+		redirectUri: 'https://store-next.paiyaapp.com/callback',
+		_createdAt: new Date(),
+		_createdBy: {
+			_id: 'system',
+			username: 'system',
+		},
+	});
+}
