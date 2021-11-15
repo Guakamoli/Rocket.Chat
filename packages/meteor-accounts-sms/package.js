@@ -8,7 +8,6 @@ Package.describe({
 // eslint-disable-next-line no-undef
 Npm.depends({
 	'@alicloud/sms-sdk': '1.1.6',
-	twilio: '3.60.0',
 });
 
 Package.onUse(function(api) {

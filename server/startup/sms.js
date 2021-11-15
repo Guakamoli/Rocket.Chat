@@ -10,5 +10,6 @@ Meteor.startup(function() {
 			templateCode: process.env.SMS_TEMPLATE_CODE,
 		},
 		env: process.env.NODE_ENV,
+		productCode: process.env.PRODUCT_CODE,
 	});
 });

@@ -1,6 +1,4 @@
 /* eslint-disable no-undef */
-const Twilio = Npm.require('twilio');
-
 const SMSClient = Npm.require('@alicloud/sms-sdk');
 
 const MATCH_PHONE_NUMBER = /^(\+?86)?1[3-9]\d{9}$/;
@@ -73,14 +71,7 @@ Accounts.kameoSms.configure = function(options) {
 					templateCode: String,
 				},
 				env: String,
-			},
-			{
-				twilio: {
-					sid: String,
-					token: String,
-					from: String,
-				},
-				env: String,
+				productCode: String,
 			},
 		),
 	);
@@ -92,15 +83,7 @@ Accounts.kameoSms.configure = function(options) {
 		Accounts.kameoSms.params = {
 			signName: options.aliyun.signName,
 			templateCode: options.aliyun.templateCode,
-			productCode: 'PAIYA',
 		};
-		Accounts.kameoSms.env = options.env;
-	} else if (options.twilio) {
-		Accounts.kameoSms.client = new Twilio({
-			sid: options.twilio.sid,
-			token: options.twilio.token,
-		});
-		Accounts.kameoSms.params = { productCode: 'GODUCK', from: options.twilio.from };
 		Accounts.kameoSms.env = options.env;
 	}
 };
@@ -117,20 +100,6 @@ async function sendSMSService(phoneNumber, templateParam) {
 		SignName: Accounts.kameoSms.params.signName,
 		TemplateCode: Accounts.kameoSms.params.templateCode,
 		TemplateParam: templateParam,
-	});
-}
-
-/**
- * sendGoDuckSms
- * @param{String} phoneNumber The phoneNumber
- * @param{String} verificationCode The code
- *  @returns {void}
- */
-async function sendGoDuckSms(phoneNumber, verificationCode) {
-	await Accounts.kameoSms.client.messages.create({
-		body: `GoDuck: Your verification code is ${ verificationCode }. Please fill it in within 10 minutes. `,
-		from: Accounts.kameoSms.params.from,
-		to: phoneNumber,
 	});
 }
 
@@ -155,14 +124,10 @@ async function sendSms({ userId, phoneNumber, verificationCode, countryCode }) {
 				},
 			};
 			Meteor.users.update({ _id: userId }, modifier);
-			if (Accounts.kameoSms.params.productCode === 'GODUCK') {
-				await sendGoDuckSms(`${ countryCode }${ phoneNumber }`, verificationCode);
-			} else {
-				await sendSMSService(
-					`${ countryCode }${ phoneNumber }`,
-					`{"code": ${ verificationCode }}`,
-				);
-			}
+			await sendSMSService(
+				`${ countryCode }${ phoneNumber }`,
+				`{"code": ${ verificationCode }}`,
+			);
 			console.log(`send sms success ${ countryCode }${ phoneNumber }`);
 		} catch (err) {
 			if (err.message.includes('invalid mobile number')) {
@@ -207,7 +172,7 @@ function insertUser(data) {
 		services: {
 			sms: {
 				realPhoneNumber: `${ countryCode }${ phoneNumber }`,
-				purePhoneNumber: phoneNumber,
+				purePhoneNumber: String(phoneNumber),
 				countryCode,
 				verificationCodes: [],
 			},
@@ -217,7 +182,7 @@ function insertUser(data) {
 		roles: [
 			'user',
 		],
-		name: `User${ phoneNumber.slice(-8) }`,
+		name: `User${ String(phoneNumber).slice(-8) }`,
 	};
 	Accounts.users.insert(user);
 
@@ -233,10 +198,7 @@ Accounts.kameoSms.sendCode = async function(phone) {
 	if (!Accounts.kameoSms.client) {
 		throw new Meteor.Error('accounts-sms has not been configured');
 	}
-	let verificationCode = Math.random().toString().slice(-6);
-	if (verificationCode.length < 6) {
-		verificationCode = verificationCode.padStart(6, 1);
-	}
+	const verificationCode = Math.random().toString().slice(2, 8); // 去除整数位与小数点
 	const { phoneNumber, countryCode: regionCode } = phone;
 	const countryCode = `+${ regionCode }`;
 	let userId;
@@ -284,7 +246,9 @@ Accounts.kameoSms.verifyCode = function(phone, code, username) {
 
 	if (username) {
 		const oldUser = Meteor.call('kameoFindPhoneUser', { username });
-		if (oldUser && oldUser.username) throw new Meteor.Error('The current nickname has been registered!');
+		if (oldUser && oldUser.username) {
+			throw new Meteor.Error('The current nickname has been registered!');
+		}
 		modifier.username = username;
 		modifier.name = username;
 	}
