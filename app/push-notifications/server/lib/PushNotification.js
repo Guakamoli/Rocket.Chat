@@ -67,6 +67,8 @@ export class PushNotification {
 		const idOnly = settings.get('Push_request_content_from_server');
 		const config = this.getNotificationConfig({ rid, uid, mid, roomName, username, message, payload, badge, category, idOnly });
 
+		// 尽量使用真名
+		config.title = payload.sender.name || payload.sender.nickname || payload.sender.username || payload.sender._id;
 		logger.debug('PushNotification.send() config:', config);
 
 		metrics.notificationsSent.inc({ notification_type: 'mobile' });
