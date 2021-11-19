@@ -8,6 +8,7 @@ import { RocketChatAssets } from '../../../assets/server';
 import { replaceMentionedUsernamesWithFullNames, parseMessageTextPerUser } from '../../../lib/server/functions/notifications';
 import { callbacks } from '../../../callbacks/server';
 import { getPushData } from '../../../lib/server/functions/notifications/mobile';
+import { logger } from '../../../push/server/logger';
 
 export class PushNotification {
 	getNotificationId(roomId) {
@@ -66,12 +67,14 @@ export class PushNotification {
 		const idOnly = settings.get('Push_request_content_from_server');
 		const config = this.getNotificationConfig({ rid, uid, mid, roomName, username, message, payload, badge, category, idOnly });
 
+		logger.debug('PushNotification.send() config:', config);
+
 		metrics.notificationsSent.inc({ notification_type: 'mobile' });
 		return Push.send(config);
 	}
 
 	getNotificationForMessageId({ receiver, message, room }) {
-		const sender = Users.findOne(message.u._id, { fields: { username: 1, name: 1 } });
+		const sender = Users.findOne(message.u._id, { fields: { username: 1, name: 1, nickname: 1 } });
 		if (!sender) {
 			throw new Error('Message sender not found');
 		}
@@ -92,6 +95,9 @@ export class PushNotification {
 			notificationMessage,
 			shouldOmitMessage: false,
 		}));
+
+		// 尽量使用真名
+		pushData.title = sender.name || sender.nickname || sender.username || sender._id;
 
 		return {
 			message,

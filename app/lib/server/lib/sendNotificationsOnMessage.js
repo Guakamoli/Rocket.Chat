@@ -13,6 +13,7 @@ import { notifyDesktopUser, shouldNotifyDesktop } from '../functions/notificatio
 import { notifyAudioUser, shouldNotifyAudio } from '../functions/notifications/audio';
 import { Notification } from '../../../notification-queue/server/NotificationQueue';
 import { getMentions } from './notifyUsersOnMessage';
+import { logger } from '../../../push/server/logger';
 
 let TroubleshootDisableNotifications;
 
@@ -70,6 +71,15 @@ export const sendNotification = async ({
 	const isThread = !!message.tmid && !message.tshow;
 
 	notificationMessage = parseMessageTextPerUser(notificationMessage, message, receiver);
+
+	if (['post', 'story'].includes(message.t)) {
+		if (!message.msg && message.attachments && message.attachments[0]) {
+			const description = message.attachments[0].description.replace(/(paiyapost|paiyastory):?\s?/, '');
+			notificationMessage = parseMessageTextPerUser(description, {}, receiver);
+		}
+	}
+
+	logger.debug('sendNotification() notificationMessage:', notificationMessage);
 
 	const isHighlighted = messageContainsHighlight(message, subscription.userHighlights);
 
