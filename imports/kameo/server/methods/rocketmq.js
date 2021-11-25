@@ -17,6 +17,7 @@ const topicIds = {
 	postMessage: process.env.MQ_TOPIC_ID_ROCKETCHAT_POST_MESSAGE,
 	notification: process.env.MQ_TOPIC_ID_ROCKETCHAT_NOTIFICATION,
 	account: process.env.MQ_TOPIC_ID_ROCKETCHAT_ACCOUNT,
+	aliyunPush: process.env.MQ_TOPIC_ID_ALIYUN_PUSH,
 };
 
 const mqClient = new MQClient(endpoint, accessKeyId, accessKeySecret);
@@ -86,10 +87,30 @@ async function rocketmqSendUpdateProfile(userId, profile) {
 	await rocketmqSend(topicIds.account, { ...profile }, 'mqUpdateAccount', 'Account', props);
 }
 
+async function rocketmqSendAliyunPush(userId, payload, tag = 'notification') {
+	const user = Users.findOneById(userId);
+	if (user.emails.address) {
+		payload.targetValue = user.emails.address;
+	}
+
+	if (user.services.sms.realPhoneNumber) {
+		payload.targetValue = user.services.sms.realPhoneNumber;
+	}
+
+	// 不存在 targetValue 字段，不发送消息
+	if (!payload.targetValue) {
+		throw new Meteor.Error('no-target-value', 'no target value', { ...payload });
+	}
+
+	logger.debug('SendAliyunPush', { user, payload });
+	await rocketmqSend(topicIds.aliyunPush, { ...payload }, tag, 'AliyunPush');
+}
+
 Meteor.methods({
 	kameoRocketmqSend: rocketmqSend,
 	kameoRocketmqSendLoginUser: rocketmqSendLoginUser,
 	kameoRocketmqSendPostMessage: rocketmqSendPostMessage,
 	kameoRocketmqSendNotification: rocketmqSendNotification,
 	kameoRocketmqSendUpdateProfile: rocketmqSendUpdateProfile,
+	kameoRocketmqSendAliyunPush: rocketmqSendAliyunPush,
 });
