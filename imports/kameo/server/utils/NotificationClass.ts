@@ -1,11 +1,14 @@
 import { Meteor } from 'meteor/meteor';
 
-import { INotification, INotificationItemPush, INotificationItemEmail, NotificationItem } from '../../../definition/INotification';
-import { NotificationQueue, Users } from '../../models/server/raw';
-import { sendEmailFromData } from '../../lib/server/functions/notifications/email';
-import { PushNotification } from '../../push-notifications/server';
-import { IUser } from '../../../definition/IUser';
-import { NotificationClass as KameoNotificationClass } from '../../../imports/kameo/server';
+import { INotification, INotificationItemPush, INotificationItemEmail, NotificationItem } from '../../../../definition/INotification';
+import { NotificationQueue, Users } from '../../../../app/models/server/raw';
+import { sendEmailFromData } from '../../../../app/lib/server/functions/notifications/email';
+// import { PushNotification } from '../../../../app/push-notifications/server';
+import { IUser } from '../../../../definition/IUser';
+import { settings } from '../../../../app/settings/server';
+import { metrics } from '../../../../app/metrics/server';
+import { currentProduct } from './index';
+import { IAliyunPushRequest } from '../definition/IAliyun';
 
 const {
 	NOTIFICATIONS_WORKER_TIMEOUT = 2000,
@@ -15,7 +18,7 @@ const {
 	NOTIFICATIONS_SCHEDULE_DELAY_OFFLINE = 0,
 } = process.env;
 
-export class NotificationClass {
+export default class NotificationClass {
 	private running = false;
 
 	private cyclePause = Number(NOTIFICATIONS_WORKER_TIMEOUT);
@@ -99,13 +102,64 @@ export class NotificationClass {
 		return NotificationQueue.findNextInQueueOrExpired(expired);
 	}
 
-	push({ uid, rid, mid }: INotification, item: INotificationItemPush): void {
-		PushNotification.send({
-			rid,
-			uid,
-			mid,
-			...item.data,
+	push({ uid }: INotification, item: INotificationItemPush): void {
+		const { roomName, username, message, payload, badge = 1, category } = item.data;
+
+		const idOnly = settings.get('Push_request_content_from_server');
+		const title = idOnly ? '' : payload.sender.name || username || roomName;
+
+		const iOSAppKey = currentProduct({
+			PAIYA: Number(process.env.MPUSH_APPKEY_PAIYA_IOS),
+			GODUCK: Number(process.env.MPUSH_APPKEY_GODUCK_IOS),
 		});
+		const iOSRequest: IAliyunPushRequest = {
+			pushType: 'NOTICE',
+			appKey: iOSAppKey,
+			deviceType: 'iOS',
+			target: 'ACCOUNT',
+			iOSApnsEnv: process.env.NODE_ENV === 'production' ? 'PRODUCT' : 'DEV',
+			iOSMutableContent: true,
+			iOSBadge: badge,
+			body: message,
+		};
+		iOSRequest.iOSExtParameters = JSON.stringify({ extras: payload });
+		if (title) {
+			iOSRequest.title = title;
+		}
+		if (category) {
+			iOSRequest.iOSNotificationCategory = category;
+		}
+
+		const androidAppKey = currentProduct({
+			PAIYA: Number(process.env.MPUSH_APPKEY_PAIYA_ANDROID),
+			GODUCK: Number(process.env.MPUSH_APPKEY_GODUCK_ANDROID),
+		});
+		const androidRequest: IAliyunPushRequest = {
+			pushType: 'NOTICE',
+			appKey: androidAppKey,
+			deviceType: 'ANDROID',
+			target: 'ACCOUNT',
+			androidNotificationChannel: '1',
+			body: message,
+			androidNotifyType: 'BOTH',
+		};
+		if (title) {
+			androidRequest.title = title;
+		} else {
+			androidRequest.title = currentProduct({
+				PAIYA: '拍鸭',
+				GODUCK: 'Torimi',
+			});
+		}
+		androidRequest.androidPopupTitle = androidRequest.title;
+		androidRequest.androidPopupBody = androidRequest.body;
+		androidRequest.androidExtParameters = JSON.stringify({ extras: payload });
+
+		// eslint-disable-next-line @typescript-eslint/camelcase
+		metrics.notificationsSent.inc({ notification_type: 'mobile' });
+
+		Meteor.call('kameoRocketmqSendAliyunPush', uid, iOSRequest);
+		Meteor.call('kameoRocketmqSendAliyunPush', uid, androidRequest);
 	}
 
 	email(item: INotificationItemEmail): void {
@@ -147,11 +201,3 @@ export class NotificationClass {
 		});
 	}
 }
-
-// export const Notification = new NotificationClass();
-
-export const Notification = new KameoNotificationClass();
-
-Meteor.startup(() => {
-	Notification.initWorker();
-});
