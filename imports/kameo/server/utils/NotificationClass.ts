@@ -140,12 +140,19 @@ export default class NotificationClass {
 			deviceType: 'ANDROID',
 			target: 'ACCOUNT',
 			androidNotificationChannel: '1',
-			title: title || currentProduct({
+			body: message,
+			androidNotifyType: 'BOTH',
+		};
+		if (title) {
+			androidRequest.title = title;
+		} else {
+			androidRequest.title = currentProduct({
 				PAIYA: '拍鸭',
 				GODUCK: 'Torimi',
-			}),
-			body: message,
-		};
+			});
+		}
+		androidRequest.androidPopupTitle = androidRequest.title;
+		androidRequest.androidPopupBody = androidRequest.body;
 		androidRequest.androidExtParameters = JSON.stringify({ extras: payload });
 
 		// eslint-disable-next-line @typescript-eslint/camelcase

@@ -13,7 +13,7 @@ Meteor.methods({
 			return;
 		}
 
-		const forcedSearchFields = workspace === 'all' && ['username', 'name', 'emails.address'];
+		const forcedSearchFields = workspace === 'all' && ['name'];
 
 		const viewFullOtherUserInfo = hasPermission(user._id, 'view-full-other-user-info');
 
