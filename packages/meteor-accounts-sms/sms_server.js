@@ -126,7 +126,7 @@ async function sendSms({ userId, phoneNumber, verificationCode, countryCode }) {
 			Meteor.users.update({ _id: userId }, modifier);
 			await sendSMSService(
 				`${ countryCode }${ phoneNumber }`,
-				`{"code": ${ verificationCode }}`,
+				JSON.stringify({ code: verificationCode }),
 			);
 			console.log(`send sms success ${ countryCode }${ phoneNumber }`);
 		} catch (err) {
