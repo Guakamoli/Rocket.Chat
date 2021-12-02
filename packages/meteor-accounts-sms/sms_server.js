@@ -215,12 +215,20 @@ Accounts.kameoSms.sendCode = async function(phone) {
 	await sendSms({ userId, phoneNumber, verificationCode, countryCode });
 };
 
+function handleUsername(username, modifier) {
+	const oldUser = Meteor.call('kameoFindPhoneUser', { username });
+	if (oldUser && oldUser.username) {
+		throw new Meteor.Error('The current nickname has been registered!');
+	}
+	modifier.username = username;
+	modifier.name = username;
+}
+
 /**
  * Send a 6 digit verification sms with aliyun or twilio.
  * @param phone
  * @param code
  */
-
 Accounts.kameoSms.verifyCode = function(phone, code, username) {
 	const { phoneNumber, countryCode: regionCode } = phone;
 	const countryCode = `+${ regionCode }`;
@@ -244,13 +252,13 @@ Accounts.kameoSms.verifyCode = function(phone, code, username) {
 		throw new Meteor.Error('Expired verification code');
 	}
 
-	if (username) {
-		const oldUser = Meteor.call('kameoFindPhoneUser', { username });
-		if (oldUser && oldUser.username) {
-			throw new Meteor.Error('The current nickname has been registered!');
-		}
-		modifier.username = username;
-		modifier.name = username;
+	if (user && !user.username && username) {
+		handleUsername(username, modifier);
+	}
+
+	if (user && !user.username && !username) {
+		const username = Math.random().toString(36).slice(-8);
+		handleUsername(username, modifier);
 	}
 
 	if (!user.active) {
