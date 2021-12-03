@@ -62,8 +62,8 @@ Template.loginForm.helpers({
 	requirePasswordConfirmation() {
 		return settings.get('Accounts_RequirePasswordConfirmation');
 	},
-	emailOrUsernamePlaceholder() {
-		return settings.get('Accounts_EmailOrUsernamePlaceholder') || t('Email_or_username');
+	emailPlaceholder() {
+		return settings.get('Accounts_EmailOrUsernamePlaceholder') || t('Email');
 	},
 	phoneNumberPlaceholder() {
 		return t('Input_mobile');
@@ -128,6 +128,7 @@ Template.loginForm.events({
 				return;
 			}
 			if (state === 'register') {
+				formData.name = '';
 				formData.secretURL = FlowRouter.getParam('hash');
 				return Meteor.call('registerUser', formData, function(error) {
 					instance.loading.set(false);
@@ -142,7 +143,8 @@ Template.loginForm.events({
 					callbacks.run('userRegistered');
 					toastr.success(t('Active_user_description'));
 					// eslint-disable-next-line no-return-assign
-					return window.location.href = Meteor.settings.public.LOGIN_ACTIVE_SUCCESS_URL;
+					instance.state.set('email-login');
+					// return window.location.href = Meteor.settings.public.LOGIN_ACTIVE_SUCCESS_URL;
 					// return Meteor.loginWithPassword(s.trim(formData.email), formData.pass, function(error) {
 					// 	if (error && error.error === 'error-invalid-email') {
 					// 		return instance.state.set('wait-email-activation');
@@ -187,14 +189,14 @@ Template.loginForm.events({
 				});
 			}
 
-			return Meteor[loginMethod](s.trim(formData.emailOrUsername), formData.pass, function(error) {
+			return Meteor[loginMethod](s.trim(formData.email), formData.pass, function(error) {
 				instance.loading.set(false);
 				if (error != null) {
 					if (error.error === 'error-user-is-not-activated') {
 						return toastr.error(t('Wait_activation_warning'));
 					}
 					if (error.error === 'error-invalid-email') {
-						instance.typedEmail = formData.emailOrUsername;
+						instance.typedEmail = formData.email;
 						return instance.state.set('email-verification');
 					}
 					if (error.error === 'error-user-is-not-activated') {
@@ -215,6 +217,10 @@ Template.loginForm.events({
 	},
 	'click .register'() {
 		Template.instance().state.set('register');
+		return callbacks.run('loginPageStateChange', Template.instance().state.get());
+	},
+	'click .goEmailLogin'() {
+		Template.instance().state.set('email-login');
 		return callbacks.run('loginPageStateChange', Template.instance().state.get());
 	},
 	'click .back-to-login'() {
@@ -262,6 +268,54 @@ Template.loginForm.events({
 			});
 		}
 	},
+	'keyup #email'(event) {
+		if (Template.instance().state.get() === 'email-login') {
+			if (event.currentTarget.value.length > 5 && $('#pass').val().length > 5) {
+				$('.login').addClass('active');
+			} else {
+				$('.login').removeClass('active');
+			}
+		}
+		if (Template.instance().state.get() === 'register') {
+			if (event.currentTarget.value.length > 5 && $('#pass').val().length > 5 && $('#confirm-pass').val().length > 5) {
+				$('.login').addClass('active');
+			} else {
+				$('.login').removeClass('active');
+			}
+		}
+	},
+	'keyup #pass'(event) {
+		if (Template.instance().state.get() === 'email-login') {
+			if (event.currentTarget.value.length > 5 && $('#email').val().length > 5) {
+				$('.login').addClass('active');
+			} else {
+				$('.login').removeClass('active');
+			}
+		}
+		if (Template.instance().state.get() === 'register') {
+			if (event.currentTarget.value.length > 5 && $('#email').val().length > 5 && $('#confirm-pass').val().length > 5) {
+				$('.login').addClass('active');
+			} else {
+				$('.login').removeClass('active');
+			}
+		}
+	},
+	'keyup #confirm-pass'(event) {
+		if (Template.instance().state.get() === 'email-login') {
+			if (event.currentTarget.value.length > 5 && $('#email').val().length > 5) {
+				$('.login').addClass('active');
+			} else {
+				$('.login').removeClass('active');
+			}
+		}
+		if (Template.instance().state.get() === 'register') {
+			if (event.currentTarget.value.length > 5 && $('#pass').val().length > 5 && $('#email').val().length > 5) {
+				$('.login').addClass('active');
+			} else {
+				$('.login').removeClass('active');
+			}
+		}
+	},
 });
 
 Template.loginForm.onCreated(function() {
@@ -274,7 +328,7 @@ Template.loginForm.onCreated(function() {
 	if (Session.get('loginDefaultState')) {
 		this.state = new ReactiveVar(Session.get('loginDefaultState'));
 	} else {
-		this.state = new ReactiveVar('login');
+		this.state = new ReactiveVar('email-login');
 	}
 
 	Tracker.autorun(() => {
@@ -336,8 +390,8 @@ Template.loginForm.onCreated(function() {
 			}
 		}
 		if (state === 'email-login') {
-			if (!formObj.emailOrUsername) {
-				validationObj.emailOrUsername = t('Invalid_email');
+			if (!formObj.email) {
+				validationObj.email = t('Invalid_email');
 			}
 		}
 		if (state !== 'forgot-password' && state !== 'email-verification' && state !== 'login') {
@@ -346,9 +400,9 @@ Template.loginForm.onCreated(function() {
 			}
 		}
 		if (state === 'register') {
-			if (settings.get('Accounts_RequireNameForSignUp') && !formObj.name) {
-				validationObj.name = t('Invalid_name');
-			}
+			// if (settings.get('Accounts_RequireNameForSignUp') && !formObj.name) {
+			// 	validationObj.name = t('Invalid_name');
+			// }
 			if (settings.get('Accounts_RequirePasswordConfirmation') && formObj['confirm-pass'] !== formObj.pass) {
 				validationObj['confirm-pass'] = t('Invalid_confirm_pass');
 			}
