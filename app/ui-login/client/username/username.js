@@ -102,11 +102,13 @@ Template.username.helpers({
 		return Template.instance().active.get();
 	},
 
-	backgroundUrl() {
-		const asset = settings.get('Assets_background');
+	logoUrl() {
+		const asset = settings.get('Assets_logo');
+		const productCode = Meteor.settings.public.PRODUCT_CODE;
+		const imageUrl = productCode === 'GODUCK' ? 'images/logo/torimi.png' : 'images/logo/paiya.png';
 		const prefix = __meteor_runtime_config__.ROOT_URL_PATH_PREFIX || '';
-		if (asset && (asset.url || asset.defaultUrl)) {
-			return `${ prefix }/${ asset.url || asset.defaultUrl }`;
+		if (asset != null) {
+			return `${ prefix }/${ asset.url || imageUrl }`;
 		}
 	},
 });

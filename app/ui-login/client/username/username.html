@@ -1,11 +1,13 @@
 <template name="username">
-	<section class="rc-old full-page color-tertiary-font-color" style="{{#with backgroundUrl}}background-image: url('{{.}}'){{/with}}">
-		<div class="wrapper">
+	
+	<section class="rc-old full-page color-tertiary-font-color" style="flex-direction: column;justify-content: center;align-items: center">
+		<header style='margin:0'>
+			<div class="logo" href="/">
+				<img src="{{logoUrl}}" />
+			</div>
+		</header>
+		<div class="wrapper" style='margin:0'>
 			<form id="login-card" class="content-background-color color-primary-font-color" method='/'>
-				<header>
-					<h2>{{_ "Username_title"}}</h2>
-					<p>{{_ "Username_description"}}</p>
-				</header>
 				{{#if username.blocked}}
 					<div class="alert error-color error-background error-border">
 						{{{_ "error-blocked-username" field=username.escaped}}}
@@ -27,7 +29,7 @@
 					</div>
 				{{/if}}
 				<div class="fields">
-					<div class='input-text active'>
+					<div class='input-text' style='margin-bottom:40px'>
 						{{#if username.ready}}
 							<span>
 								<input type="text" name='username' id="username" value="{{username.username}}" dir="auto" class="rc-input__element" placeholder="{{_ 'Username'}}"/>
@@ -48,7 +50,6 @@
 							<button data-loading-text="{{_ " Please_wait "}}..." class='rc-button rc-button--primary login'>{{_
 								"Use_this_username_active"}}</button>
 						{{/if}}
-						<button type="reset" class='rc-button rc-button--nude'>{{_ "Logout"}}</button>
 					</div>
 				{{/if}}
 			</form>

@@ -4285,5 +4285,16 @@
   "Active_user_description": "注册成功，请前往邮箱激活账号！",
   "User_protocol_description": "登录注册表示您同意",
   "User_protocol": "《用户协议》",
-  "Privacy_policy": "《隐私政策》"
+  "Privacy_policy": "《隐私政策》",
+  "Email_verify_welcome": "你好：",
+  "Email_verify_subtitle": "要验证帐户，请单击下面的按钮。",
+  "Email_verify_pleaseverify": "请验证：",
+  "Email_verify_button": "検証をクリックします",
+  "Email_verify_expired": "認証コードの有効期限は15分です",
+  "Email_verify_bottom": "このメッセージに心当たりない場合は，無視してください",
+  "Email_verify_made": "Torimi達人制作",
+  "Register_has_account": "已有账号",
+  "Register_go_login": "去登陆",
+  "Login_has_not_account": "没有账号",
+  "Login_go_register": "去注册"
 }

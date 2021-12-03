@@ -56,12 +56,11 @@
 				{{#if state 'email-login'}}
 					{{#if showFormLogin}}
 						<div class="rc-input">
-							<label class="rc-input__label" for="emailOrUsername">
+							<label class="rc-input__label" for="email">
 								<div class="rc-input__wrapper">
-									<input name="emailOrUsername" id="emailOrUsername" type="text" class="rc-input__element"
+									<input name="email" id="email" type="text" class="rc-input__element"
 												 autocapitalize="off" autocorrect="off"
-												 placeholder="{{emailOrUsernamePlaceholder}}" autofocus>
-									<div class="input-error"></div>
+												 placeholder="{{emailPlaceholder}}" autofocus>
 								</div>
 							</label>
 						</div>
@@ -78,16 +77,6 @@
 					{{/if}}
 				{{/if}}
 				{{#if state 'register'}}
-					<div class="rc-input">
-						<label class="rc-input__label" for="name">
-							<div class="rc-input__wrapper">
-								<input name="name" id="name" type="text" class="rc-input__element"
-									autocapitalize="off" autocorrect="off"
-									placeholder="{{namePlaceholder}}" autofocus>
-								<div class="input-error"></div>
-							</div>
-						</label>
-					</div>
 					<div class="rc-input">
 						<label class="rc-input__label" for="email">
 							<div class="rc-input__wrapper">
@@ -162,14 +151,12 @@
 				{{/if}}
 
 				{{#if state 'email-login'}}
-					{{#if showFormLogin}}
-						{{#if passwordResetAllowed}}
-							<button type="button" class="rc-button rc-button--nude forgot-password">{{_ 'Forgot_password'}}</button>
-						{{/if}}
-					{{/if}}
-
+			        
 					{{#if registrationAllowed}}
-						<button type="button" class="rc-button rc-button--nude register">{{_ 'Register'}}</button>
+						<div style="display: flex;flex-direction:column;justify-content:center;align-items:center">
+							<div style='color: #9B9B9B;'>{{_ "Login_has_not_account"}}</div>
+							<button type="button" class="rc-button rc-button--nude register" style="color: #651FFF;padding: 0px">{{_ 'Login_go_register'}}</button>
+						</div>
 					{{else}}
 						{{#if linkReplacementText}}
 							<div class="register-link-replacement">
@@ -178,9 +165,15 @@
 						{{/if}}
 					{{/if}}
 				{{/if}}
+				{{#if state 'register'}}
+					<div style="display: flex;flex-direction:column;justify-content:center;align-items:center">
+						<div style='color: #9B9B9B;'>{{_ "Register_has_account"}}</div>
+						<button type="button" class="rc-button rc-button--nude goEmailLogin" style="color: #651FFF;padding: 0px">{{_ 'Register_go_login'}}</button>
+					</div>
+				{{/if}}
 			</div>
 		{{/if}}
-		{{#unless state 'login'}}
+		{{#unless state 'email-login' 'register'}}
 			<div class="rc-button__group rc-button__group--vertical">
 				<button type="button" class="rc-button rc-button--nude back-to-login">{{_ 'Back_to_login'}}</button>
 			</div>
@@ -188,7 +181,8 @@
 	</form>
 	<div class='login-terms'>
 		<div class="powered-by">
-			{{_ 'User_protocol_description'}} <a class="link-style" href={{userAgreement}}>{{_ 'User_protocol'}}</a><a class="link-style" href={{privacy}}>{{_ 'Privacy_policy'}}</a>
+			{{_ 'User_protocol_description'}} <br/>
+			<a class="link-style" style='margin-right: 10px;' href={{userAgreement}}>{{_ 'User_Agreement'}}</a><a class="link-style" href={{privacy}}>{{_ 'User_Privacy_policy'}}</a>
 		</div>
 	</div>
 </template>

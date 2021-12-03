@@ -12,6 +12,7 @@
 
 .color-primary-font-color {
 	color: var(--primary-font-color);
+
 	/* background-color: var(--color-white); */
 }
 
