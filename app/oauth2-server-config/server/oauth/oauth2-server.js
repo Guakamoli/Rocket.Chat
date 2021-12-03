@@ -115,7 +115,7 @@ if (process.env.ROCKETCHAT_INTERNAL_API_ENABLE === 'true') {
 	});
 }
 
-const iframeAllowOrigin = process.env.IFRAME_ALLOW_ORIGIN?.split(',').filter(Boolean);
+const iframeAllowOrigin = process.env.IFRAME_ALLOW_ORIGIN?.split(',').filter(Boolean) ?? [];
 WebApp.connectHandlers.use((req, res, next) => {
 	if (req.headers.referer) {
 		const referer = new URL(req.headers.referer);
