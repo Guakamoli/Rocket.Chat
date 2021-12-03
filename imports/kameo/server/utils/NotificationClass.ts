@@ -130,6 +130,10 @@ export default class NotificationClass {
 			iOSRequest.iOSNotificationCategory = category;
 		}
 
+		const currentDate = new Date();
+		currentDate.setHours(currentDate.getHours() + 72); // 72小时后过期
+		const expireTime = currentDate.toISOString().replace(/\.[0-9]{3}/, '');
+
 		const androidAppKey = currentProduct({
 			PAIYA: Number(process.env.MPUSH_APPKEY_PAIYA_ANDROID),
 			GODUCK: Number(process.env.MPUSH_APPKEY_GODUCK_ANDROID),
@@ -142,6 +146,11 @@ export default class NotificationClass {
 			androidNotificationChannel: '1',
 			body: message,
 			androidNotifyType: 'BOTH',
+			androidPopupBody: message,
+			androidNotificationBarPriority: 0,
+			androidRemind: false,
+			storeOffline: true,
+			expireTime,
 		};
 		if (title) {
 			androidRequest.title = title;
@@ -151,8 +160,7 @@ export default class NotificationClass {
 				GODUCK: 'Torimi',
 			});
 		}
-		androidRequest.androidPopupTitle = androidRequest.title;
-		androidRequest.androidPopupBody = androidRequest.body;
+		androidRequest.androidPopupTitle = title;
 		androidRequest.androidExtParameters = JSON.stringify({ extras: payload });
 
 		// eslint-disable-next-line @typescript-eslint/camelcase

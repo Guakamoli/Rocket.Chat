@@ -23,7 +23,7 @@ const topicIds = {
 const mqClient = new MQClient(endpoint, accessKeyId, accessKeySecret);
 
 async function publishMessage(producer, body, tag, props) {
-	await producer.publishMessage(JSON.stringify(body), tag, props);
+	await producer.publishMessage(body, tag, props);
 }
 
 function genRocketmqMsgProps(key, props) {
@@ -31,11 +31,13 @@ function genRocketmqMsgProps(key, props) {
 	Object.keys(props).forEach((prop) => {
 		msgProps.putProperty(prop, props[prop]);
 	});
-	msgProps.messageKey(key);
+	if (key) {
+		msgProps.messageKey(key);
+	}
 	return msgProps;
 }
 
-async function rocketmqSend(topicId, body, tag, messageKey, props = {}, retry = 3) {
+async function rocketmqSend(topicId, body, tag, messageKey = '', props = {}, retry = 3) {
 	logger.debug('Send', { topicId, body, tag, messageKey, props, retry: retry - 1 });
 	const producer = mqClient.getProducer(instanceId, topicId);
 	let msgProps = new MessageProperties();
@@ -60,11 +62,11 @@ async function rocketmqSendLoginUser(userId) {
 		id: userId,
 	};
 
-	await rocketmqSend(topicIds.login, { ...user }, 'mqLoginUser', 'LoginUser', props);
+	await rocketmqSend(topicIds.login, JSON.stringify({ ...user }), 'mqLoginUser', 'LoginUser', props);
 }
 
 async function rocketmqSendPostMessage(message) {
-	await rocketmqSend(topicIds.postMessage, { ...message }, 'mqPostMessage', 'PostMessage');
+	await rocketmqSend(topicIds.postMessage, JSON.stringify({ ...message }), 'mqPostMessage', 'PostMessage');
 }
 
 async function rocketmqSendNotification(notification) {
@@ -72,7 +74,7 @@ async function rocketmqSendNotification(notification) {
 		id: notification.postId,
 	};
 
-	await rocketmqSend(topicIds.notification, { ...notification }, 'mqNotification', 'Notification', props);
+	await rocketmqSend(topicIds.notification, JSON.stringify({ ...notification }), 'mqNotification', 'Notification', props);
 }
 
 async function rocketmqSendUpdateProfile(userId, profile) {
@@ -84,7 +86,7 @@ async function rocketmqSendUpdateProfile(userId, profile) {
 		profile.picture = `${ process.env.ROOT_URL }/avatar/${ profile.username }#`;
 	}
 
-	await rocketmqSend(topicIds.account, { ...profile }, 'mqUpdateAccount', 'Account', props);
+	await rocketmqSend(topicIds.account, JSON.stringify({ ...profile }), 'mqUpdateAccount', 'Account', props);
 }
 
 async function rocketmqSendAliyunPush(userId, payload, tag = 'notification') {
@@ -103,7 +105,7 @@ async function rocketmqSendAliyunPush(userId, payload, tag = 'notification') {
 	}
 
 	logger.debug('SendAliyunPush', { user, payload });
-	await rocketmqSend(topicIds.aliyunPush, { ...payload }, tag, 'AliyunPush');
+	await rocketmqSend(topicIds.aliyunPush, JSON.stringify({ ...payload }), tag, 'AliyunPush');
 }
 
 Meteor.methods({
