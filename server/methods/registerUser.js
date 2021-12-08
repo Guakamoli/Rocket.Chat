@@ -8,6 +8,7 @@ import { Users } from '../../app/models';
 import { settings } from '../../app/settings';
 import { validateEmailDomain, passwordPolicy } from '../../app/lib';
 import { validateInviteToken } from '../../app/invites/server/functions/validateInviteToken';
+import { defaultUsernameSuggestion } from '../../app/lib/server/functions/getUsernameSuggestion';
 
 Meteor.methods({
 	registerUser(formData) {
@@ -79,6 +80,9 @@ Meteor.methods({
 		if (manuallyApproveNewUsers && reason) {
 			Users.setReason(userId, reason);
 		}
+
+		// 设置建议的用户名
+		Users.setUsername(userId, defaultUsernameSuggestion());
 
 		try {
 			Accounts.sendVerificationEmail(userId, userData.email);
