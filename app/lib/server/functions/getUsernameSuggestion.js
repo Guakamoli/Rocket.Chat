@@ -22,6 +22,19 @@ function usernameIsAvaliable(username) {
 
 const name = (username) => (settings.get('UTF8_Names_Slugify') ? slug(username) : username);
 
+export function defaultUsernameSuggestion() {
+	const username = settings.get('Accounts_DefaultUsernamePrefixSuggestion');
+	let index = Users.find({ username: new RegExp(`^${ username }-[0-9]+`) }).count();
+	while (!username) {
+		if (usernameIsAvaliable(`${ username }-${ index }`)) {
+			return `${ username }-${ index }`;
+		}
+		index++;
+	}
+
+	return `user-${ Math.random().toString(16).substr(2) }`;
+}
+
 export function generateUsernameSuggestion(user) {
 	let usernames = [];
 
@@ -64,14 +77,5 @@ export function generateUsernameSuggestion(user) {
 		}
 	}
 
-	usernames.push(settings.get('Accounts_DefaultUsernamePrefixSuggestion'));
-
-	let index = Users.find({ username: new RegExp(`^${ usernames[0] }-[0-9]+`) }).count();
-	const username = '';
-	while (!username) {
-		if (usernameIsAvaliable(`${ usernames[0] }-${ index }`)) {
-			return `${ usernames[0] }-${ index }`;
-		}
-		index++;
-	}
+	return defaultUsernameSuggestion();
 }
