@@ -257,7 +257,7 @@ Accounts.kameoSms.verifyCode = function(phone, code, username) {
 	}
 
 	if (user && !user.username && !username) {
-		const username = Math.random().toString(36).slice(-8);
+		const username = `user-${ Math.random().toString(16).substr(2) }`;
 		handleUsername(username, modifier);
 	}
 
