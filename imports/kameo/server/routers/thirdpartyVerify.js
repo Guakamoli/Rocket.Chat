@@ -20,11 +20,11 @@ WebApp.connectHandlers.use('/.well-known/apple-app-site-association', Meteor.bin
 			details: [
 				{
 					appID: 'K6X9285QVU.co.goduck.goducktalent.ios',
-					paths: ['NOT /login', '*'],
+					paths: ['NOT /login', 'NOT /oauth/*', '*'],
 				},
 				{
 					appID: 'K6X9285QVU.co.goduck.goduck.ios',
-					paths: ['/login'],
+					paths: ['NOT /oauth/*', '/login'],
 				},
 			],
 		},
