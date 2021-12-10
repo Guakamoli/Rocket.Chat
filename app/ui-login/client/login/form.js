@@ -224,7 +224,7 @@ Template.loginForm.events({
 		return callbacks.run('loginPageStateChange', Template.instance().state.get());
 	},
 	'click .back-to-login'() {
-		Template.instance().state.set('login');
+		Template.instance().state.set('email-login');
 		return callbacks.run('loginPageStateChange', Template.instance().state.get());
 	},
 	'click .forgot-password'() {
