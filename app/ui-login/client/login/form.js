@@ -141,7 +141,7 @@ Template.loginForm.events({
 						return;
 					}
 					callbacks.run('userRegistered');
-					toastr.success(t('Active_user_description'));
+					toastr.success(t('We_have_sent_registration_email'));
 					// eslint-disable-next-line no-return-assign
 					instance.state.set('email-login');
 					// return window.location.href = Meteor.settings.public.LOGIN_ACTIVE_SUCCESS_URL;
