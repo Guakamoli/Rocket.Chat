@@ -9,7 +9,7 @@ Accounts.onEmailVerificationLink(function(token, done) {
 		if (error == null) {
 			toastr.success(t('Email_verified'));
 			window.location.href = Meteor.settings.public.LOGIN_ACTIVE_SUCCESS_URL;
-			Meteor.call('afterVerifyEmail');
+			Meteor.call('afterVerifyEmail'); 
 			
 		} else {
 			toastr.error(error.message);
