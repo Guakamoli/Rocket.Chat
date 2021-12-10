@@ -110,7 +110,7 @@ Template.loginForm.events({
 					instance.loading.set(false);
 					callbacks.run('userConfirmationEmailRequested');
 					toastr.success(t('We_have_sent_registration_email'));
-					return instance.state.set('login');
+					return instance.state.set('email-login');
 				});
 				return;
 			}
