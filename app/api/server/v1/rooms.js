@@ -28,7 +28,7 @@ function findRoomByIdOrName({ params, checkedArchived = true }) {
 		throw new Meteor.Error('error-room-not-found', 'The required "roomId" or "roomName" param provided does not match any channel');
 	}
 	if (checkedArchived && room.archived) {
-		throw new Meteor.Error('error-room-archived', `The channel, ${ room.name }, is archived`);
+		throw new Meteor.Error('error-room-archived', `The channel, ${room.name}, is archived`);
 	}
 
 	return room;
@@ -107,6 +107,64 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 		SystemLogger.debug('rooms.upload/:rid', this.request.headers, messageType, fields);
 
 		Meteor.call('sendFileMessage', this.urlParams.rid, null, uploadedFile, fields);
+
+		return API.v1.success({ message: Messages.getMessageByFileIdAndUsername(uploadedFile._id, this.userId) });
+	},
+});
+
+API.v1.addRoute('rooms.uploads/:rid', { authRequired: true }, {
+	post() {
+		const room = Meteor.call('canAccessRoom', this.urlParams.rid, this.userId);
+
+		if (!room) {
+			return API.v1.unauthorized();
+		}
+
+		const data = Promise.await(getUploadFormData({
+			request: this.request,
+		}));
+		let hasFile = false
+		for (const key in data) {
+			if (data[key]?.file) {
+				hasFile = true
+				break
+			}
+		}
+		if (!hasFile) {
+			throw new Meteor.Error('invalid-field');
+		}
+		const stripExif = settings.get('Message_Attachments_Strip_Exif');
+		const fileStore = FileUpload.getStore('Uploads');
+		const uploadedFiles = []
+		for (const key in data) {
+			if (!data[key]?.file) continue
+			const file = data[key]
+			Reflect.deleteProperty(data, key)
+			const details = {
+				name: file.filename,
+				size: file.fileBuffer.length,
+				type: file.mimetype,
+				rid: this.urlParams.rid,
+				userId: this.userId,
+			};
+
+			if (stripExif) {
+				// No need to check mime. Library will ignore any files without exif/xmp tags (like BMP, ico, PDF, etc)
+				file.fileBuffer = Promise.await(Media.stripExifFromBuffer(file.fileBuffer));
+			}
+			const uploadedFile = fileStore.insertSync(details, file.fileBuffer);
+			uploadedFile.description = data.description;
+			delete data.description;
+			uploadedFiles.push(uploadedFile)
+		}
+
+
+		const messageType = this.request.headers['x-upload-type'] || null;
+		if (messageType && ['post', 'story'].includes(messageType)) {
+			data.t = messageType;
+		}
+		// SystemLogger.debug('rooms.upload/:rid', this.request.headers, messageType, data);
+		Meteor.call('sendFileMessage', this.urlParams.rid, null, null, data, uploadedFiles);
 
 		return API.v1.success({ message: Messages.getMessageByFileIdAndUsername(uploadedFile._id, this.userId) });
 	},

@@ -20,7 +20,7 @@ const topicIds = {
 	aliyunPush: process.env.MQ_TOPIC_ID_ALIYUN_PUSH,
 };
 
-const mqClient = new MQClient(endpoint, accessKeyId, accessKeySecret);
+// const mqClient = new MQClient(endpoint, accessKeyId, accessKeySecret);
 
 async function publishMessage(producer, body, tag, props) {
 	await producer.publishMessage(body, tag, props);
@@ -38,6 +38,7 @@ function genRocketmqMsgProps(key, props) {
 }
 
 async function rocketmqSend(topicId, body, tag, messageKey = '', props = {}, retry = 3) {
+	return;
 	logger.debug('Send', { topicId, body, tag, messageKey, props, retry: retry - 1 });
 	const producer = mqClient.getProducer(instanceId, topicId);
 	let msgProps = new MessageProperties();
@@ -83,7 +84,7 @@ async function rocketmqSendUpdateProfile(userId, profile) {
 	};
 
 	if (profile.username) {
-		profile.picture = `${ process.env.ROOT_URL }/avatar/${ profile.username }#`;
+		profile.picture = `${process.env.ROOT_URL}/avatar/${profile.username}#`;
 	}
 
 	await rocketmqSend(topicIds.account, JSON.stringify({ ...profile }), 'mqUpdateAccount', 'Account', props);

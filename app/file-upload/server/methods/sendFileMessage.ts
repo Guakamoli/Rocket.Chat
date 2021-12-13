@@ -13,7 +13,7 @@ import { FileAttachmentProps } from '../../../../definition/IMessage/MessageAtta
 import { IUser } from '../../../../definition/IUser';
 
 Meteor.methods({
-	async sendFileMessage(roomId, _store, file, msgData = {}) {
+	async sendFileMessage(roomId, _store, rowFile, msgData = {}, rowFiles) {
 		const user = Meteor.user() as IUser | undefined;
 		if (!user) {
 			throw new Meteor.Error('error-invalid-user', 'Invalid user', { method: 'sendFileMessage' } as any);
@@ -34,18 +34,28 @@ Meteor.methods({
 			msg: Match.Optional(String),
 			tmid: Match.Optional(String),
 		});
+		if (!rowFile && rowFiles && rowFiles[0]) {
+			rowFile = rowFiles[0]
+		}
+		if (!rowFiles) {
+			rowFiles = [rowFile]
+		}
+		const files = [];
+		const attachments: MessageAttachment[] = [];
 
+		for (const file of rowFiles) {
+
+			files.push({
+				_id: file._id,
+				name: file.name,
+				type: file.type,
+			})
 		Uploads.updateFileComplete(file._id, user._id, _.omit(file, '_id'));
 
 		const fileUrl = FileUpload.getPath(`${ file._id }/${ encodeURI(file.name) }`);
 
-		const attachments: MessageAttachment[] = [];
 
-		const files = [{
-			_id: file._id,
-			name: file.name,
-			type: file.type,
-		}];
+	
 
 		if (/^image\/.+/.test(file.type)) {
 			const attachment: FileAttachmentProps = {
@@ -120,7 +130,7 @@ Meteor.methods({
 			};
 			attachments.push(attachment);
 		}
-
+	}
 
 		const msg = Meteor.call('sendMessage', {
 			rid: roomId,

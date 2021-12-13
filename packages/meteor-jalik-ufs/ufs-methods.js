@@ -40,11 +40,11 @@ if (Meteor.isServer) {
 	Meteor.methods({
 
 		/**
-     * Completes the file transfer
-     * @param fileId
-     * @param storeName
-     * @param token
-     */
+	 * Completes the file transfer
+	 * @param fileId
+	 * @param storeName
+	 * @param token
+	 */
 		ufsComplete(fileId, storeName, token) {
 			check(fileId, String);
 			check(storeName, String);
@@ -63,9 +63,9 @@ if (Meteor.isServer) {
 			const fut = new Future();
 			const tmpFile = UploadFS.getTempFilePath(fileId);
 
-			const removeTempFile = function() {
-				fs.unlink(tmpFile, function(err) {
-					err && console.error(`ufs: cannot delete temp file "${ tmpFile }" (${ err.message })`);
+			const removeTempFile = function () {
+				fs.unlink(tmpFile, function (err) {
+					err && console.error(`ufs: cannot delete temp file "${tmpFile}" (${err.message})`);
 				});
 			};
 
@@ -86,16 +86,15 @@ if (Meteor.isServer) {
 				});
 
 				// Clean upload if error occurs
-				rs.on('error', Meteor.bindEnvironment(function(err) {
+				rs.on('error', Meteor.bindEnvironment(function (err) {
 					console.error(err);
 					store.getCollection().remove({ _id: fileId });
 					fut.throw(err);
 				}));
 
 				// Save file in the store
-				store.write(rs, fileId, Meteor.bindEnvironment(function(err, file) {
+				store.write(rs, fileId, Meteor.bindEnvironment(function (err, file) {
 					removeTempFile();
-
 					if (err) {
 						fut.throw(err);
 					} else {
@@ -118,10 +117,10 @@ if (Meteor.isServer) {
 		},
 
 		/**
-     * Creates the file and returns the file upload token
-     * @param file
-     * @return {{fileId: string, token: *, url: *}}
-     */
+	 * Creates the file and returns the file upload token
+	 * @param file
+	 * @return {{fileId: string, token: *, url: *}}
+	 */
 		ufsCreate(file) {
 			check(file, Object);
 
@@ -158,7 +157,7 @@ if (Meteor.isServer) {
 			// Create the file
 			const fileId = store.create(file);
 			const token = store.createToken(fileId);
-			const uploadUrl = store.getURL(`${ fileId }?token=${ token }`);
+			const uploadUrl = store.getURL(`${fileId}?token=${token}`);
 
 			return {
 				fileId,
@@ -168,12 +167,12 @@ if (Meteor.isServer) {
 		},
 
 		/**
-     * Deletes a file
-     * @param fileId
-     * @param storeName
-     * @param token
-     * @returns {*}
-     */
+	 * Deletes a file
+	 * @param fileId
+	 * @param storeName
+	 * @param token
+	 * @returns {*}
+	 */
 		ufsDelete(fileId, storeName, token) {
 			check(fileId, String);
 			check(storeName, String);
@@ -196,12 +195,12 @@ if (Meteor.isServer) {
 		},
 
 		/**
-     * Imports a file from the URL
-     * @param url
-     * @param file
-     * @param storeName
-     * @return {*}
-     */
+	 * Imports a file from the URL
+	 * @param url
+	 * @param file
+	 * @param storeName
+	 * @return {*}
+	 */
 		ufsImportURL(url, file, storeName) {
 			check(url, String);
 			check(file, Object);
@@ -274,28 +273,28 @@ if (Meteor.isServer) {
 			this.unblock();
 
 			// Download file
-			proto.get(url, Meteor.bindEnvironment(function(res) {
+			proto.get(url, Meteor.bindEnvironment(function (res) {
 				// Save the file in the store
-				store.write(res, file._id, function(err, file) {
+				store.write(res, file._id, function (err, file) {
 					if (err) {
 						fut.throw(err);
 					} else {
 						fut.return(file);
 					}
 				});
-			})).on('error', function(err) {
+			})).on('error', function (err) {
 				fut.throw(err);
 			});
 			return fut.wait();
 		},
 
 		/**
-     * Marks the file uploading as stopped
-     * @param fileId
-     * @param storeName
-     * @param token
-     * @returns {*}
-     */
+	 * Marks the file uploading as stopped
+	 * @param fileId
+	 * @param storeName
+	 * @param token
+	 * @returns {*}
+	 */
 		ufsStop(fileId, storeName, token) {
 			check(fileId, String);
 			check(storeName, String);

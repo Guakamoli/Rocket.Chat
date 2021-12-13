@@ -40,7 +40,7 @@ messageBox.actions.add('Add_files_from', 'Computer', {
 
 		$(document.body).append($input);
 
-		$input.one('change', async function(e) {
+		$input.one('change', async function (e) {
 			const { mime } = await import('../../../utils/lib/mimeTypes');
 			const filesToUpload = [...e.target.files].map((file) => {
 				Object.defineProperty(file, 'type', {
@@ -51,7 +51,7 @@ messageBox.actions.add('Add_files_from', 'Computer', {
 					name: file.name,
 				};
 			});
-
+			console.log(filesToUpload, 'filesToUpload')
 			fileUpload(filesToUpload, $('.js-input-message', messageBox).get(0), { rid, tmid });
 			$input.remove();
 		});
@@ -137,7 +137,7 @@ messageBox.actions.add('Share', 'My_location', {
 		}
 
 		const { coords: { latitude, longitude } } = position;
-		const text = `<div class="upload-preview"><div class="upload-preview-file" style="background-size: cover; box-shadow: 0 0 0px 1px #dfdfdf; border-radius: 2px; height: 250px; width:100%; max-width: 500px; background-image:url(https://maps.googleapis.com/maps/api/staticmap?zoom=14&size=500x250&markers=color:gray%7Clabel:%7C${ latitude },${ longitude }&key=${ settings.get('MapView_GMapsAPIKey') })" ></div></div>`;
+		const text = `<div class="upload-preview"><div class="upload-preview-file" style="background-size: cover; box-shadow: 0 0 0px 1px #dfdfdf; border-radius: 2px; height: 250px; width:100%; max-width: 500px; background-image:url(https://maps.googleapis.com/maps/api/staticmap?zoom=14&size=500x250&markers=color:gray%7Clabel:%7C${latitude},${longitude}&key=${settings.get('MapView_GMapsAPIKey')})" ></div></div>`;
 
 		modal.open({
 			title: t('Share_Location_Title'),
@@ -146,7 +146,7 @@ messageBox.actions.add('Share', 'My_location', {
 			closeOnConfirm: true,
 			closeOnCancel: true,
 			html: true,
-		}, function(isConfirm) {
+		}, function (isConfirm) {
 			if (isConfirm !== true) {
 				return;
 			}

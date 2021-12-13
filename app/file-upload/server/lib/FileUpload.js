@@ -32,7 +32,7 @@ import { streamToBuffer } from './streamToBuffer';
 const cookie = new Cookies();
 let maxFileSize = 0;
 
-settings.get('FileUpload_MaxFileSize', function(key, value) {
+settings.get('FileUpload_MaxFileSize', function (key, value) {
 	try {
 		maxFileSize = parseInt(value);
 	} catch (e) {
@@ -45,7 +45,7 @@ export const FileUpload = {
 	handlers: {},
 
 	getPath(path = '') {
-		return `/file-upload/${ path }`;
+		return `/file-upload/${path}`;
 	},
 
 	configureUploadsStore(store, name, options) {
@@ -55,7 +55,7 @@ export const FileUpload = {
 
 		return new UploadFS.store[store](Object.assign({
 			name,
-		}, options, FileUpload[`default${ type }`]()));
+		}, options, FileUpload[`default${type}`]()));
 	},
 
 	validateFileUpload(fileData) {
@@ -135,15 +135,14 @@ export const FileUpload = {
 
 		return true;
 	},
-
-	defaultUploads() {
+	defaultVideoUploads() {
 		return {
 			collection: Uploads.model,
 			filter: new UploadFS.Filter({
 				onCheck: FileUpload.validateFileUpload,
 			}),
 			getPath(file) {
-				return `${ settings.get('uniqueID') }/uploads/${ file.rid }/${ file.userId }/${ file._id }`;
+				return `${settings.get('uniqueID')}/uploads/${file.rid}/${file.userId}/${file._id}`;
 			},
 			onValidate: FileUpload.uploadsOnValidate,
 			onRead(fileId, file, req, res) {
@@ -152,7 +151,28 @@ export const FileUpload = {
 					return false;
 				}
 
-				res.setHeader('content-disposition', `attachment; filename="${ encodeURIComponent(file.name) }"`);
+				res.setHeader('content-disposition', `attachment; filename="${encodeURIComponent(file.name)}"`);
+				return true;
+			},
+		};
+	},
+	defaultUploads() {
+		return {
+			collection: Uploads.model,
+			filter: new UploadFS.Filter({
+				onCheck: FileUpload.validateFileUpload,
+			}),
+			getPath(file) {
+				return `${settings.get('uniqueID')}/uploads/${file.rid}/${file.userId}/${file._id}`;
+			},
+			onValidate: FileUpload.uploadsOnValidate,
+			onRead(fileId, file, req, res) {
+				if (!FileUpload.requestCanAccessFiles(req)) {
+					res.writeHead(403);
+					return false;
+				}
+
+				res.setHeader('content-disposition', `attachment; filename="${encodeURIComponent(file.name)}"`);
 				return true;
 			},
 		};
@@ -165,8 +185,8 @@ export const FileUpload = {
 				onCheck: FileUpload.validateAvatarUpload,
 			}),
 			getPath(file) {
-				const avatarFile = file.rid ? `room-${ file.rid }` : file.userId;
-				return `${ settings.get('uniqueID') }/avatars/${ avatarFile }`;
+				const avatarFile = file.rid ? `room-${file.rid}` : file.userId;
+				return `${settings.get('uniqueID')}/avatars/${avatarFile}`;
 			},
 			onValidate: FileUpload.avatarsOnValidate,
 			onFinishUpload: FileUpload.avatarsOnFinishUpload,
@@ -177,7 +197,7 @@ export const FileUpload = {
 		return {
 			collection: UserDataFiles.model,
 			getPath(file) {
-				return `${ settings.get('uniqueID') }/uploads/userData/${ file.userId }`;
+				return `${settings.get('uniqueID')}/uploads/userData/${file.userId}`;
 			},
 			onValidate: FileUpload.uploadsOnValidate,
 			onRead(fileId, file, req, res) {
@@ -186,7 +206,7 @@ export const FileUpload = {
 					return false;
 				}
 
-				res.setHeader('content-disposition', `attachment; filename="${ encodeURIComponent(file.name) }"`);
+				res.setHeader('content-disposition', `attachment; filename="${encodeURIComponent(file.name)}"`);
 				return true;
 			},
 		};
@@ -295,7 +315,7 @@ export const FileUpload = {
 	uploadImageThumbnail(file, buffer, rid, userId) {
 		const store = FileUpload.getStore('Uploads');
 		const details = {
-			name: `thumb-${ file.name }`,
+			name: `thumb-${file.name}`,
 			size: buffer.length,
 			type: file.type,
 			rid,
@@ -336,10 +356,10 @@ export const FileUpload = {
 					return cb();
 				}
 				s.rotate()
-					.toFile(`${ tmpFile }.tmp`)
+					.toFile(`${tmpFile}.tmp`)
 					.then(Meteor.bindEnvironment(() => {
 						fs.unlink(tmpFile, Meteor.bindEnvironment(() => {
-							fs.rename(`${ tmpFile }.tmp`, tmpFile, Meteor.bindEnvironment(() => {
+							fs.rename(`${tmpFile}.tmp`, tmpFile, Meteor.bindEnvironment(() => {
 								cb();
 							}));
 						}));
@@ -414,8 +434,8 @@ export const FileUpload = {
 		// This file type can be pretty much anything, so it's better if we don't mess with the file extension
 		if (file.type !== 'application/octet-stream') {
 			const ext = mime.extension(file.type);
-			if (ext && new RegExp(`\\.${ ext }$`, 'i').test(file.name) === false) {
-				file.name = `${ file.name }.${ ext }`;
+			if (ext && new RegExp(`\\.${ext}$`, 'i').test(file.name) === false) {
+				file.name = `${file.name}.${ext}`;
 			}
 		}
 
@@ -424,14 +444,14 @@ export const FileUpload = {
 
 	getStore(modelName) {
 		const storageType = settings.get('FileUpload_Storage_Type');
-		const handlerName = `${ storageType }:${ modelName }`;
+		const handlerName = `${storageType}:${modelName}`;
 
 		return this.getStoreByName(handlerName);
 	},
 
 	getStoreByName(handlerName) {
 		if (this.handlers[handlerName] == null) {
-			console.error(`Upload handler "${ handlerName }" does not exists`);
+			console.error(`Upload handler "${handlerName}" does not exists`);
 		}
 		return this.handlers[handlerName];
 	},
@@ -484,7 +504,7 @@ export const FileUpload = {
 	},
 
 	proxyFile(fileName, fileUrl, forceDownload, request, req, res) {
-		res.setHeader('Content-Disposition', `${ forceDownload ? 'attachment' : 'inline' }; filename="${ encodeURI(fileName) }"`);
+		res.setHeader('Content-Disposition', `${forceDownload ? 'attachment' : 'inline'}; filename="${encodeURI(fileName)}"`);
 
 		request.get(fileUrl, (fileRes) => fileRes.pipe(res));
 	},
@@ -617,7 +637,10 @@ export class FileUploadClass {
 			if (streamOrBuffer instanceof stream) {
 				streamOrBuffer.pipe(fs.createWriteStream(tmpFile));
 			} else if (streamOrBuffer instanceof Buffer) {
+				const a = Date.now()
+
 				fs.writeFileSync(tmpFile, streamOrBuffer);
+
 			} else {
 				throw new Error('Invalid file type');
 			}

@@ -8,12 +8,19 @@ import { prependReplies } from '../../../ui-utils';
 import { imperativeModal } from '../../../../client/lib/imperativeModal';
 import FileUploadModal from '../../../../client/components/modals/FileUploadModal';
 
-export const uploadFileWithMessage = async (rid, tmid, { description, fileName, msg, file }) => {
+export const uploadFileWithMessage = async (rid, tmid, { description, fileName, msg, file, files }) => {
 	const data = new FormData();
-	description	&& data.append('description', description);
-	msg	&& data.append('msg', msg);
+	description && data.append('description', description);
+	msg && data.append('msg', msg);
 	tmid && data.append('tmid', tmid);
-	data.append('file', file.file, fileName);
+	for (const [index, item] of files.entries()) {
+		console.log("开阿卡")
+
+		data.append(`file[${index}]`, item.file, item.fileName);
+
+	}
+	console.log(data)
+	// data.append(`file`, file.file, fileName);
 
 	const uploads = Session.get('uploading') || [];
 
@@ -26,7 +33,7 @@ export const uploadFileWithMessage = async (rid, tmid, { description, fileName, 
 	uploads.push(upload);
 	Session.set('uploading', uploads);
 
-	const { xhr, promise } = APIClient.upload(`v1/rooms.upload/${ rid }`, {}, data, {
+	const { xhr, promise } = APIClient.upload(`v1/rooms.uploads/${rid}`, {}, data, {
 		progress(progress) {
 			const uploads = Session.get('uploading') || [];
 
@@ -49,12 +56,12 @@ export const uploadFileWithMessage = async (rid, tmid, { description, fileName, 
 	});
 
 	Tracker.autorun((computation) => {
-		const isCanceling = Session.get(`uploading-cancel-${ upload.id }`);
+		const isCanceling = Session.get(`uploading-cancel-${upload.id}`);
 		if (!isCanceling) {
 			return;
 		}
 		computation.stop();
-		Session.delete(`uploading-cancel-${ upload.id }`);
+		Session.delete(`uploading-cancel-${upload.id}`);
 
 		xhr.abort();
 
@@ -95,7 +102,7 @@ export const fileUpload = async (files, input, { rid, tmid }) => {
 	}
 
 	const uploadNextFile = () => {
-		const file = files.pop();
+		const file = files[0];
 		if (!file) {
 			return;
 		}
@@ -110,14 +117,16 @@ export const fileUpload = async (files, input, { rid, tmid }) => {
 					uploadNextFile();
 				},
 				onSubmit: (fileName, description) => {
+					console.log("点下了")
 					uploadFileWithMessage(rid, tmid, {
 						description,
 						fileName,
 						msg: msg || undefined,
 						file,
+						files,
 					});
 					imperativeModal.close();
-					uploadNextFile();
+					// uploadNextFile();
 				},
 				isValidContentType: file.file.type && fileUploadIsValidContentType(file.file.type),
 			},

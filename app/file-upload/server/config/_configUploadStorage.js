@@ -3,6 +3,7 @@ import _ from 'underscore';
 
 import { settings } from '../../../settings';
 import './AmazonS3.js';
+import './AliyunOSS.js';
 import './FileSystem.js';
 import './GoogleStorage.js';
 import './GridFS.js';
@@ -13,9 +14,9 @@ const configStore = _.debounce(() => {
 
 	if (store) {
 		console.log('Setting default file store to', store);
-		UploadFS.getStores().Avatars = UploadFS.getStore(`${ store }:Avatars`);
-		UploadFS.getStores().Uploads = UploadFS.getStore(`${ store }:Uploads`);
-		UploadFS.getStores().UserDataFiles = UploadFS.getStore(`${ store }:UserDataFiles`);
+		UploadFS.getStores().Avatars = UploadFS.getStore(`${store}:Avatars`);
+		UploadFS.getStores().Uploads = UploadFS.getStore(`${store}:Uploads`);
+		UploadFS.getStores().UserDataFiles = UploadFS.getStore(`${store}:UserDataFiles`);
 	}
 }, 1000);
 
