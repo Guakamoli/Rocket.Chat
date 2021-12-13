@@ -2605,6 +2605,7 @@
   "UI_Unread_Counter_Style": "未读柜台风格",
   "UI_Use_Name_Avatar": "使用全名缩写来生成默认头像",
   "UI_Use_Real_Name": "使用真实姓名",
+  "UI_Use_Default_Avatar": "设置默认头像URL",
   "Unarchive": "取消封存",
   "unarchive-room": "unarchive房间",
   "unarchive-room_description": "允许非存档渠道",
