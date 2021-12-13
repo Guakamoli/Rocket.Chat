@@ -73,5 +73,11 @@ export const userAvatar = Meteor.bindEnvironment(function(req, res) {
 		}
 	}
 
+	if (settings.get('UI_Use_Default_Avatar')) {
+		res.setHeader('Location', settings.get('UI_Use_Default_Avatar'));
+		res.end();
+		return;
+	}
+
 	serveAvatar(svg, req.query.format, res);
 });
