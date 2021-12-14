@@ -18,7 +18,7 @@ const topicIds = {
 	notification: process.env.MQ_TOPIC_ID_ROCKETCHAT_NOTIFICATION,
 	account: process.env.MQ_TOPIC_ID_ROCKETCHAT_ACCOUNT,
 	aliyunPush: process.env.MQ_TOPIC_ID_ALIYUN_PUSH,
-	creatorRole: process.env.MQ_TOPIC_ID_CREATOR_ROLE,
+	creatorRole: process.env.MQ_TOPIC_ID_ROCKETCHAT_ROLE,
 };
 
 const mqClient = new MQClient(endpoint, accessKeyId, accessKeySecret);
@@ -109,12 +109,12 @@ async function rocketmqSendAliyunPush(userId, payload, tag = 'notification') {
 	await rocketmqSend(topicIds.aliyunPush, JSON.stringify({ ...payload }), tag, 'AliyunPush');
 }
 
-async function rocketmqSendChangeCreator(userId, payload, tag = 'mqCreatorRole') {
+async function rocketmqSendChangeRole(userId, payload, tag = 'mqRole') {
 	const props = {
 		id: userId,
 	};
 	logger.debug('SendChangeCreator', { ...payload });
-	await rocketmqSend(topicIds.creatorRole, JSON.stringify({ ...payload }), tag, 'ChangeCreatorRole', props);
+	await rocketmqSend(topicIds.creatorRole, JSON.stringify({ ...payload }), tag, 'ChangeRole', props);
 }
 
 Meteor.methods({
@@ -124,5 +124,5 @@ Meteor.methods({
 	kameoRocketmqSendNotification: rocketmqSendNotification,
 	kameoRocketmqSendUpdateProfile: rocketmqSendUpdateProfile,
 	kameoRocketmqSendAliyunPush: rocketmqSendAliyunPush,
-	kameoRocketmqSendChangeCreator: rocketmqSendChangeCreator,
+	kameoRocketmqSendChangeRole: rocketmqSendChangeRole,
 });

@@ -233,22 +233,15 @@ function changeCreatorRole(userData) {
 	const account = Meteor.users.findOne({ _id: userData._id });
 	const roles = account?.roles ?? [];
 	const userDataRoles = userData?.roles ?? [];
-	const isCreatorUpdate = roles.includes('creator') !== userDataRoles.includes('creator');
+	const diffCreatorRole = roles.includes('creator') !== userDataRoles.includes('creator');
+	const diffInfluencerRole = roles.includes('influencer') !== userDataRoles.includes('influencer');
 
-	if (isCreatorUpdate) {
-		if (!account?.customFields?.defaultChannel) {
+	if (diffCreatorRole || diffInfluencerRole) {
+		if (userDataRoles.includes('creator') && !account?.customFields?.defaultChannel) {
 			const room = createRoom('c', userData._id, account.username, [], false, {});
 			saveCustomFields(userData._id, { ...userData.customFields, defaultChannel: room.rid ?? '' });
-			Meteor.call('kameoRocketmqSendChangeCreator', userData._id, { type: 'add', userId: userData._id });
-		} else {
-			if (userDataRoles.includes('creator')) {
-				Meteor.call('kameoRocketmqSendChangeCreator', userData._id, { type: 'add', userId: userData._id });
-			}
-
-			if (roles.includes('creator')) {
-				Meteor.call('kameoRocketmqSendChangeCreator', userData._id, { type: 'remove', userId: userData._id });
-			}
 		}
+		Meteor.call('kameoRocketmqSendChangeRole', userData._id, { userId: userData._id, roles: userDataRoles });
 	}
 }
 
