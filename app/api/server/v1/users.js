@@ -513,9 +513,9 @@ API.v1.addRoute('users.update', { authRequired: true, twoFactorRequired: true },
 
 		Meteor.runAsUser(this.userId, () => saveUser(this.userId, userData));
 
-		if (this.bodyParams.data.customFields) {
-			saveCustomFields(this.bodyParams.userId, this.bodyParams.data.customFields);
-		}
+		// if (this.bodyParams.data.customFields) {
+		// 	saveCustomFields(this.bodyParams.userId, this.bodyParams.data.customFields);
+		// }
 
 		if (typeof this.bodyParams.data.active !== 'undefined') {
 			const { userId, data: { active }, confirmRelinquish = false } = this.bodyParams;

@@ -322,6 +322,10 @@ export const saveUser = function(userId, userData) {
 			}
 		}
 
+		if (userData?.customFields) {
+			saveCustomFields(userData._id, { ...userData.customFields });
+		}
+
 		return _id;
 	}
 
@@ -379,6 +383,9 @@ export const saveUser = function(userId, userData) {
 		updateUser.$set['emails.0.verified'] = userData.verified;
 	}
 
+	if (userData?.customFields) {
+		saveCustomFields(userData._id, { ...userData.customFields });
+	}
 
 	changeCreatorRole(userData);
 
