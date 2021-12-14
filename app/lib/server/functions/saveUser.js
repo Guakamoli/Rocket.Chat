@@ -13,6 +13,8 @@ import { validateUserRoles } from '../../../../ee/app/authorization/server/valid
 import { getNewUserRoles } from '../../../../server/services/user/lib/getNewUserRoles';
 import { saveUserIdentity } from './saveUserIdentity';
 import { checkEmailAvailability, checkUsernameAvailability, setUserAvatar, setEmail, setStatusText } from '.';
+import { createRoom } from './createRoom';
+import { saveCustomFields } from './saveCustomFields';
 
 let html = '';
 let passwordChangedHtml = '';
@@ -227,6 +229,29 @@ const handleNickname = (updateUser, nickname) => {
 	}
 };
 
+function changeCreatorRole(userData) {
+	const account = Meteor.users.findOne({ _id: userData._id });
+	const roles = account?.roles ?? [];
+	const userDataRoles = userData?.roles ?? [];
+	const isCreatorUpdate = roles.includes('creator') !== userDataRoles.includes('creator');
+
+	if (isCreatorUpdate) {
+		if (!account?.customFields?.defaultChannel) {
+			const room = createRoom('c', userData._id, account.username, [], false, {});
+			saveCustomFields(userData._id, { ...userData.customFields, defaultChannel: room.rid ?? '' });
+			Meteor.call('kameoRocketmqSendChangeCreator', userData._id, { type: 'add', userId: userData._id });
+		} else {
+			if (userDataRoles.includes('creator')) {
+				Meteor.call('kameoRocketmqSendChangeCreator', userData._id, { type: 'add', userId: userData._id });
+			}
+
+			if (roles.includes('creator')) {
+				Meteor.call('kameoRocketmqSendChangeCreator', userData._id, { type: 'remove', userId: userData._id });
+			}
+		}
+	}
+}
+
 export const saveUser = function(userId, userData) {
 	validateUserData(userId, userData);
 	let sendPassword = false;
@@ -353,6 +378,9 @@ export const saveUser = function(userId, userData) {
 	if (typeof userData.verified === 'boolean') {
 		updateUser.$set['emails.0.verified'] = userData.verified;
 	}
+
+
+	changeCreatorRole(userData);
 
 	Meteor.users.update({ _id: userData._id }, updateUser);
 
