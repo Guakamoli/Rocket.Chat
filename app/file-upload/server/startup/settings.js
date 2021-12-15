@@ -138,22 +138,7 @@ settings.addGroup('FileUpload', function () {
 				value: 'AliyunOSS',
 			},
 		});
-		this.add('FileUpload_AliOSS_Video_AccessKeyId', '', {
-			type: 'string',
-			enableQuery: {
-				_id: 'FileUpload_Storage_Type',
-				value: 'AliyunOSS',
-			},
-			secret: true,
-		});
-		this.add('FileUpload_AliOSS_Video_AccessKeySecret', '', {
-			type: 'string',
-			enableQuery: {
-				_id: 'FileUpload_Storage_Type',
-				value: 'AliyunOSS',
-			},
-			secret: true,
-		});
+
 		this.add('FileUpload_AliOSS_Video_Region', '', {
 			type: 'string',
 			enableQuery: {
@@ -168,7 +153,27 @@ settings.addGroup('FileUpload', function () {
 				value: 'AliyunOSS',
 			},
 		});
-
+		this.add('FileUpload_AliOSS_Video_WorkFlowId', '', {
+			type: 'string',
+			enableQuery: {
+				_id: 'FileUpload_Storage_Type',
+				value: 'AliyunOSS',
+			},
+		});
+		this.add('FileUpload_AliOSS_Video_CateIdVideo', '', {
+			type: 'string',
+			enableQuery: {
+				_id: 'FileUpload_Storage_Type',
+				value: 'AliyunOSS',
+			},
+		});
+		this.add('FileUpload_AliOSS_Video_CateIdCover', '', {
+			type: 'string',
+			enableQuery: {
+				_id: 'FileUpload_Storage_Type',
+				value: 'AliyunOSS',
+			},
+		});
 	});
 
 	this.section('Amazon S3', function () {

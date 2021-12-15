@@ -6,7 +6,6 @@ import _ from 'underscore';
 import { settings } from '../../../settings';
 import { FileUploadClass, FileUpload } from '../lib/FileUpload';
 import '../../ufs/AliyunOSS/server.js';
-
 const get = function (file, req, res) {
 	const forceDownload = typeof req.query.download !== 'undefined';
 
@@ -47,12 +46,7 @@ const AliyunOSSUploads = new FileUploadClass({
 	copy,
 	// store setted bellow
 });
-const AliyunOSSVideoUploads = new FileUploadClass({
-	name: 'AliyunOSS:VideoUploads',
-	get,
-	copy,
-	// store setted bellow
-});
+
 const AliyunOSSAvatars = new FileUploadClass({
 	name: 'AliyunOSS:Avatars',
 	get,
@@ -68,19 +62,26 @@ const AliyunOSSUserDataFiles = new FileUploadClass({
 });
 
 const configure = _.debounce(function () {
-	const keys = ['Bucket', 'AccessKeyId', 'AccessKeySecret', 'Region', 'Endpoint', 'Domain']
+	const specialKeys = ['AccessKeyId', 'AccessKeySecret'];
+	const keys = ['Bucket', 'AccessKeyId', 'AccessKeySecret', 'Region', 'Endpoint', 'Domain',]
+	const videoKeys = ['WorkFlowId', 'CateIdVideo', 'CateIdCover']
 	const config = {
 		commonConfig: {},
 		videoConfig: {}
 	}
 	for (const key of keys) {
-		config.commonConfig[key] = settings.get(`FileUpload_AliOSS_${key}`);
-		config.videoConfig[key] = settings.get(`FileUpload_AliOSS_Video_${key}`);
+		const lowKey = key.replace(/^\S/, s => s.toLowerCase())
+		config.commonConfig[lowKey] = settings.get(`FileUpload_AliOSS_${key}`);
+		if (specialKeys.indexOf(key) > -1) {
+			config.videoConfig[lowKey] = settings.get(`FileUpload_AliOSS_${key}`);
+		} else {
+			config.videoConfig[lowKey] = settings.get(`FileUpload_AliOSS_Video_${key}`);
+		}
 	}
-	if (!config.Bucket) {
-		return;
+	for (const key of videoKeys) {
+		const lowKey = key.replace(/^\S/, s => s.toLowerCase())
+		config.videoConfig[lowKey] = settings.get(`FileUpload_AliOSS_Video_${key}`);
 	}
-	AliyunOSSVideoUploads.store = FileUpload.configureUploadsStore('AliyunOSS', AliyunOSSVideoUploads.name, config);
 	AliyunOSSUploads.store = FileUpload.configureUploadsStore('AliyunOSS', AliyunOSSUploads.name, config);
 	AliyunOSSAvatars.store = FileUpload.configureUploadsStore('AliyunOSS', AliyunOSSAvatars.name, config);
 	AliyunOSSUserDataFiles.store = FileUpload.configureUploadsStore('AliyunOSS', AliyunOSSUserDataFiles.name, config);

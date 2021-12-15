@@ -6,11 +6,11 @@ import OSS from "ali-oss";
 import { md5 } from "./random.js";
 import { settings } from '../../settings';
 
-const config = {}
+let config = {}
 const { default: vod20170321 } = $vod20170321;
 
 export class OSSClient {
-  static ACCELERATE_ENDPOINT = config.OSS_ACCELERATE_ENDPOINT;
+  static ACCELERATE_ENDPOINT = config.OSS_ENDPOINT;
 
   /**
    * @param {String} accessKeyId -
@@ -416,19 +416,25 @@ export async function ossGetPlayList(videoId) {
     }, {});
 }
 const configure = _.debounce(function () {
-  const keys = ['Bucket', 'AccessKeyId', 'AccessKeySecret', 'Region', 'Endpoint', 'Domain']
-  const config = {
-    commonConfig: {},
-    videoConfig: {}
-  }
+  const specialKeys = ['AccessKeyId', 'AccessKeySecret'];
+
+  const keys = ['Bucket', 'AccessKeyId', 'AccessKeySecret', 'Region', 'Endpoint',
+    'Domain', 'WorkFlowId', 'CateIdVideo', 'CateIdCover']
   for (const key of keys) {
-    config.commonConfig[key] = settings.get(`FileUpload_AliOSS_${key}`);
-    config.videoConfig[key] = settings.get(`FileUpload_AliOSS_Video_${key}`);
-  }
-  if (!config.Bucket) {
-    return;
+    let ossKey = key.replace(/^\S/, s => s.toLowerCase())
+    ossKey = ossKey.replace(/([A-Z])/g, '_$1').trim().toUpperCase()
+    const ossValue = settings.get(`FileUpload_AliOSS_${key}`);
+    const vodValue = settings.get(`FileUpload_AliOSS_Video_${key}`);
+    config[`OSS_${ossKey}`] = ossValue
+    if (specialKeys.indexOf(key) > -1) {
+      config[`VOD_${ossKey}`] = ossValue
+    } else {
+      config[`VOD_${ossKey}`] = vodValue
+    }
   }
 
+  OSSClient.ACCELERATE_ENDPOINT = config.OSS_ENDPOINT
+  VodClient.VOD_ENDPOINT = config.VOD_ENDPOINT
 }, 500);
 
 settings.get(/^FileUpload_AliOSS_/, configure);

@@ -4,12 +4,7 @@ import { check } from 'meteor/check';
 import { UploadFS } from 'meteor/jalik:ufs';
 import { Random } from 'meteor/random';
 import _ from 'underscore';
-import path from "path";
-import OpenApi from "@alicloud/openapi-client";
-import $vod20170321 from "@alicloud/vod20170321";
-import * as $tea from "@alicloud/tea-typescript";
-import OSS from "ali-oss";
-import { md5 } from "../../../utils/lib/random";
+import { OSSClient, VodClient } from "../../../utils/lib/oss.js"
 
 /**
  * AliyunOss store
@@ -35,9 +30,8 @@ export class AliyunOSSStore extends UploadFS.Store {
 		super(options);
 
 		const classOptions = options;
-
-		const oss = new OSS(options.commonConfig);
-		const vod = new $vod20170321(options.videoConfig);
+		const oss = new OSSClient.init(options.commonConfig);
+		// const vod = new VodClient(options.videoConfig);
 		options.getPath = options.getPath || function (file) {
 			return file._id;
 		};
