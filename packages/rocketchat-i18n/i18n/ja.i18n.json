@@ -3196,7 +3196,9 @@
   "Reset": "リセット",
   "Reset_Connection": "リセット接続",
   "Reset_E2E_Key": "E2Eキーをリセットする",
-  "Reset_password": "パスワードをリセットする",
+  "Reset_password": "パスワードを忘れた",
+  "Reset_password_btn": "アカウントのパスワードをリセットします",
+  "Reset_password_success": "パスワードのリセットが成功しましたので、再登録してください",
   "Reset_section_settings": "セクション設定のリセット",
   "Reset_TOTP": "TOTPをリセット",
   "reset-other-user-e2e-key": "他のユーザーE2Eキーをリセットする",
@@ -4244,6 +4246,7 @@
   "Register_has_account": "すでにアカウントをお持ちですか？",
   "Register_go_login": "クリックしてログイン",
   "Login_has_not_account": "まだアカウントをお持ちでない？",
-  "Login_go_register": "クリックしてサインアップ"
+  "Login_go_register": "クリックしてサインアップ",
+  "Register_passwordLengLimit6": "パスワードの最短長さは6です"
 
 }

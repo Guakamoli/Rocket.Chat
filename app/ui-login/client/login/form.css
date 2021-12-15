@@ -40,3 +40,9 @@ input {
 .active {
 	background-color: #651fff !important;
 }
+
+.input-error {
+	text-align: left !important;
+
+	color: red !important;
+}
