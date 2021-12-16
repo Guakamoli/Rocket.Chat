@@ -8,18 +8,21 @@ import { prependReplies } from '../../../ui-utils';
 import { imperativeModal } from '../../../../client/lib/imperativeModal';
 import FileUploadModal from '../../../../client/components/modals/FileUploadModal';
 
-export const uploadFileWithMessage = async (rid, tmid, { description, fileName, msg, file, files }) => {
+export const uploadFileWithMessage = async (
+	rid,
+	tmid,
+	{ description, fileName, msg, file, files },
+) => {
 	const data = new FormData();
 	description && data.append('description', description);
 	msg && data.append('msg', msg);
 	tmid && data.append('tmid', tmid);
 	for (const [index, item] of files.entries()) {
-		console.log("开阿卡")
+		console.log('开阿卡');
 
-		data.append(`file[${index}]`, item.file, item.fileName);
-
+		data.append(`file[${ index }]`, item.file, item.fileName);
 	}
-	console.log(data)
+	console.log(data);
 	// data.append(`file`, file.file, fileName);
 
 	const uploads = Session.get('uploading') || [];
@@ -33,52 +36,72 @@ export const uploadFileWithMessage = async (rid, tmid, { description, fileName, 
 	uploads.push(upload);
 	Session.set('uploading', uploads);
 
-	const { xhr, promise } = APIClient.upload(`v1/rooms.uploads/${rid}`, {}, data, {
-		progress(progress) {
-			const uploads = Session.get('uploading') || [];
+	const { xhr, promise } = APIClient.upload(
+		`v1/rooms.uploads/${ rid }`,
+		{},
+		data,
+		{
+			progress(progress) {
+				const uploads = Session.get('uploading') || [];
 
-			if (progress === 100) {
-				return;
-			}
-			uploads.filter((u) => u.id === upload.id).forEach((u) => {
-				u.percentage = Math.round(progress) || 0;
-			});
-			Session.set('uploading', uploads);
+				if (progress === 100) {
+					return;
+				}
+				uploads
+					.filter((u) => u.id === upload.id)
+					.forEach((u) => {
+						u.percentage = Math.round(progress) || 0;
+					});
+				Session.set('uploading', uploads);
+			},
+			error(error) {
+				const uploads = Session.get('uploading') || [];
+				uploads
+					.filter((u) => u.id === upload.id)
+					.forEach((u) => {
+						u.error = error.message;
+						u.percentage = 0;
+					});
+				Session.set('uploading', uploads);
+			},
 		},
-		error(error) {
-			const uploads = Session.get('uploading') || [];
-			uploads.filter((u) => u.id === upload.id).forEach((u) => {
-				u.error = error.message;
-				u.percentage = 0;
-			});
-			Session.set('uploading', uploads);
-		},
-	});
+	);
 
 	Tracker.autorun((computation) => {
-		const isCanceling = Session.get(`uploading-cancel-${upload.id}`);
+		const isCanceling = Session.get(`uploading-cancel-${ upload.id }`);
 		if (!isCanceling) {
 			return;
 		}
 		computation.stop();
-		Session.delete(`uploading-cancel-${upload.id}`);
+		Session.delete(`uploading-cancel-${ upload.id }`);
 
 		xhr.abort();
 
 		const uploads = Session.get('uploading') || {};
-		Session.set('uploading', uploads.filter((u) => u.id !== upload.id));
+		Session.set(
+			'uploading',
+			uploads.filter((u) => u.id !== upload.id),
+		);
 	});
 
 	try {
 		await promise;
 		const uploads = Session.get('uploading') || [];
-		return Session.set('uploading', uploads.filter((u) => u.id !== upload.id));
+		return Session.set(
+			'uploading',
+			uploads.filter((u) => u.id !== upload.id),
+		);
 	} catch (error) {
 		const uploads = Session.get('uploading') || [];
-		uploads.filter((u) => u.id === upload.id).forEach((u) => {
-			u.error = (error.xhr && error.xhr.responseJSON && error.xhr.responseJSON.error) || error.message;
-			u.percentage = 0;
-		});
+		uploads
+			.filter((u) => u.id === upload.id)
+			.forEach((u) => {
+				u.error =					(error.xhr
+						&& error.xhr.responseJSON
+						&& error.xhr.responseJSON.error)
+					|| error.message;
+				u.percentage = 0;
+			});
 		Session.set('uploading', uploads);
 	}
 };
@@ -117,7 +140,7 @@ export const fileUpload = async (files, input, { rid, tmid }) => {
 					uploadNextFile();
 				},
 				onSubmit: (fileName, description) => {
-					console.log("点下了")
+					console.log('点下了');
 					uploadFileWithMessage(rid, tmid, {
 						description,
 						fileName,
@@ -128,7 +151,8 @@ export const fileUpload = async (files, input, { rid, tmid }) => {
 					imperativeModal.close();
 					// uploadNextFile();
 				},
-				isValidContentType: file.file.type && fileUploadIsValidContentType(file.file.type),
+				isValidContentType:
+					file.file.type && fileUploadIsValidContentType(file.file.type),
 			},
 		});
 	};

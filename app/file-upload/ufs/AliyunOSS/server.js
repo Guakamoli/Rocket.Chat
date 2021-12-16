@@ -4,7 +4,8 @@ import { check } from 'meteor/check';
 import { UploadFS } from 'meteor/jalik:ufs';
 import { Random } from 'meteor/random';
 import _ from 'underscore';
-import { OSSClient, VodClient } from "../../../utils/lib/oss.js"
+
+import { OSSClient, VodClient } from '../../../utils/lib/oss.js';
 
 /**
  * AliyunOss store
@@ -20,33 +21,39 @@ export class AliyunOSSStore extends UploadFS.Store {
 		// options.region,
 		// options.sslEnabled // optional
 
-		options = _.extend({
-			httpOptions: {
-				timeout: 6000,
-				agent: false,
+		options = _.extend(
+			{
+				httpOptions: {
+					timeout: 6000,
+					agent: false,
+				},
 			},
-		}, options);
+			options,
+		);
 
 		super(options);
 
 		const classOptions = options;
 		const oss = new OSSClient.init(options.commonConfig);
 		// const vod = new VodClient(options.videoConfig);
-		options.getPath = options.getPath || function (file) {
-			return file._id;
-		};
+		options.getPath =			options.getPath
+			|| function(file) {
+				return file._id;
+			};
 
-		this.getPath = function (file) {
+		this.getPath = function(file) {
 			if (file.AliyunOSS) {
 				return file.AliyunOSS.path;
 			}
 		};
 
-		this.getRedirectURL = function (file, forceDownload = false, callback) {
+		this.getRedirectURL = function(file, forceDownload = false, callback) {
 			const params = {
 				Key: this.getPath(file),
 				Expires: classOptions.URLExpiryTimeSpan,
-				ResponseContentDisposition: `${forceDownload ? 'attachment' : 'inline'}; filename="${encodeURI(file.name)}"`,
+				ResponseContentDisposition: `${
+					forceDownload ? 'attachment' : 'inline'
+				}; filename="${ encodeURI(file.name) }"`,
 			};
 
 			return oss.getSignedUrl('getObject', params, callback);
@@ -58,7 +65,7 @@ export class AliyunOSSStore extends UploadFS.Store {
 		 * @param callback
 		 * @return {string}
 		 */
-		this.create = function (file, callback) {
+		this.create = function(file, callback) {
 			check(file, Object);
 
 			if (file._id == null) {
@@ -78,11 +85,11 @@ export class AliyunOSSStore extends UploadFS.Store {
 		 * @param fileId
 		 * @param callback
 		 */
-		this.delete = function (fileId, callback) {
+		this.delete = function(fileId, callback) {
 			const file = this.getCollection().findOne({ _id: fileId });
 			const params = {
 				name: this.getPath(file),
-				timeout: 30
+				timeout: 30,
 			};
 
 			oss.delete(params, (err, data) => {
@@ -101,16 +108,16 @@ export class AliyunOSSStore extends UploadFS.Store {
 		 * @param options
 		 * @return {*}
 		 */
-		this.getReadStream = function (fileId, file, options = {}) {
+		this.getReadStream = function(fileId, file, options = {}) {
 			const params = {
 				name: this.getPath(file),
 			};
 
 			if (options.start && options.end) {
-				params.Range = `${options.start} - ${options.end}`;
+				params.Range = `${ options.start } - ${ options.end }`;
 			}
 
-			return oss.getStream(params)
+			return oss.getStream(params);
 		};
 
 		/**
@@ -120,7 +127,7 @@ export class AliyunOSSStore extends UploadFS.Store {
 		 * @param options
 		 * @return {*}
 		 */
-		this.getWriteStream = function (fileId, file/* , options*/) {
+		this.getWriteStream = function(fileId, file /* , options*/) {
 			const writeStream = new stream.PassThrough();
 			writeStream.length = file.size;
 
@@ -133,18 +140,20 @@ export class AliyunOSSStore extends UploadFS.Store {
 				}
 			});
 
-			oss.putStream({
-				name: this.getPath(file),
-				stream: writeStream,
-				mime: file.type,
+			oss.putStream(
+				{
+					name: this.getPath(file),
+					stream: writeStream,
+					mime: file.type,
+				},
+				(error) => {
+					if (error) {
+						console.error(error);
+					}
 
-			}, (error) => {
-				if (error) {
-					console.error(error);
-				}
-
-				writeStream.emit('real_finish');
-			});
+					writeStream.emit('real_finish');
+				},
+			);
 
 			return writeStream;
 		};

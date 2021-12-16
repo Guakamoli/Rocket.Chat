@@ -38,13 +38,12 @@ const Future = Npm.require('fibers/future');
 
 if (Meteor.isServer) {
 	Meteor.methods({
-
 		/**
-	 * Completes the file transfer
-	 * @param fileId
-	 * @param storeName
-	 * @param token
-	 */
+		 * Completes the file transfer
+		 * @param fileId
+		 * @param storeName
+		 * @param token
+		 */
 		ufsComplete(fileId, storeName, token) {
 			check(fileId, String);
 			check(storeName, String);
@@ -63,9 +62,12 @@ if (Meteor.isServer) {
 			const fut = new Future();
 			const tmpFile = UploadFS.getTempFilePath(fileId);
 
-			const removeTempFile = function () {
-				fs.unlink(tmpFile, function (err) {
-					err && console.error(`ufs: cannot delete temp file "${tmpFile}" (${err.message})`);
+			const removeTempFile = function() {
+				fs.unlink(tmpFile, function(err) {
+					err
+						&& console.error(
+							`ufs: cannot delete temp file "${ tmpFile }" (${ err.message })`,
+						);
 				});
 			};
 
@@ -86,25 +88,32 @@ if (Meteor.isServer) {
 				});
 
 				// Clean upload if error occurs
-				rs.on('error', Meteor.bindEnvironment(function (err) {
-					console.error(err);
-					store.getCollection().remove({ _id: fileId });
-					fut.throw(err);
-				}));
+				rs.on(
+					'error',
+					Meteor.bindEnvironment(function(err) {
+						console.error(err);
+						store.getCollection().remove({ _id: fileId });
+						fut.throw(err);
+					}),
+				);
 
 				// Save file in the store
-				store.write(rs, fileId, Meteor.bindEnvironment(function (err, file) {
-					removeTempFile();
-					if (err) {
-						fut.throw(err);
-					} else {
-						// File has been fully uploaded
-						// so we don't need to keep the token anymore.
-						// Also this ensure that the file cannot be modified with extra chunks later.
-						Tokens.remove({ fileId });
-						fut.return(file);
-					}
-				}));
+				store.write(
+					rs,
+					fileId,
+					Meteor.bindEnvironment(function(err, file) {
+						removeTempFile();
+						if (err) {
+							fut.throw(err);
+						} else {
+							// File has been fully uploaded
+							// so we don't need to keep the token anymore.
+							// Also this ensure that the file cannot be modified with extra chunks later.
+							Tokens.remove({ fileId });
+							fut.return(file);
+						}
+					}),
+				);
 
 				// catch will not work if fut.wait() is outside try/catch
 				return fut.wait();
@@ -117,10 +126,10 @@ if (Meteor.isServer) {
 		},
 
 		/**
-	 * Creates the file and returns the file upload token
-	 * @param file
-	 * @return {{fileId: string, token: *, url: *}}
-	 */
+		 * Creates the file and returns the file upload token
+		 * @param file
+		 * @return {{fileId: string, token: *, url: *}}
+		 */
 		ufsCreate(file) {
 			check(file, Object);
 
@@ -139,10 +148,13 @@ if (Meteor.isServer) {
 			// Set default info
 			file.complete = false;
 			file.uploading = false;
-			file.extension = file.name && file.name.substr((~-file.name.lastIndexOf('.') >>> 0) + 2).toLowerCase();
+			file.extension =				file.name
+				&& file.name
+					.substr((~-file.name.lastIndexOf('.') >>> 0) + 2)
+					.toLowerCase();
 			// Assign file MIME type based on the extension
 			if (file.extension && !file.type) {
-				file.type = UploadFS.getMimeType(file.extension) || 'application/octet-stream';
+				file.type =					UploadFS.getMimeType(file.extension) || 'application/octet-stream';
 			}
 			file.progress = 0;
 			file.size = parseInt(file.size) || 0;
@@ -157,7 +169,7 @@ if (Meteor.isServer) {
 			// Create the file
 			const fileId = store.create(file);
 			const token = store.createToken(fileId);
-			const uploadUrl = store.getURL(`${fileId}?token=${token}`);
+			const uploadUrl = store.getURL(`${ fileId }?token=${ token }`);
 
 			return {
 				fileId,
@@ -167,12 +179,12 @@ if (Meteor.isServer) {
 		},
 
 		/**
-	 * Deletes a file
-	 * @param fileId
-	 * @param storeName
-	 * @param token
-	 * @returns {*}
-	 */
+		 * Deletes a file
+		 * @param fileId
+		 * @param storeName
+		 * @param token
+		 * @returns {*}
+		 */
 		ufsDelete(fileId, storeName, token) {
 			check(fileId, String);
 			check(storeName, String);
@@ -195,12 +207,12 @@ if (Meteor.isServer) {
 		},
 
 		/**
-	 * Imports a file from the URL
-	 * @param url
-	 * @param file
-	 * @param storeName
-	 * @return {*}
-	 */
+		 * Imports a file from the URL
+		 * @param url
+		 * @param file
+		 * @param storeName
+		 * @return {*}
+		 */
 		ufsImportURL(url, file, storeName) {
 			check(url, String);
 			check(file, Object);
@@ -236,11 +248,14 @@ if (Meteor.isServer) {
 				file.name = url.replace(/\?.*$/, '').split('/').pop();
 			}
 			if (file.name && !file.extension) {
-				file.extension = file.name && file.name.substr((~-file.name.lastIndexOf('.') >>> 0) + 2).toLowerCase();
+				file.extension =					file.name
+					&& file.name
+						.substr((~-file.name.lastIndexOf('.') >>> 0) + 2)
+						.toLowerCase();
 			}
 			if (file.extension && !file.type) {
 				// Assign file MIME type based on the extension
-				file.type = UploadFS.getMimeType(file.extension) || 'application/octet-stream';
+				file.type =					UploadFS.getMimeType(file.extension) || 'application/octet-stream';
 			}
 			// Check if file is valid
 			if (store.getFilter() instanceof Filter) {
@@ -248,7 +263,9 @@ if (Meteor.isServer) {
 			}
 
 			if (file.originalUrl) {
-				console.warn('ufs: The "originalUrl" attribute is automatically set when importing a file from a URL');
+				console.warn(
+					'ufs: The "originalUrl" attribute is automatically set when importing a file from a URL',
+				);
 			}
 
 			// Add original URL
@@ -273,28 +290,33 @@ if (Meteor.isServer) {
 			this.unblock();
 
 			// Download file
-			proto.get(url, Meteor.bindEnvironment(function (res) {
-				// Save the file in the store
-				store.write(res, file._id, function (err, file) {
-					if (err) {
-						fut.throw(err);
-					} else {
-						fut.return(file);
-					}
+			proto
+				.get(
+					url,
+					Meteor.bindEnvironment(function(res) {
+						// Save the file in the store
+						store.write(res, file._id, function(err, file) {
+							if (err) {
+								fut.throw(err);
+							} else {
+								fut.return(file);
+							}
+						});
+					}),
+				)
+				.on('error', function(err) {
+					fut.throw(err);
 				});
-			})).on('error', function (err) {
-				fut.throw(err);
-			});
 			return fut.wait();
 		},
 
 		/**
-	 * Marks the file uploading as stopped
-	 * @param fileId
-	 * @param storeName
-	 * @param token
-	 * @returns {*}
-	 */
+		 * Marks the file uploading as stopped
+		 * @param fileId
+		 * @param storeName
+		 * @param token
+		 * @returns {*}
+		 */
 		ufsStop(fileId, storeName, token) {
 			check(fileId, String);
 			check(storeName, String);
@@ -306,7 +328,9 @@ if (Meteor.isServer) {
 				throw new Meteor.Error('invalid-store', 'Store not found');
 			}
 			// Check file
-			const file = store.getCollection().find({ _id: fileId }, { fields: { userId: 1 } });
+			const file = store
+				.getCollection()
+				.find({ _id: fileId }, { fields: { userId: 1 } });
 			if (!file) {
 				throw new Meteor.Error('invalid-file', 'File not found');
 			}
@@ -315,9 +339,12 @@ if (Meteor.isServer) {
 				throw new Meteor.Error('invalid-token', 'Token is not valid');
 			}
 
-			return store.getCollection().update({ _id: fileId }, {
-				$set: { uploading: false },
-			});
+			return store.getCollection().update(
+				{ _id: fileId },
+				{
+					$set: { uploading: false },
+				},
+			);
 		},
 	});
 }

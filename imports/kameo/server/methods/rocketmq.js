@@ -37,9 +37,23 @@ function genRocketmqMsgProps(key, props) {
 	return msgProps;
 }
 
-async function rocketmqSend(topicId, body, tag, messageKey = '', props = {}, retry = 3) {
+async function rocketmqSend(
+	topicId,
+	body,
+	tag,
+	messageKey = '',
+	props = {},
+	retry = 3,
+) {
 	return;
-	logger.debug('Send', { topicId, body, tag, messageKey, props, retry: retry - 1 });
+	logger.debug('Send', {
+		topicId,
+		body,
+		tag,
+		messageKey,
+		props,
+		retry: retry - 1,
+	});
 	const producer = mqClient.getProducer(instanceId, topicId);
 	let msgProps = new MessageProperties();
 	if (props) {
@@ -51,8 +65,24 @@ async function rocketmqSend(topicId, body, tag, messageKey = '', props = {}, ret
 	} catch (error) {
 		if (retry > 0) {
 			// 消息发送失败，需要进行重试处理，可重新发送这条消息或持久化这条数据进行补偿处理。
-			logger.debug('Retry', { error, topicId, body, tag, messageKey, props, retry: retry - 1 });
-			Meteor.call('kameoRocketmqSend', topicId, body, tag, messageKey, props, retry - 1);
+			logger.debug('Retry', {
+				error,
+				topicId,
+				body,
+				tag,
+				messageKey,
+				props,
+				retry: retry - 1,
+			});
+			Meteor.call(
+				'kameoRocketmqSend',
+				topicId,
+				body,
+				tag,
+				messageKey,
+				props,
+				retry - 1,
+			);
 		}
 	}
 }
@@ -63,11 +93,22 @@ async function rocketmqSendLoginUser(userId) {
 		id: userId,
 	};
 
-	await rocketmqSend(topicIds.login, JSON.stringify({ ...user }), 'mqLoginUser', 'LoginUser', props);
+	await rocketmqSend(
+		topicIds.login,
+		JSON.stringify({ ...user }),
+		'mqLoginUser',
+		'LoginUser',
+		props,
+	);
 }
 
 async function rocketmqSendPostMessage(message) {
-	await rocketmqSend(topicIds.postMessage, JSON.stringify({ ...message }), 'mqPostMessage', 'PostMessage');
+	await rocketmqSend(
+		topicIds.postMessage,
+		JSON.stringify({ ...message }),
+		'mqPostMessage',
+		'PostMessage',
+	);
 }
 
 async function rocketmqSendNotification(notification) {
@@ -75,7 +116,13 @@ async function rocketmqSendNotification(notification) {
 		id: notification.postId,
 	};
 
-	await rocketmqSend(topicIds.notification, JSON.stringify({ ...notification }), 'mqNotification', 'Notification', props);
+	await rocketmqSend(
+		topicIds.notification,
+		JSON.stringify({ ...notification }),
+		'mqNotification',
+		'Notification',
+		props,
+	);
 }
 
 async function rocketmqSendUpdateProfile(userId, profile) {
@@ -84,10 +131,16 @@ async function rocketmqSendUpdateProfile(userId, profile) {
 	};
 
 	if (profile.username) {
-		profile.picture = `${process.env.ROOT_URL}/avatar/${profile.username}#`;
+		profile.picture = `${ process.env.ROOT_URL }/avatar/${ profile.username }#`;
 	}
 
-	await rocketmqSend(topicIds.account, JSON.stringify({ ...profile }), 'mqUpdateAccount', 'Account', props);
+	await rocketmqSend(
+		topicIds.account,
+		JSON.stringify({ ...profile }),
+		'mqUpdateAccount',
+		'Account',
+		props,
+	);
 }
 
 async function rocketmqSendAliyunPush(userId, payload, tag = 'notification') {
@@ -102,11 +155,18 @@ async function rocketmqSendAliyunPush(userId, payload, tag = 'notification') {
 
 	// 不存在 targetValue 字段，不发送消息
 	if (!payload.targetValue) {
-		throw new Meteor.Error('no-target-value', 'no target value', { ...payload });
+		throw new Meteor.Error('no-target-value', 'no target value', {
+			...payload,
+		});
 	}
 
 	logger.debug('SendAliyunPush', { user, payload });
-	await rocketmqSend(topicIds.aliyunPush, JSON.stringify({ ...payload }), tag, 'AliyunPush');
+	await rocketmqSend(
+		topicIds.aliyunPush,
+		JSON.stringify({ ...payload }),
+		tag,
+		'AliyunPush',
+	);
 }
 
 Meteor.methods({

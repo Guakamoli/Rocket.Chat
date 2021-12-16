@@ -1,6 +1,6 @@
 import { settings } from '../../../settings';
 
-settings.addGroup('FileUpload', function () {
+settings.addGroup('FileUpload', function() {
 	this.add('FileUpload_Enabled', true, {
 		type: 'boolean',
 		public: true,
@@ -56,28 +56,35 @@ settings.addGroup('FileUpload', function () {
 
 	this.add('FileUpload_Storage_Type', 'GridFS', {
 		type: 'select',
-		values: [{
-			key: 'GridFS',
-			i18nLabel: 'GridFS',
-		}, {
-			key: 'AmazonS3',
-			i18nLabel: 'AmazonS3',
-		}, {
-			key: 'GoogleCloudStorage',
-			i18nLabel: 'GoogleCloudStorage',
-		}, {
-			key: 'Webdav',
-			i18nLabel: 'WebDAV',
-		}, {
-			key: 'FileSystem',
-			i18nLabel: 'FileSystem',
-		}, {
-			key: 'AliyunOSS',
-			i18nLabel: 'AliyunOSS',
-		}],
+		values: [
+			{
+				key: 'GridFS',
+				i18nLabel: 'GridFS',
+			},
+			{
+				key: 'AmazonS3',
+				i18nLabel: 'AmazonS3',
+			},
+			{
+				key: 'GoogleCloudStorage',
+				i18nLabel: 'GoogleCloudStorage',
+			},
+			{
+				key: 'Webdav',
+				i18nLabel: 'WebDAV',
+			},
+			{
+				key: 'FileSystem',
+				i18nLabel: 'FileSystem',
+			},
+			{
+				key: 'AliyunOSS',
+				i18nLabel: 'AliyunOSS',
+			},
+		],
 		public: true,
 	});
-	this.section('AliyunOSS', function () {
+	this.section('AliyunOSS', function() {
 		this.add('FileUpload_AliOSS_Bucket', '', {
 			type: 'string',
 			enableQuery: {
@@ -122,7 +129,6 @@ settings.addGroup('FileUpload', function () {
 				value: 'AliyunOSS',
 			},
 		});
-
 
 		this.add('FileUpload_AliOSS_Video_Bucket', '', {
 			type: 'string',
@@ -176,7 +182,7 @@ settings.addGroup('FileUpload', function () {
 		});
 	});
 
-	this.section('Amazon S3', function () {
+	this.section('Amazon S3', function() {
 		this.add('FileUpload_S3_Bucket', '', {
 			type: 'string',
 			enableQuery: {
@@ -227,7 +233,8 @@ settings.addGroup('FileUpload', function () {
 				_id: 'FileUpload_Storage_Type',
 				value: 'AmazonS3',
 			},
-			i18nDescription: 'Override_URL_to_which_files_are_uploaded_This_url_also_used_for_downloads_unless_a_CDN_is_given.',
+			i18nDescription:
+				'Override_URL_to_which_files_are_uploaded_This_url_also_used_for_downloads_unless_a_CDN_is_given.',
 			secret: true,
 		});
 		this.add('FileUpload_S3_SignatureVersion', 'v4', {
@@ -268,7 +275,7 @@ settings.addGroup('FileUpload', function () {
 		});
 	});
 
-	this.section('Google Cloud Storage', function () {
+	this.section('Google Cloud Storage', function() {
 		this.add('FileUpload_GoogleStorage_Bucket', '', {
 			type: 'string',
 			private: true,
@@ -313,7 +320,7 @@ settings.addGroup('FileUpload', function () {
 		});
 	});
 
-	this.section('File System', function () {
+	this.section('File System', function() {
 		this.add('FileUpload_FileSystemPath', '', {
 			type: 'string',
 			enableQuery: {
@@ -323,7 +330,7 @@ settings.addGroup('FileUpload', function () {
 		});
 	});
 
-	this.section('WebDAV', function () {
+	this.section('WebDAV', function() {
 		this.add('FileUpload_Webdav_Upload_Folder_Path', '', {
 			type: 'string',
 			enableQuery: {
