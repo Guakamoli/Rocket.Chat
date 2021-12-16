@@ -302,8 +302,11 @@ API.v1.addRoute('users.register', { authRequired: false }, {
 		// Register the user
 		const userId = Meteor.call('registerUser', this.bodyParams);
 
-		// Now set their username
-		Meteor.runAsUser(userId, () => Meteor.call('setUsername', this.bodyParams.username));
+		if (settings.get('Accounts_AllowUsernameChange')) {
+			// Now set their username
+			Meteor.runAsUser(userId, () => Meteor.call('setUsername', this.bodyParams.username));
+		}
+
 		const { fields } = this.parseJsonQuery();
 
 		return API.v1.success({ user: Users.findOneById(userId, { fields }) });
