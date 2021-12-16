@@ -10,7 +10,7 @@ import toastr from 'toastr';
 
 import { settings } from '../../../settings';
 import { callbacks } from '../../../callbacks';
-import { t, handleError } from '../../../utils';
+import { t, handleError, isEmail } from '../../../utils';
 
 Template.loginForm.helpers({
 	userName() {
@@ -106,7 +106,7 @@ Template.loginForm.events({
 		const state = instance.state.get();
 		if (formData) {
 			if (state === 'email-verification') {
-				Meteor.call('sendConfirmationEmail', s.trim(formData.email), () => {
+				Meteor.call('sendConfirmationEmail', s.trim(formData.email.toLocaleLowerCase()), () => {
 					instance.loading.set(false);
 					callbacks.run('userConfirmationEmailRequested');
 					toastr.success(t('We_have_sent_registration_email'));
@@ -116,7 +116,7 @@ Template.loginForm.events({
 				return;
 			}
 			if (state === 'forgot-password') {
-				Meteor.call('sendForgotPasswordEmail', s.trim(formData.email), (err) => {
+				Meteor.call('sendForgotPasswordEmail', s.trim(formData.email.toLocaleLowerCase()), (err) => {
 					if (err) {
 						handleError(err);
 						return instance.state.set('email-login');
@@ -129,6 +129,7 @@ Template.loginForm.events({
 				return;
 			}
 			if (state === 'register') {
+				formData.email = formData.email.toLocaleLowerCase();
 				formData.name = '';
 				formData.secretURL = FlowRouter.getParam('hash');
 				return Meteor.call('registerUser', formData, function(error) {
@@ -190,7 +191,7 @@ Template.loginForm.events({
 				});
 			}
 
-			return Meteor[loginMethod](s.trim(formData.email), formData.pass, function(error) {
+			return Meteor[loginMethod](s.trim(formData.email.toLocaleLowerCase()), formData.pass, function(error) {
 				instance.loading.set(false);
 				if (error != null) {
 					if (error.error === 'error-user-is-not-activated') {
@@ -275,28 +276,28 @@ Template.loginForm.events({
 	},
 	'keyup #email'(event) {
 		if (Template.instance().state.get() === 'email-login') {
-			if (/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]+\b/i.test(event.currentTarget.value) && $('#pass').val().length > 5) {
+			if (isEmail(event.currentTarget.value) && $('#pass').val().length > 5) {
 				$('.login').addClass('active');
 			} else {
 				$('.login').removeClass('active');
 			}
 		}
 		if (Template.instance().state.get() === 'register') {
-			if (/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]+\b/i.test(event.currentTarget.value) && $('#pass').val().length > 5 && $('#confirm-pass').val().length > 5) {
+			if (isEmail(event.currentTarget.value) && $('#pass').val().length > 5 && $('#confirm-pass').val().length > 5) {
 				$('.login').addClass('active');
 			} else {
 				$('.login').removeClass('active');
 			}
 		}
 		if (Template.instance().state.get() === 'email-verification') {
-			if (/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]+\b/i.test(event.currentTarget.value)) {
+			if (isEmail(event.currentTarget.value)) {
 				$('.login').addClass('active');
 			} else {
 				$('.login').removeClass('active');
 			}
 		}
 		if (Template.instance().state.get() === 'forgot-password') {
-			if (/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]+\b/i.test(event.currentTarget.value)) {
+			if (isEmail(event.currentTarget.value)) {
 				$('.login').addClass('active');
 			} else {
 				$('.login').removeClass('active');
@@ -305,14 +306,14 @@ Template.loginForm.events({
 	},
 	'keyup #pass'(event) {
 		if (Template.instance().state.get() === 'email-login') {
-			if (event.currentTarget.value.length > 5 && /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]+\b/i.test($('#email').val())) {
+			if (event.currentTarget.value.length > 5 && isEmail($('#email').val())) {
 				$('.login').addClass('active');
 			} else {
 				$('.login').removeClass('active');
 			}
 		}
 		if (Template.instance().state.get() === 'register') {
-			if (event.currentTarget.value.length > 5 && /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]+\b/i.test($('#email').val()) && $('#confirm-pass').val().length > 5) {
+			if (event.currentTarget.value.length > 5 && isEmail($('#email').val()) && $('#confirm-pass').val().length > 5) {
 				$('.login').addClass('active');
 			} else {
 				$('.login').removeClass('active');
@@ -321,14 +322,14 @@ Template.loginForm.events({
 	},
 	'keyup #confirm-pass'(event) {
 		if (Template.instance().state.get() === 'email-login') {
-			if (event.currentTarget.value.length > 5 && /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]+\b/i.test($('#email').val())) {
+			if (event.currentTarget.value.length > 5 && isEmail($('#email').val())) {
 				$('.login').addClass('active');
 			} else {
 				$('.login').removeClass('active');
 			}
 		}
 		if (Template.instance().state.get() === 'register') {
-			if (event.currentTarget.value.length > 5 && $('#pass').val().length > 5 && /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]+\b/i.test($('#email').val())) {
+			if (event.currentTarget.value.length > 5 && $('#pass').val().length > 5 && isEmail($('#email').val())) {
 				$('.login').addClass('active');
 			} else {
 				$('.login').removeClass('active');
@@ -396,7 +397,7 @@ Template.loginForm.onCreated(function() {
 		});
 		const state = instance.state.get();
 		if (state !== 'login' && state !== 'email-login') {
-			if (!(formObj.email && /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]+\b/i.test(formObj.email))) {
+			if (!(formObj.email && isEmail(formObj.email))) {
 				validationObj.email = t('Invalid_email');
 			}
 		}
