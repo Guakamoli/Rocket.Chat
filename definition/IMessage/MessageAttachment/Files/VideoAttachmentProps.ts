@@ -7,6 +7,8 @@ export type VideoAttachmentProps = {
 	video_url: string;
 	video_type: string;
 	video_size: number;
+	video_width: number;
+	video_height: number;
 	file?: FileProp;
 } & MessageAttachmentBase;
 

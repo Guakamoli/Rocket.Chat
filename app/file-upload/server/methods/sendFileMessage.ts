@@ -108,6 +108,8 @@ Meteor.methods({
 				video_url: fileUrl,
 				video_type: file.type,
 				video_size: file.size,
+				video_width:file.width,
+				video_height:file.height
 			};
 			attachments.push(attachment);
 		} else {
