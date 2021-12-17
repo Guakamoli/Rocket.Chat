@@ -325,7 +325,7 @@ export const saveUser = function(userId, userData) {
 	validateUserEditing(userId, userData);
 
 	// update user
-	if (userData.hasOwnProperty('username') || userData.hasOwnProperty('name')) {
+	if (userData.hasOwnProperty('username')) {
 		if (!saveUserIdentity({
 			_id: userData._id,
 			username: userData.username,
