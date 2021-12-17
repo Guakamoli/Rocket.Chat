@@ -377,7 +377,8 @@ export const saveUser = function(userId, userData) {
 	}
 
 	if (userData?.customFields) {
-		saveCustomFields(userData._id, { ...userData.customFields });
+		const account = Meteor.users.findOne({ _id: userData._id });
+		saveCustomFields(userData._id, { ...userData.customFields, defaultChannel: account?.customFields?.defaultChannel || '' });
 	}
 
 	changeCreatorRole(userData);
