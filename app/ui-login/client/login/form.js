@@ -30,7 +30,7 @@ Template.loginForm.helpers({
 		return state.indexOf(Template.instance().state.get()) > -1;
 	},
 	productCode(productCode) {
-		return Meteor.settings.public.Meteor.settings.public.PRODUCT_CODE === productCode
+		return Meteor.settings.public.PRODUCT_CODE === productCode
 	},
 	btnLoginSave() {
 		if (Template.instance().loading.get()) {
