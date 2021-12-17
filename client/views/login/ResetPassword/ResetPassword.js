@@ -56,7 +56,7 @@ const ResetPassword = () => {
 	);
 
 	const isSubmitDisabled =
-		newPassword.trim().length < 5 || newPassword.trim() !== comfirmPassword.trim() || isLoading;
+		newPassword.trim().length < 6 || newPassword.trim() !== comfirmPassword.trim() || isLoading;
 
 	const goLogin = () => {
 		router.push({});
@@ -66,6 +66,14 @@ const ResetPassword = () => {
 		async (e) => {
 			e.preventDefault();
 			if (isSubmitDisabled) {
+				if (newPassword.trim().length < 6) {
+					toastr.error(t('Register_passwordLengLimit6'));
+					return;
+				};
+				if (newPassword.trim() !== comfirmPassword.trim()) {
+					toastr.error(t('Comfirm_password_error'));
+					return;
+				};
 				return;
 			}
 			setIsLoading(true);

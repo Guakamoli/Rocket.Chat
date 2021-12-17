@@ -3211,8 +3211,7 @@
   "Reset": "重置",
   "Reset_Connection": "重置连接",
   "Reset_E2E_Key": "重置端到端密钥",
-  "Reset_password": "找回密码",
-  "Reset_create_new_password": "来创建一个新密码：",
+  "Reset_password": "重设密码",
   "Reset_password_btn": "重置密码",
   "Reset_password_success": "密码重置成功，请重新登录",
   "Reset_section_settings": "重置区块为默认",
@@ -4302,5 +4301,6 @@
   "Register_go_login": "去登陆",
   "Login_has_not_account": "还没有账号?",
   "Login_go_register": "去注册",
-  "Register_passwordLengLimit6": "密码长度最小为6"
+  "Register_passwordLengLimit6": "密码长度最小为6",
+  "Comfirm_password_error": "两次密码不一致"
 }
