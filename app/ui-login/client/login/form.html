@@ -176,10 +176,13 @@
 				{{/if}}
 			</div>
 		{{/if}}
-		{{#unless state 'email-login' 'register' 'email-verification' 'forgot-password'}}
-			<div class="rc-button__group rc-button__group--vertical">
-				<button type="button" class="rc-button rc-button--nude back-to-login">{{_ 'Back_to_login'}}</button>
-			</div>
-		{{/unless}}
+		{{#if productCode 'PAIYA' }}
+			{{#unless state 'login'}}
+				<div class="rc-button__group rc-button__group--vertical">
+					<button type="button" class="rc-button rc-button--nude back-to-login">{{_ 'Back_to_login'}}</button>
+				</div>
+			{{/unless}}
+		{{/if}}
+		
 	</form>
 </template>
