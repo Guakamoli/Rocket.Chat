@@ -61,6 +61,7 @@
 									<input name="email" id="email" type="text" class="rc-input__element"
 												 autocapitalize="off" autocorrect="off"
 												 placeholder="{{emailPlaceholder}}" autofocus>
+									<div class="input-error"></div>
 								</div>
 							</label>
 						</div>
@@ -151,9 +152,11 @@
 				{{/if}}
 
 				{{#if state 'email-login'}}
-			        
-					{{#if registrationAllowed}}
-						<div style="display: flex;flex-direction:column;justify-content:center;align-items:center">
+					{{#if passwordResetAllowed}}
+						<button type="button" class="rc-button rc-button--nude forgot-password" style="align-self: flex-end;color: #651FFF;padding:0">{{_ 'Forgot_password'}}</button>
+					{{/if}}
+					{{#if showFormLogin}}
+						<div style="display: flex;flex-direction:column;justify-content:center;align-items:center;margin-top: 100px">
 							<div style='color: #9B9B9B;'>{{_ "Login_has_not_account"}}</div>
 							<button type="button" class="rc-button rc-button--nude register" style="color: #651FFF;padding: 0px">{{_ 'Login_go_register'}}</button>
 						</div>
@@ -165,24 +168,18 @@
 						{{/if}}
 					{{/if}}
 				{{/if}}
-				{{#if state 'register'}}
-					<div style="display: flex;flex-direction:column;justify-content:center;align-items:center">
+				{{#if state 'register' 'email-verification' 'forgot-password'}}
+					<div style="display: flex;flex-direction:column;justify-content:center;align-items:center;margin-top: 100px">
 						<div style='color: #9B9B9B;'>{{_ "Register_has_account"}}</div>
 						<button type="button" class="rc-button rc-button--nude goEmailLogin" style="color: #651FFF;padding: 0px">{{_ 'Register_go_login'}}</button>
 					</div>
 				{{/if}}
 			</div>
 		{{/if}}
-		{{#unless state 'email-login' 'register'}}
+		{{#unless state 'email-login' 'register' 'email-verification' 'forgot-password'}}
 			<div class="rc-button__group rc-button__group--vertical">
 				<button type="button" class="rc-button rc-button--nude back-to-login">{{_ 'Back_to_login'}}</button>
 			</div>
 		{{/unless}}
 	</form>
-	<div class='login-terms'>
-		<div class="powered-by">
-			<div style="margin-bottom:3px;">{{_ 'User_protocol_description'}}</div>
-			<a class="link-style" style="margin-right: 10px" href={{userAgreement}}>{{_ 'User_Agreement'}}</a><a class="link-style" href={{privacy}}>{{_ 'User_Privacy_policy'}}</a>
-		</div>
-	</div>
 </template>

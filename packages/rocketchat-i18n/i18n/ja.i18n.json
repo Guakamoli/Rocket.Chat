@@ -1844,7 +1844,7 @@
   "Force_visitor_to_accept_data_processing_consent_enabled_alert": "データ処理に関する合意は、処理理由の透明な理解に基づくものでなければなりません。このため、ユーザーの個人情報を収集および処理する理由を説明するために、ユーザーに表示される以下の設定を記入する必要があります。",
   "force-delete-message": "メッセージを強制的に削除する",
   "force-delete-message_description": "すべての制限をバイパスしてメッセージを削除する権限",
-  "Forgot_password": "パスワードをお忘れですか?",
+  "Forgot_password": "パスワードを忘れた？",
   "Forgot_Password_Description": "次のプレースホルダを使用できます: <br/><ul><li>[Forgot_Password_Url] はパスワード復元URL</li><li>[name]、[fname]、[lname]はそれぞれユーザーのフルネーム、ファーストネームまたはラストネームです。</li><li>[email]はユーザーのメールアドレス。</li><li>[Site_Name]と[Site_URL]はそれぞれアプリケーション名とURLです。</li></ul>",
   "Forgot_Password_Email": "パスワードをリセットするには、<a href=\"[Forgot_Password_Url]\">ここ</a>をクリックしてください。",
   "Forgot_Password_Email_Subject": "[Site_Name]  - パスワードの回復",
@@ -3196,7 +3196,10 @@
   "Reset": "リセット",
   "Reset_Connection": "リセット接続",
   "Reset_E2E_Key": "E2Eキーをリセットする",
-  "Reset_password": "パスワードをリセットする",
+  "Reset_password": "パスワードを忘れた",
+  "Reset_create_new_password": "新しいパスワードを作成することができます：",
+  "Reset_password_btn": "リセットする",
+  "Reset_password_success": "パスワードのリセットが成功しましたので、再登録してください",
   "Reset_section_settings": "セクション設定のリセット",
   "Reset_TOTP": "TOTPをリセット",
   "reset-other-user-e2e-key": "他のユーザーE2Eキーをリセットする",
@@ -4244,6 +4247,7 @@
   "Register_has_account": "すでにアカウントをお持ちですか？",
   "Register_go_login": "クリックしてログイン",
   "Login_has_not_account": "まだアカウントをお持ちでない？",
-  "Login_go_register": "クリックしてサインアップ"
+  "Login_go_register": "クリックしてサインアップ",
+  "Register_passwordLengLimit6": "パスワードの最短長さは6です"
 
 }
