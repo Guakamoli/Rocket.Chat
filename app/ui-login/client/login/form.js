@@ -11,7 +11,7 @@ import toastr from 'toastr';
 import { settings } from '../../../settings';
 import { callbacks } from '../../../callbacks';
 import { t, handleError, isEmail } from '../../../utils';
-const PRODUCT_CODE = Meteor.settings.public.PRODUCT_CODE
+
 Template.loginForm.helpers({
 	userName() {
 		const user = Meteor.user();
@@ -30,7 +30,7 @@ Template.loginForm.helpers({
 		return state.indexOf(Template.instance().state.get()) > -1;
 	},
 	productCode(productCode) {
-		return PRODUCT_CODE === productCode
+		return Meteor.settings.public.Meteor.settings.public.PRODUCT_CODE === productCode
 	},
 	btnLoginSave() {
 		if (Template.instance().loading.get()) {
@@ -351,7 +351,7 @@ Template.loginForm.onCreated(function() {
 	if (Session.get('loginDefaultState')) {
 		this.state = new ReactiveVar(Session.get('loginDefaultState'));
 	} else {
-		const page = PRODUCT_CODE === 'GODUCK' ? 'email-login' : 'login'
+		const page = Meteor.settings.public.PRODUCT_CODE === 'GODUCK' ? 'email-login' : 'login'
 		this.state = new ReactiveVar(page);
 	}
 
