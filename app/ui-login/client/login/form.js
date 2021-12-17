@@ -29,6 +29,9 @@ Template.loginForm.helpers({
 	state(...state) {
 		return state.indexOf(Template.instance().state.get()) > -1;
 	},
+	productCode(productCode) {
+		return Meteor.settings.public.PRODUCT_CODE === productCode
+	},
 	btnLoginSave() {
 		if (Template.instance().loading.get()) {
 			return `${ t('Please_wait') }...`;
@@ -230,7 +233,7 @@ Template.loginForm.events({
 	},
 	'click .back-to-login'() {
 		$('.login').removeClass('active');
-		Template.instance().state.set('email-login');
+		Template.instance().state.set('login');
 		return callbacks.run('loginPageStateChange', Template.instance().state.get());
 	},
 	'click .forgot-password'() {
@@ -348,7 +351,8 @@ Template.loginForm.onCreated(function() {
 	if (Session.get('loginDefaultState')) {
 		this.state = new ReactiveVar(Session.get('loginDefaultState'));
 	} else {
-		this.state = new ReactiveVar('email-login');
+		const page = Meteor.settings.public.PRODUCT_CODE === 'GODUCK' ? 'email-login' : 'login'
+		this.state = new ReactiveVar(page);
 	}
 
 	Tracker.autorun(() => {
