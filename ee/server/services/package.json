@@ -25,7 +25,7 @@
 		"cookie-parser": "^1.4.5",
 		"ejson": "^2.2.1",
 		"eventemitter3": "^4.0.7",
-		"express": "^4.17.1",
+		"express": "^4.17.2",
 		"jaeger-client": "^3.18.1",
 		"mem": "^6.1.1",
 		"moleculer": "^0.14.14",
