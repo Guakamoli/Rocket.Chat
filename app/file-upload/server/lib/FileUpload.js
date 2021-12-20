@@ -767,8 +767,6 @@ export class FileUploadClass {
 			if (streamOrBuffer instanceof stream) {
 				streamOrBuffer.pipe(fs.createWriteStream(tmpFile));
 			} else if (streamOrBuffer instanceof Buffer) {
-				const a = Date.now();
-
 				fs.writeFileSync(tmpFile, streamOrBuffer);
 			} else {
 				throw new Error('Invalid file type');

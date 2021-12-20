@@ -114,7 +114,6 @@ API.v1.addRoute(
 					request: this.request,
 				}),
 			);
-
 			if (!file) {
 				throw new Meteor.Error('invalid-field');
 			}
@@ -145,13 +144,13 @@ API.v1.addRoute(
 			if (messageType && ['post', 'story'].includes(messageType)) {
 				fields.t = messageType;
 			}
+
 			SystemLogger.debug(
 				'rooms.upload/:rid',
 				this.request.headers,
 				messageType,
 				fields,
 			);
-
 			Meteor.call(
 				'sendFileMessage',
 				this.urlParams.rid,
@@ -203,8 +202,11 @@ API.v1.addRoute(
 			const stripExif = settings.get('Message_Attachments_Strip_Exif');
 			const fileStore = FileUpload.getStore('Uploads');
 			const uploadedFiles = [];
+			let uploadedFile;
 			for (const key in data) {
-				if (!data[key]?.file) { continue; }
+				if (!data[key]?.file) {
+					continue;
+				}
 				const file = data[key];
 				Reflect.deleteProperty(data, key);
 				const details = {
@@ -221,7 +223,7 @@ API.v1.addRoute(
 						Media.stripExifFromBuffer(file.fileBuffer),
 					);
 				}
-				const uploadedFile = fileStore.insertSync(details, file.fileBuffer);
+				uploadedFile = fileStore.insertSync(details, file.fileBuffer);
 				uploadedFile.description = data.description;
 				delete data.description;
 				uploadedFiles.push(uploadedFile);

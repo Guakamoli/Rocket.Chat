@@ -18,12 +18,9 @@ export const uploadFileWithMessage = async (
 	msg && data.append('msg', msg);
 	tmid && data.append('tmid', tmid);
 	for (const [index, item] of files.entries()) {
-		console.log('开阿卡');
-
 		data.append(`file[${ index }]`, item.file, item.fileName);
 	}
-	console.log(data);
-	// data.append(`file`, file.file, fileName);
+	data.append('file', file.file, fileName);
 
 	const uploads = Session.get('uploading') || [];
 
@@ -140,7 +137,6 @@ export const fileUpload = async (files, input, { rid, tmid }) => {
 					uploadNextFile();
 				},
 				onSubmit: (fileName, description) => {
-					console.log('点下了');
 					uploadFileWithMessage(rid, tmid, {
 						description,
 						fileName,

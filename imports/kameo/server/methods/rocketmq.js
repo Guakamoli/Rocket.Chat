@@ -19,8 +19,7 @@ const topicIds = {
 	account: process.env.MQ_TOPIC_ID_ROCKETCHAT_ACCOUNT,
 	aliyunPush: process.env.MQ_TOPIC_ID_ALIYUN_PUSH,
 };
-
-// const mqClient = new MQClient(endpoint, accessKeyId, accessKeySecret);
+const mqClient = new MQClient(endpoint, accessKeyId, accessKeySecret);
 
 async function publishMessage(producer, body, tag, props) {
 	await producer.publishMessage(body, tag, props);
@@ -45,7 +44,6 @@ async function rocketmqSend(
 	props = {},
 	retry = 3,
 ) {
-	return;
 	logger.debug('Send', {
 		topicId,
 		body,

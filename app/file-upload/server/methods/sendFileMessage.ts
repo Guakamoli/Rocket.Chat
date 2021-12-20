@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
+/* eslint-disable no-await-in-loop */
+
 import { Meteor } from 'meteor/meteor';
 import { Match, check } from 'meteor/check';
 import _ from 'underscore';
@@ -20,13 +22,11 @@ Meteor.methods({
 				method: 'sendFileMessage',
 			} as any);
 		}
-
 		const room = await Rooms.findOneById(roomId);
 
 		if (user?.type !== 'app' && !canAccessRoom(room, user)) {
 			return false;
 		}
-
 		check(msgData, {
 			t: Match.Optional(String),
 			avatar: Match.Optional(String),
@@ -35,6 +35,7 @@ Meteor.methods({
 			groupable: Match.Optional(Boolean),
 			msg: Match.Optional(String),
 			tmid: Match.Optional(String),
+			// ts: Match.Optional(Number),
 		});
 		if (!rowFile && rowFiles && rowFiles[0]) {
 			rowFile = rowFiles[0];
@@ -65,6 +66,7 @@ Meteor.methods({
 					image_url: fileUrl,
 					image_type: file.type,
 					image_size: file.size,
+					is_video_cover: true,
 				};
 
 				if (file.identify && file.identify.size) {

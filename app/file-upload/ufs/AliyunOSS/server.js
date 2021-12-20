@@ -1,3 +1,4 @@
+/* eslint-disable new-cap */
 import stream from 'stream';
 
 import { check } from 'meteor/check';
@@ -5,7 +6,10 @@ import { UploadFS } from 'meteor/jalik:ufs';
 import { Random } from 'meteor/random';
 import _ from 'underscore';
 
-import { OSSClient, VodClient } from '../../../utils/lib/oss.js';
+import {
+	OSSClient,
+	// VodClient
+} from '../../../utils/lib/oss.js';
 
 /**
  * AliyunOss store

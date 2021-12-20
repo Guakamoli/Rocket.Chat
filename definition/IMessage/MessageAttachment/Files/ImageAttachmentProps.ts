@@ -11,6 +11,7 @@ export type ImageAttachmentProps = {
 	image_type: string;
 	image_size?: number;
 	file?: FileProp;
+	is_video_cover: boolean;
 } & MessageAttachmentBase;
 
 export const isFileImageAttachment = (
