@@ -36,6 +36,13 @@ Meteor.methods({
 			reason: Match.Optional(String),
 		}));
 
+		if (formData.pass.length < 6) {
+			throw new Meteor.Error('error-user-password-limit-6', 'Password must be at least 6 characters', { method: 'registerUser' });
+		}
+
+		if (formData.pass.length > 18) {
+			throw new Meteor.Error('error-user-password-most-18', 'Password must be at most 18 characters', { method: 'registerUser' });
+		}
 
 		if (settings.get('Accounts_RegistrationForm') === 'Disabled') {
 			throw new Meteor.Error('error-user-registration-disabled', 'User registration is disabled', { method: 'registerUser' });
