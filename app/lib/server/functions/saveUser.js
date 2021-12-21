@@ -233,6 +233,9 @@ function changeCreatorRole(userData) {
 	const account = Meteor.users.findOne({ _id: userData._id });
 	const roles = account?.roles ?? [];
 	const userDataRoles = userData?.roles ?? [];
+	if (!userData?.roles || JSON.stringify(roles) === JSON.stringify(userDataRoles)) {
+		return;
+	}
 	const diffCreatorRole = roles.includes('creator') !== userDataRoles.includes('creator');
 	const diffInfluencerRole = roles.includes('influencer') !== userDataRoles.includes('influencer');
 
@@ -377,7 +380,7 @@ export const saveUser = function(userId, userData) {
 	}
 
 	if (userData?.customFields) {
-		const account = Meteor.users.findOne({ _id: userData._id });
+		const account = Meteor.users.findOne({ _id: userData?._id });
 		saveCustomFields(userData._id, { ...userData.customFields, defaultChannel: account?.customFields?.defaultChannel || '' });
 	}
 
