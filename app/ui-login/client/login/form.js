@@ -30,17 +30,13 @@ Template.loginForm.helpers({
 		return state.indexOf(Template.instance().state.get()) > -1;
 	},
 	bottomStyle() {
-		return Meteor.settings.public.PRODUCT_CODE === "PAIYA" 
-			? "display: flex;flex-direction:row;justify-content:center;align-items:center;margin-top: 100px" 
-			: "display: flex;flex-direction:column;justify-content:center;align-items:center;margin-top: 100px"
+		return Meteor.settings.public.PRODUCT_CODE === 'PAIYA' ? 'display: flex;flex-direction:row;justify-content:center;align-items:center;margin-top: 100px' : 'display: flex;flex-direction:column;justify-content:center;align-items:center;margin-top: 100px';
 	},
 	bottomLabelStyle() {
-		return Meteor.settings.public.PRODUCT_CODE === "PAIYA" 
-			? "color: #9B9B9B; margin-right:10px" 
-			: "color: #9B9B9B;"
+		return Meteor.settings.public.PRODUCT_CODE === 'PAIYA' ? 'color: #9B9B9B; margin-right:10px' : 'color: #9B9B9B;';
 	},
 	productCode(productCode) {
-		return Meteor.settings.public.PRODUCT_CODE === productCode
+		return Meteor.settings.public.PRODUCT_CODE === productCode;
 	},
 	btnLoginSave() {
 		if (Template.instance().loading.get()) {
@@ -361,7 +357,7 @@ Template.loginForm.onCreated(function() {
 	if (Session.get('loginDefaultState')) {
 		this.state = new ReactiveVar(Session.get('loginDefaultState'));
 	} else {
-		const page = Meteor.settings.public.PRODUCT_CODE === 'GODUCK' ? 'email-login' : 'login'
+		const page = Meteor.settings.public.PRODUCT_CODE === 'GODUCK' ? 'email-login' : 'login';
 		this.state = new ReactiveVar(page);
 	}
 

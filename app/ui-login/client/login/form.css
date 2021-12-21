@@ -1,6 +1,8 @@
 .btn-code {
 	display: flex;
+
 	color: #651fff;
+
 	font-size: 13px;
 	font-weight: 500;
 	align-items: center;
@@ -44,6 +46,6 @@ input {
 
 .seconds {
 	position: absolute;
+	top: 0;
 	right: 0;
-	top:0
 }
