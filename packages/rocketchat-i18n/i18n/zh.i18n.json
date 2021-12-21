@@ -4302,5 +4302,6 @@
   "Register_go_login": "去登陆",
   "Login_has_not_account": "还没有账号?",
   "Login_go_register": "去注册",
-  "Register_passwordLengLimit6": "密码长度最小为6"
+  "Register_passwordLengLimit6": "密码长度最小为6",
+  "Register_passwordLengMax18": "密码长度最大为18"
 }
