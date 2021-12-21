@@ -15,12 +15,13 @@ import { IUser } from '../../../../definition/IUser';
 Meteor.methods({
 	async sendFileMessage(roomId, _store, file, msgData = {}) {
 		const user = Meteor.user() as IUser | undefined;
+
 		if (!user) {
-			throw new Meteor.Error('error-invalid-user', 'Invalid user', { method: 'sendFileMessage' } as any);
+			throw new Meteor.Error('error-invalid-user', 'Invalid user', {
+				method: 'sendFileMessage',
+			} as any);
 		}
-
 		const room = await Rooms.findOneById(roomId);
-
 		if (user?.type !== 'app' && !canAccessRoom(room, user)) {
 			return false;
 		}
@@ -34,18 +35,19 @@ Meteor.methods({
 			msg: Match.Optional(String),
 			tmid: Match.Optional(String),
 		});
-
 		Uploads.updateFileComplete(file._id, user._id, _.omit(file, '_id'));
 
 		const fileUrl = FileUpload.getPath(`${ file._id }/${ encodeURI(file.name) }`);
 
 		const attachments: MessageAttachment[] = [];
 
-		const files = [{
-			_id: file._id,
-			name: file.name,
-			type: file.type,
-		}];
+		const files = [
+			{
+				_id: file._id,
+				name: file.name,
+				type: file.type,
+			},
+		];
 
 		if (/^image\/.+/.test(file.type)) {
 			const attachment: FileAttachmentProps = {
@@ -68,8 +70,15 @@ Meteor.methods({
 				const thumbResult = await FileUpload.createImageThumbnail(file);
 				if (thumbResult) {
 					const { data: thumbBuffer, width, height } = thumbResult;
-					const thumbnail = FileUpload.uploadImageThumbnail(file, thumbBuffer, roomId, user._id);
-					const thumbUrl = FileUpload.getPath(`${ thumbnail._id }/${ encodeURI(file.name) }`);
+					const thumbnail = FileUpload.uploadImageThumbnail(
+						file,
+						thumbBuffer,
+						roomId,
+						user._id,
+					);
+					const thumbUrl = FileUpload.getPath(
+						`${ thumbnail._id }/${ encodeURI(file.name) }`,
+					);
 					attachment.image_url = thumbUrl;
 					attachment.image_type = thumbnail.type;
 					attachment.image_dimensions = {
@@ -108,8 +117,9 @@ Meteor.methods({
 				video_url: fileUrl,
 				video_type: file.type,
 				video_size: file.size,
-				video_width:file.width,
-				video_height:file.height
+				video_width: file.width,
+				video_height: file.height,
+				video_cover_url: file.cover_url,
 			};
 			attachments.push(attachment);
 		} else {
@@ -122,7 +132,6 @@ Meteor.methods({
 			};
 			attachments.push(attachment);
 		}
-
 
 		const msg = Meteor.call('sendMessage', {
 			rid: roomId,

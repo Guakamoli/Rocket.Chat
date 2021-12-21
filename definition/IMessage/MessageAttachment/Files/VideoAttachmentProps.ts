@@ -9,6 +9,7 @@ export type VideoAttachmentProps = {
 	video_size: number;
 	video_width: number;
 	video_height: number;
+	video_cover_url: string;
 	file?: FileProp;
 } & MessageAttachmentBase;
 
