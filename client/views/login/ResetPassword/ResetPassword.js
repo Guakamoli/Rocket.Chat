@@ -69,11 +69,11 @@ const ResetPassword = () => {
 				if (newPassword.trim().length < 6) {
 					toastr.error(t('Register_passwordLengLimit6'));
 					return;
-				};
+				}
 				if (newPassword.trim() !== comfirmPassword.trim()) {
 					toastr.error(t('Comfirm_password_error'));
 					return;
-				};
+				}
 				return;
 			}
 			setIsLoading(true);
@@ -103,6 +103,7 @@ const ResetPassword = () => {
 			setUserPassword,
 			// setError,
 			t,
+			comfirmPassword,
 		],
 	);
 
