@@ -380,7 +380,6 @@ export const saveUser = function(userId, userData) {
 	handleNickname(updateUser, userData.nickname);
 
 	handleName(updateUser, userData.name);
-	handleCustomFields(userData._id, userData.customFields);
 
 	if (userData.roles) {
 		updateUser.$set.roles = userData.roles;
@@ -401,13 +400,15 @@ export const saveUser = function(userId, userData) {
 		updateUser.$set['emails.0.verified'] = userData.verified;
 	}
 
-	changeCreatorRole(userData);
-
 	Meteor.users.update({ _id: userData._id }, updateUser);
+
+	handleCustomFields(userData._id, userData.customFields);
 
 	if (sendPassword) {
 		_sendUserEmail(settings.get('Password_Changed_Email_Subject'), passwordChangedHtml, userData);
 	}
+
+	changeCreatorRole(userData);
 
 	return true;
 };
