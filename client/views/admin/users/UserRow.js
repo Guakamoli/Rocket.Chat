@@ -15,6 +15,7 @@ const UserRow = ({
 	emails,
 	_id,
 	username,
+	services,
 	name,
 	roles,
 	status,
@@ -67,6 +68,9 @@ const UserRow = ({
 				</Table.Cell>
 			)}
 			<Table.Cell style={style}>{emails && emails.length && emails[0].address}</Table.Cell>
+			<Table.Cell style={style}>
+				{services && services.sms && services.sms.purePhoneNumber}
+			</Table.Cell>
 			{mediaQuery && <Table.Cell style={style}>{roles && roles.join(', ')}</Table.Cell>}
 			<Table.Cell fontScale='p1' color='hint' style={style}>
 				{statusText}
