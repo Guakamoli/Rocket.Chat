@@ -102,6 +102,7 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 		uploadedFile.description = fields.description;
 
 		delete fields.description;
+
 		const messageType = this.request.headers['x-upload-type'] || null;
 		if (messageType && ['post', 'story'].includes(messageType)) {
 			fields.t = messageType;
