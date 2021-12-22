@@ -401,10 +401,6 @@ export const saveUser = function(userId, userData) {
 		updateUser.$set['emails.0.verified'] = userData.verified;
 	}
 
-	if (userData.name) {
-		updateUser.$set.name = userData.name;
-	}
-
 	changeCreatorRole(userData);
 
 	Meteor.users.update({ _id: userData._id }, updateUser);
