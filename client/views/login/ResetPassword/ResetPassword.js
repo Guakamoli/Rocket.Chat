@@ -103,6 +103,7 @@ const ResetPassword = () => {
 			setUserPassword,
 			// setError,
 			t,
+			comfirmPassword,
 		],
 	);
 
