@@ -229,6 +229,25 @@ const handleNickname = (updateUser, nickname) => {
 	}
 };
 
+const handleName = (updateUser, name) => {
+	if (name && name.trim()) {
+		if (typeof name !== 'string' || name.length > 120) {
+			throw new Meteor.Error('error-invalid-field', 'name', {
+				method: 'saveUserProfile',
+			});
+		}
+		updateUser.$set = updateUser.$set || {};
+		updateUser.$set.name = name;
+	}
+};
+
+const handleCustomFields = (userId, customFields = {}) => {
+	if (customFields && typeof customFields === 'object') {
+		const account = Meteor.users.findOne({ _id: userId });
+		saveCustomFields(userId, { ...customFields, defaultChannel: account?.customFields?.defaultChannel || '' });
+	}
+};
+
 function changeCreatorRole(userData) {
 	const account = Meteor.users.findOne({ _id: userData._id });
 	const roles = account?.roles ?? [];
@@ -360,6 +379,8 @@ export const saveUser = function(userId, userData) {
 	handleBio(updateUser, userData.bio);
 	handleNickname(updateUser, userData.nickname);
 
+	handleName(updateUser, userData.name);
+
 	if (userData.roles) {
 		updateUser.$set.roles = userData.roles;
 	}
@@ -379,18 +400,15 @@ export const saveUser = function(userId, userData) {
 		updateUser.$set['emails.0.verified'] = userData.verified;
 	}
 
-	if (userData?.customFields) {
-		const account = Meteor.users.findOne({ _id: userData?._id });
-		saveCustomFields(userData._id, { ...userData.customFields, defaultChannel: account?.customFields?.defaultChannel || '' });
-	}
-
-	changeCreatorRole(userData);
-
 	Meteor.users.update({ _id: userData._id }, updateUser);
+
+	handleCustomFields(userData._id, userData.customFields);
 
 	if (sendPassword) {
 		_sendUserEmail(settings.get('Password_Changed_Email_Subject'), passwordChangedHtml, userData);
 	}
+
+	changeCreatorRole(userData);
 
 	return true;
 };
