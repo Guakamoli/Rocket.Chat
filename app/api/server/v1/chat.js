@@ -718,3 +718,40 @@ API.v1.addRoute('chat.getDiscussions', { authRequired: true }, {
 		return API.v1.success(messages);
 	},
 });
+API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
+	get() {
+		const { messageId } = this.queryParams;
+		if (!messageId) {
+			throw new Meteor.Error('error-invalid-params', 'The required "messageId" query param is missing.');
+		}
+		const msg = Messages.findOne({ _id: messageId, t: 'post' });
+		if (!msg) {
+			throw new Meteor.Error('error-message-not-found', 'Message not exists');
+		}
+		const serverUri = settings.get('Site_Url');
+		let t = null;
+		let coverUri = '';
+		const userName = msg?.u?.name || '';
+		let userAvatar = msg?.u?.username || '';
+		const attachment = msg?.attachments?.[0];
+		if (attachment) {
+			if (userAvatar) {
+				userAvatar = `${ serverUri }/avatar/${ userAvatar }`;
+			}
+			coverUri = attachment.video_cover_url || attachment.image_url || '';
+			if (coverUri && !coverUri.startsWith('http')) {
+				coverUri = `${ serverUri }/${ coverUri }`;
+			}
+			t = attachment.image_type || attachment.video_type || null;
+		}
+		const data = {
+			userAvatar,
+			userName,
+			coverUri,
+			t,
+		};
+		return API.v1.success({
+			data,
+		});
+	},
+});
