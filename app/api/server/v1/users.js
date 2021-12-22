@@ -15,7 +15,7 @@ import {
 	saveCustomFieldsWithoutValidation,
 	checkUsernameAvailability,
 	setUserAvatar,
-	saveCustomFields,
+	// saveCustomFields,
 } from '../../../lib';
 import { getFullUserDataByIdOrUsername } from '../../../lib/server/functions/getFullUserData';
 import { API } from '../api';
