@@ -92,11 +92,13 @@ async function rocketmqSendUpdateProfile(userId, profile) {
 
 async function rocketmqSendAliyunPush(userId, payload, tag = 'notification') {
 	const user = Users.findOneById(userId);
-	if (user.emails.address) {
-		payload.targetValue = user.emails.address;
+
+	if (Array.isArray(user.emails) && user.emails.find((email) => email.verified)) {
+		const email = user.emails.find((email) => email.verified); // 查找第一个已验证的邮箱
+		payload.targetValue = email.address;
 	}
 
-	if (user.services.sms.realPhoneNumber) {
+	if (user.services?.sms?.realPhoneNumber) {
 		payload.targetValue = user.services.sms.realPhoneNumber;
 	}
 
