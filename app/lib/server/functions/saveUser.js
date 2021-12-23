@@ -241,16 +241,14 @@ const handleName = (updateUser, name) => {
 	}
 };
 
-const handleCustomFields = (userId, customFields = {}) => {
+const handleCustomFields = (account, customFields = {}) => {
 	if (customFields && typeof customFields === 'object') {
-		const account = Meteor.users.findOne({ _id: userId });
-		saveCustomFields(userId, { ...customFields, defaultChannel: account?.customFields?.defaultChannel || '' });
+		saveCustomFields(account._id, { ...customFields, defaultChannel: account?.customFields?.defaultChannel || '' });
 	}
 };
 
-function changeCreatorRole(userData) {
-	const account = Meteor.users.findOne({ _id: userData._id });
-	const roles = account?.roles ?? [];
+function changeRole(userData, oldAccount) {
+	const roles = oldAccount?.roles ?? [];
 	const userDataRoles = userData?.roles ?? [];
 	if (!userData?.roles || JSON.stringify(roles) === JSON.stringify(userDataRoles)) {
 		return;
@@ -259,8 +257,8 @@ function changeCreatorRole(userData) {
 	const diffInfluencerRole = roles.includes('influencer') !== userDataRoles.includes('influencer');
 
 	if (diffCreatorRole || diffInfluencerRole) {
-		if (userDataRoles.includes('creator') && !account?.customFields?.defaultChannel) {
-			const room = createRoom('c', userData._id, account.username, [], false, {});
+		if (userDataRoles.includes('creator') && !oldAccount?.customFields?.defaultChannel) {
+			const room = createRoom('c', userData._id, oldAccount.username, [], false, {});
 			saveCustomFields(userData._id, { ...userData.customFields, defaultChannel: room.rid ?? '' });
 		}
 		Meteor.call('kameoRocketmqSendChangeRole', userData._id, { userId: userData._id, roles: userDataRoles });
@@ -344,6 +342,7 @@ export const saveUser = function(userId, userData) {
 		return _id;
 	}
 
+	const oldAccount = Meteor.users.findOne({ _id: userData._id });
 	validateUserEditing(userId, userData);
 
 	// update user
@@ -402,13 +401,13 @@ export const saveUser = function(userId, userData) {
 
 	Meteor.users.update({ _id: userData._id }, updateUser);
 
-	handleCustomFields(userData._id, userData.customFields);
+	handleCustomFields(oldAccount, userData.customFields);
 
 	if (sendPassword) {
 		_sendUserEmail(settings.get('Password_Changed_Email_Subject'), passwordChangedHtml, userData);
 	}
 
-	changeCreatorRole(userData);
+	changeRole(userData, oldAccount);
 
 	return true;
 };
