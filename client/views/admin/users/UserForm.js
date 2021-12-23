@@ -32,8 +32,8 @@ export default function UserForm({
 	const {
 		name,
 		username,
-		email,
-		verified,
+		email = '',
+		verified = false,
 		statusText,
 		bio,
 		nickname,

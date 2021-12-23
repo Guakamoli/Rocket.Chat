@@ -133,11 +133,16 @@ function EditUser({ data, roles, ...props }) {
 			validationKeys[key] && validationKeys[key](value);
 		});
 
-		const { name, username } = values;
+		const { name, username, email } = values;
 		// if (name === '' || username === '' || email === '') {
 		// 不校验email的必存
 		if (name === '' || username === '') {
 			return false;
+		}
+
+		if (email === '') {
+			delete values.email;
+			delete values.verified;
 		}
 
 		const result = await saveAction();
