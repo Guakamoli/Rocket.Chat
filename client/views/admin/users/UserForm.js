@@ -32,8 +32,8 @@ export default function UserForm({
 	const {
 		name,
 		username,
-		email,
-		verified,
+		email = '',
+		verified = false,
 		statusText,
 		bio,
 		nickname,
@@ -120,7 +120,7 @@ export default function UserForm({
 									error={errors && errors.email}
 									flexGrow={1}
 									value={email}
-									error={!isEmail(email) && email.length > 0 ? 'error' : undefined}
+									error={email.length > 0 && !isEmail(email) ? 'error' : undefined}
 									onChange={handleEmail}
 									addon={<Icon name='mail' size='x20' />}
 								/>

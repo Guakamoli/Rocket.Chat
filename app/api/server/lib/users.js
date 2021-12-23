@@ -59,6 +59,7 @@ export function getNonEmptyFields(fields) {
 		status: 1,
 		active: 1,
 		avatarETag: 1,
+		'services.sms': 1,
 	};
 
 	if (!fields || Object.keys(fields).length === 0) {
@@ -78,6 +79,7 @@ export function getNonEmptyQuery(query) {
 			{ 'emails.address': { $regex: '', $options: 'i' } },
 			{ username: { $regex: '', $options: 'i' } },
 			{ name: { $regex: '', $options: 'i' } },
+			{ 'services.sms.purePhoneNumber': { $regex: '' } },
 		],
 	};
 

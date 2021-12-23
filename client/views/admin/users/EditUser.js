@@ -43,11 +43,6 @@ function EditUser({ data, roles, ...props }) {
 				...errors,
 				username: !username.trim().length ? t('The_field_is_required', t('username')) : undefined,
 			})),
-		email: (email) =>
-			setErrors((errors) => ({
-				...errors,
-				email: !email.trim().length ? t('The_field_is_required', t('email')) : undefined,
-			})),
 	};
 
 	const validateForm = ({ key, value }) => {
@@ -134,8 +129,14 @@ function EditUser({ data, roles, ...props }) {
 		});
 
 		const { name, username, email } = values;
-		if (name === '' || username === '' || email === '') {
+		// 不校验email的必存
+		if (name === '' || username === '') {
 			return false;
+		}
+
+		if (email === '') {
+			delete values.email;
+			delete values.verified;
 		}
 
 		const result = await saveAction();

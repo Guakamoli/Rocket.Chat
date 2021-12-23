@@ -21,12 +21,14 @@ const useQuery = ({ text, itemsPerPage, current }, sortFields) =>
 				status: 1,
 				avatarETag: 1,
 				active: 1,
+				services: 1,
 			}),
 			query: JSON.stringify({
 				$or: [
 					{ 'emails.address': { $regex: text || '', $options: 'i' } },
 					{ username: { $regex: text || '', $options: 'i' } },
 					{ name: { $regex: text || '', $options: 'i' } },
+					{ 'services.sms.purePhoneNumber': { $regex: text || '' } },
 				],
 			}),
 			sort: JSON.stringify(
@@ -134,6 +136,14 @@ function UsersTable() {
 						w='x120'
 					>
 						{t('Email')}
+					</GenericTable.HeaderCell>
+					<GenericTable.HeaderCell
+						key={'phoneNumber'}
+						direction={sort[0][1]}
+						onClick={onHeaderClick}
+						w='x120'
+					>
+						{t('Phone_number')}
 					</GenericTable.HeaderCell>
 					{mediaQuery && (
 						<GenericTable.HeaderCell
