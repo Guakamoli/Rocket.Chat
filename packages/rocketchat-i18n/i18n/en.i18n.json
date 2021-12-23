@@ -3469,8 +3469,7 @@
   "Reset": "Reset",
   "Reset_Connection": "Reset Connection",
   "Reset_E2E_Key": "Reset E2E Key",
-  "Reset_password": "Retrieve the password",
-  "Reset_create_new_password": "Create a new password:",
+  "Reset_password": "Reset password",
   "Reset_password_btn": "Reset password",
   "Reset_password_success": "Password reset succeeded, please log in again",
   "Reset_section_settings": "Reset Section to Default",
@@ -4690,5 +4689,6 @@
   "Login_has_not_account": "No account number?",
   "Login_go_register": "Register",
   "Register_passwordLengLimit6": "Password must be at least 6 characters",
-  "Register_passwordLengMax18": "Password must be at most 18 characters"
+  "Register_passwordLengMax18": "Password must be at most 18 characters",
+  "Comfirm_password_error": "Two inconsistent passwords"
 }

@@ -3196,8 +3196,7 @@
   "Reset": "リセット",
   "Reset_Connection": "リセット接続",
   "Reset_E2E_Key": "E2Eキーをリセットする",
-  "Reset_password": "パスワードを忘れた",
-  "Reset_create_new_password": "新しいパスワードを作成することができます：",
+  "Reset_password": "パスワードをリセットする",
   "Reset_password_btn": "リセットする",
   "Reset_password_success": "パスワードのリセットが成功しましたので、再登録してください",
   "Reset_section_settings": "セクション設定のリセット",
@@ -4249,6 +4248,6 @@
   "Login_has_not_account": "まだアカウントをお持ちでない？",
   "Login_go_register": "クリックしてサインアップ",
   "Register_passwordLengLimit6": "パスワードの最短長さは6です",
-  "Register_passwordLengMax18": "パスワードの最长長さは18です"
-
+  "Register_passwordLengMax18": "パスワードの最长長さは18です",
+  "Comfirm_password_error": "パスワードが一致しない"
 }

@@ -4,6 +4,9 @@ import { Template } from 'meteor/templating';
 import { settings } from '../../../settings';
 
 Template.loginHeader.helpers({
+	productCodeWidth() {
+		return Meteor.settings.public.PRODUCT_CODE === 'GODUCK' ? '' : '125px';
+	},
 	logoUrl() {
 		const asset = settings.get('Assets_logo');
 		const productCode = Meteor.settings.public.PRODUCT_CODE;

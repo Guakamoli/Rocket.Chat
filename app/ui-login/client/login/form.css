@@ -1,10 +1,7 @@
 .btn-code {
 	display: flex;
 
-	width: 120px;
-
 	color: #651fff;
-	background-color: #ffffff;
 
 	font-size: 13px;
 	font-weight: 500;
@@ -45,4 +42,10 @@ input {
 	text-align: left !important;
 
 	color: red !important;
+}
+
+.seconds {
+	position: absolute;
+	top: 0;
+	right: 0;
 }
