@@ -4248,5 +4248,6 @@
   "Login_has_not_account": "まだアカウントをお持ちでない？",
   "Login_go_register": "クリックしてサインアップ",
   "Register_passwordLengLimit6": "パスワードの最短長さは6です",
+  "Register_passwordLengMax18": "パスワードの最长長さは18です",
   "Comfirm_password_error": "パスワードが一致しない"
 }

@@ -436,6 +436,9 @@ Template.loginForm.onCreated(function() {
 			if (formObj.pass.length < 6) {
 				validationObj.pass = t('Register_passwordLengLimit6');
 			}
+			if (formObj.pass.length > 18) {
+				validationObj.pass = t('Register_passwordLengMax18');
+			}
 			if (settings.get('Accounts_RequirePasswordConfirmation') && formObj['confirm-pass'] !== formObj.pass) {
 				validationObj['confirm-pass'] = t('Invalid_confirm_pass');
 			}
