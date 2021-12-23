@@ -168,6 +168,14 @@ API.v1.addRoute(
 				UploadedFileItem.key = key;
 				if (key === 'file') {
 					uploadedFile = UploadedFileItem;
+
+					if (data.ts) {
+						const sepficTs = this.request.headers['x-upload-sepficts'] || null;
+						if (sepficTs) {
+							uploadedFile.ts = data.ts;
+							delete data.ts;
+						}
+					}
 					if (data.video_width) {
 						uploadedFile.width = parseInt(data.video_width);
 						uploadedFile.height = parseInt(data.video_height);

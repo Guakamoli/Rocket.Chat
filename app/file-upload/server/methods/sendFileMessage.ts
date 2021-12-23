@@ -123,11 +123,9 @@ Meteor.methods({
 			};
 			attachments.push(attachment);
 		}
-
-
 		const msg = Meteor.call('sendMessage', {
 			rid: roomId,
-			ts: new Date(),
+			ts: file.ts ? new Date(parseInt(file.ts)) : new Date(),
 			msg: '',
 			file: files[0],
 			files,
