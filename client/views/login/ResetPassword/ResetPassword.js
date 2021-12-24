@@ -82,7 +82,7 @@ const ResetPassword = () => {
 					await resetPassword(token, newPassword);
 					toastr.success(t('Reset_password_success'));
 					// await Meteor.loginWithToken(result.token);
-					router.push({});
+					window.location.href = Meteor.settings.public.LOGIN_ACTIVE_SUCCESS_URL;
 				} else {
 					await setUserPassword(newPassword);
 				}
