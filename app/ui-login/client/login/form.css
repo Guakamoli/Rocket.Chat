@@ -13,7 +13,13 @@
 	box-shadow: unset !important;
 }
 
-input {
+.rc-input__element {
+	height: 3em !important;
+}
+
+#login-card input {
+	padding: 0;
+
 	border: 0 !important;
 	border-bottom: 1px solid #e6e6e6 !important;
 	outline: none !important;
