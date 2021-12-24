@@ -2,6 +2,13 @@
 import { MessageAttachmentBase } from '../MessageAttachmentBase';
 import { FileAttachmentProps } from './FileAttachmentProps';
 import { FileProp } from './FileProp';
+import { Dimensions } from './Dimensions';
+
+export type VideoAttachmentCoverProps = {
+	video_cover_url?: string;
+	video_cover_type?: string;
+	video_cover_dimensions?: Dimensions;
+};
 
 export type VideoAttachmentProps = {
 	video_url: string;
@@ -9,9 +16,8 @@ export type VideoAttachmentProps = {
 	video_size: number;
 	video_width: number;
 	video_height: number;
-	video_cover_url: string;
 	file?: FileProp;
-} & MessageAttachmentBase;
+} & VideoAttachmentCoverProps & MessageAttachmentBase;
 
 export const isFileVideoAttachment = (
 	attachment: FileAttachmentProps,

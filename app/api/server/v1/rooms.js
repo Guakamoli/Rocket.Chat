@@ -1,5 +1,3 @@
-
-import _ from 'underscore';
 import { Meteor } from 'meteor/meteor';
 
 import { FileUpload } from '../../../file-upload';
@@ -12,7 +10,6 @@ import { Media } from '../../../../server/sdk';
 import { settings } from '../../../settings/server/index';
 import { getUploadFormData } from '../lib/getUploadFormData';
 import { SystemLogger } from '../../../logger/server';
-import { Uploads } from '../../../models/server';
 
 function findRoomByIdOrName({ params, checkedArchived = true }) {
 	if ((!params.roomId || !params.roomId.trim()) && (!params.roomName || !params.roomName.trim())) {
@@ -102,6 +99,12 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 		uploadedFile.description = fields.description;
 
 		delete fields.description;
+		if (fields.video_width && fields.video_height) {
+			uploadedFile.width = Number(fields.video_width);
+			uploadedFile.height = Number(fields.video_height);
+			delete fields.video_width;
+			delete fields.video_height;
+		}
 
 		const messageType = this.request.headers['x-upload-type'] || null;
 		if (messageType && ['post', 'story'].includes(messageType)) {
@@ -110,101 +113,10 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 		SystemLogger.debug('rooms.upload/:rid', this.request.headers, messageType, fields);
 
 		Meteor.call('sendFileMessage', this.urlParams.rid, null, uploadedFile, fields);
-
 		return API.v1.success({ message: Messages.getMessageByFileIdAndUsername(uploadedFile._id, this.userId) });
 	},
 });
 
-API.v1.addRoute(
-	'rooms.uploadPostStory/:rid',
-	{ authRequired: true },
-	{
-		post() {
-			const room = Meteor.call(
-				'canAccessRoom',
-				this.urlParams.rid,
-				this.userId,
-			);
-
-			if (!room) {
-				return API.v1.unauthorized();
-			}
-
-			const data = Promise.await(
-				getUploadFormData({
-					request: this.request,
-				}),
-			);
-			const mainFile = data.file;
-			if (!mainFile) {
-				throw new Meteor.Error('invalid-field');
-			}
-			const stripExif = settings.get('Message_Attachments_Strip_Exif');
-			const fileStore = FileUpload.getStore('Uploads');
-			let uploadedFile;
-			let coverPath = '';
-			for (const key in data) {
-				if (!data[key]?.file) {
-					continue;
-				}
-				const file = data[key];
-				Reflect.deleteProperty(data, key);
-				const details = {
-					name: file.filename,
-					size: file.fileBuffer.length,
-					type: file.mimetype,
-					rid: this.urlParams.rid,
-					userId: this.userId,
-				};
-				if (stripExif) {
-					// No need to check mime. Library will ignore any files without exif/xmp tags (like BMP, ico, PDF, etc)
-					file.fileBuffer = Promise.await(
-						Media.stripExifFromBuffer(file.fileBuffer),
-					);
-				}
-				const UploadedFileItem = fileStore.insertSync(details, file.fileBuffer);
-				UploadedFileItem.description = data.description;
-				delete data.description;
-				UploadedFileItem.key = key;
-				if (key === 'file') {
-					uploadedFile = UploadedFileItem;
-
-					if (data.ts) {
-						const sepficTs = this.request.headers['x-upload-sepficts'] || null;
-						if (sepficTs) {
-							uploadedFile.ts = data.ts;
-							delete data.ts;
-						}
-					}
-					if (data.video_width) {
-						uploadedFile.width = parseInt(data.video_width);
-						uploadedFile.height = parseInt(data.video_height);
-						delete data.video_width;
-						delete data.video_height;
-					}
-				} else {
-					Uploads.updateFileComplete(UploadedFileItem._id, this.user._id, _.omit(UploadedFileItem, '_id'));
-					coverPath = FileUpload.getPath(`${ UploadedFileItem._id }/${ encodeURI(UploadedFileItem.name) }`);
-				}
-			}
-			if (coverPath) {
-				uploadedFile.cover_url = coverPath;
-			}
-			const messageType = this.request.headers['x-upload-type'] || null;
-			if (messageType && ['post', 'story'].includes(messageType)) {
-				data.t = messageType;
-			}
-			// SystemLogger.debug('rooms.upload/:rid', this.request.headers, messageType, data);
-			Meteor.call('sendFileMessage', this.urlParams.rid, null, uploadedFile, data);
-			return API.v1.success({
-				message: Messages.getMessageByFileIdAndUsername(
-					uploadedFile._id,
-					this.userId,
-				),
-			});
-		},
-	},
-);
 API.v1.addRoute('rooms.saveNotification', { authRequired: true }, {
 	post() {
 		const saveNotifications = (notifications, roomId) => {
