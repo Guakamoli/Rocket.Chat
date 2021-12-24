@@ -99,6 +99,12 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 		uploadedFile.description = fields.description;
 
 		delete fields.description;
+		if (fields.video_width && fields.video_height) {
+			uploadedFile.width = Number(fields.video_width);
+			uploadedFile.height = Number(fields.video_height);
+			delete fields.video_width;
+			delete fields.video_height;
+		}
 
 		const messageType = this.request.headers['x-upload-type'] || null;
 		if (messageType && ['post', 'story'].includes(messageType)) {
@@ -107,7 +113,6 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 		SystemLogger.debug('rooms.upload/:rid', this.request.headers, messageType, fields);
 
 		Meteor.call('sendFileMessage', this.urlParams.rid, null, uploadedFile, fields);
-
 		return API.v1.success({ message: Messages.getMessageByFileIdAndUsername(uploadedFile._id, this.userId) });
 	},
 });

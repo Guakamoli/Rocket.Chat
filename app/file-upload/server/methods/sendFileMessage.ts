@@ -24,7 +24,10 @@ Meteor.methods({
 		if (user?.type !== 'app' && !canAccessRoom(room, user)) {
 			return false;
 		}
-
+		const videoCover = msgData.cover;
+		if (videoCover) {
+			delete msgData.cover;
+		}
 		check(msgData, {
 			t: Match.Optional(String),
 			avatar: Match.Optional(String),
@@ -108,7 +111,24 @@ Meteor.methods({
 				video_url: fileUrl,
 				video_type: file.type,
 				video_size: file.size,
+				video_width: file.width,
+				video_height: file.height,
 			};
+
+			if (videoCover) {
+				const cover = FileUpload.uploadImageThumbnail({ name: file.name, type: 'image/png' }, Buffer.from(videoCover.fileBuffer), roomId, user._id);
+				attachment.video_cover_url = FileUpload.getPath(`${ cover._id }/${ encodeURI(file.name) }`);
+				attachment.video_cover_type = cover.type;
+				attachment.video_cover_dimensions = {
+					width: file.width,
+					height: file.height,
+				};
+				files.push({
+					_id: cover._id,
+					name: file.name,
+					type: cover.type,
+				});
+			}
 			attachments.push(attachment);
 		} else {
 			const attachment = {
@@ -120,8 +140,6 @@ Meteor.methods({
 			};
 			attachments.push(attachment);
 		}
-
-
 		const msg = Meteor.call('sendMessage', {
 			rid: roomId,
 			ts: new Date(),
