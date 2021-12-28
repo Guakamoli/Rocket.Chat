@@ -60,7 +60,7 @@
                         <div class="rc-input">
                             <label class="rc-input__label" for="email">
                                 <div class="rc-input__wrapper">
-                                    <input name="email-login-email" id="email-login-email" type="text" class="rc-input__element"
+                                    <input name="email-login-account" id="email-login-account" type="text" class="rc-input__element"
                                                  autocapitalize="off" autocorrect="off"
                                                  placeholder="{{emailPlaceholder}}">
                                 </div>
@@ -69,7 +69,7 @@
                         <div class="rc-input">
                             <label class="rc-input__label" for="pass">
                                 <div class="rc-input__wrapper">
-                                    <input name="email-login-pass" id="email-login-pass" type="password" class="rc-input__element"
+                                    <input name="email-login-password" id="email-login-password" type="password" class="rc-input__element"
                                                  autocapitalize="off" autocorrect="off"
                                                  placeholder="{{passwordPlaceholder}}">
                                 </div>
@@ -148,7 +148,9 @@
             <div class="rc-button__group rc-button__group--vertical">
                 {{#if state 'login'}}
                     {{#if showFormLogin}}
-                        <button class='rc-button rc-button--primary login'>{{btnLoginSave}}</button>
+                        <div class="rc-button__group rc-button__group--vertical">
+                            <button class='rc-button rc-button--primary login'>{{btnLoginSave}}</button>
+                        </div>
 
                         <button type="button" class="rc-button rc-button--nude email-login" style="color: #651FFF; margin-top: 27px;">{{_ 'SignIn_with_email'}}</button>
                     {{/if}}

@@ -8,3 +8,11 @@ FlowRouter.route('/reset-password/:token', {
 		appLayout.render('loginLayout', { center: 'resetPassword' });
 	},
 });
+
+
+FlowRouter.route('/welcome', {
+	name: 'welcome',
+	action() {
+		appLayout.render('loginLayout', { center: 'welcome' });
+	},
+});

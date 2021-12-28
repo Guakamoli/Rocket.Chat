@@ -209,6 +209,13 @@ createTemplateForComponent(
 	},
 );
 
+createTemplateForComponent('welcome', () => import('./views/login/Result/Result'), {
+	renderContainerView: () =>
+		HTML.DIV({
+			style: 'display: flex; align-items: center; justifyContent: center; flex-direction: column',
+		}),
+});
+
 createTemplateForComponent('ModalBlock', () => import('./views/blocks/ConnectedModalBlock'), {
 	renderContainerView: () => HTML.DIV({ style: 'display: flex; width: 100%; height: 100%;' }),
 });
