@@ -13,7 +13,7 @@ import { FileAttachmentProps } from '../../../../definition/IMessage/MessageAtta
 import { IUser } from '../../../../definition/IUser';
 
 Meteor.methods({
-	async sendUploadedFileMessage(roomId, filesList = []) {
+	async sendUploadedFileMessage(roomId, filesList = [], msgData = {}) {
 		const user = Meteor.user() as IUser | undefined;
 		if (!user) {
 			throw new Meteor.Error('error-invalid-user', 'Invalid user', { method: 'sendFileMessage' } as any);
@@ -24,15 +24,42 @@ Meteor.methods({
 		if (user?.type !== 'app' && !canAccessRoom(room, user)) {
 			return false;
 		}
+		check(msgData, {
+			t: Match.Optional(String),
+			avatar: Match.Optional(String),
+			emoji: Match.Optional(String),
+			alias: Match.Optional(String),
+			groupable: Match.Optional(Boolean),
+			msg: Match.Optional(String),
+			tmid: Match.Optional(String),
+		});
+		const attachments: MessageAttachment[] = [];
+		const files = [];
+		const coverMap = {};
 		for (const file of filesList) {
+			if (file?.extra?.relative_video) {
+				coverMap[file.extra.relative_video] = file;
+				continue;
+			}
+		}
+		for (const file of filesList) {
+			files.push({
+				_id: file.extra.file_id,
+				name: file.name,
+				type: file.type,
+			});
+			Uploads.updateFileComplete(file.extra.file_id, user._id, _.omit(file, 'extra'));
+			if (file?.extra?.relative_video) {
+				continue;
+			}
 			if (/^image\/.+/.test(file.type)) {
 				const attachment: FileAttachmentProps = {
 					title: file.name,
 					type: 'file',
 					description: file.description,
-					title_link: fileUrl,
+					title_link: file.fileUrl,
 					title_link_download: true,
-					image_url: fileUrl,
+					image_url: file.fileUrl,
 					image_type: file.type,
 					image_size: file.size,
 				};
@@ -45,9 +72,9 @@ Meteor.methods({
 					title: file.name,
 					type: 'file',
 					description: file.description,
-					title_link: fileUrl,
+					title_link: file.fileUrl,
 					title_link_download: true,
-					audio_url: fileUrl,
+					audio_url: file.fileUrl,
 					audio_type: file.type,
 					audio_size: file.size,
 				};
@@ -57,25 +84,36 @@ Meteor.methods({
 					title: file.name,
 					type: 'file',
 					description: file.description,
-					title_link: fileUrl,
+					title_link: file.fileUrl,
 					title_link_download: true,
-					video_url: fileUrl,
+					video_url: file.fileUrl,
 					video_type: file.type,
 					video_size: file.size,
 					video_width: file.width,
 					video_height: file.height,
 				};
+				const videoCover = coverMap[attachment.name];
+				if (videoCover) {
+					attachment.video_cover_url = videoCover.fileUrl;
+					attachment.video_cover_type = videoCover.type;
+					attachment.video_cover_dimensions = {
+						width: file.width,
+						height: file.height,
+					};
+				}
+				attachments.push(attachment);
 			} else {
 				const attachment = {
 					title: file.name,
 					type: 'file',
 					description: file.description,
-					title_link: fileUrl,
+					title_link: file.fileUrl,
 					title_link_download: true,
 				};
 				attachments.push(attachment);
 			}
 		}
+
 		const msg = Meteor.call('sendMessage', {
 			rid: roomId,
 			ts: new Date(),

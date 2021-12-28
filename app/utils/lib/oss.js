@@ -25,12 +25,7 @@ export class OSSClient {
 	 * @param {String} options.region -
 	 */
 	constructor(accessKeyId, accessKeySecret, options = {}) {
-		const {
-			stsToken,
-			endpoint = OSSClient.ACCELERATE_ENDPOINT,
-			bucket,
-			region,
-		} = options;
+		const { stsToken, endpoint = OSSClient.ACCELERATE_ENDPOINT, bucket, region } = options;
 		const token = {
 			accessKeyId,
 			accessKeySecret,
@@ -62,12 +57,7 @@ export class OSSClient {
 	 * @returns {Promise|String} -
 	 */
 	signature(filename, options = {}) {
-		const {
-			method = 'PUT',
-			expires = 3600,
-			contentType,
-			contentDisposition = false,
-		} = options;
+		const { method = 'PUT', expires = 3600, contentType, contentDisposition = false } = options;
 		const response = {};
 		if (contentDisposition) {
 			response['content-disposition'] = `attachment; filename="${ filename }"`;
@@ -92,14 +82,7 @@ export class OSSClient {
 	 * @returns {OSSClient} -
 	 */
 	static init(options = {}) {
-		const {
-			accessKeyId,
-			accessKeySecret,
-			securityToken: stsToken,
-			filename,
-			bucket,
-			region,
-		} = options;
+		const { accessKeyId, accessKeySecret, securityToken: stsToken, filename, bucket, region } = options;
 
 		const opts = {
 			stsToken,
@@ -167,18 +150,12 @@ export class VodClient {
 			opts.coverURL = coverURL;
 		}
 
-		const createUploadVideoRequest = new $vod20170321.CreateUploadVideoRequest(
-			opts,
-		);
+		const createUploadVideoRequest = new $vod20170321.CreateUploadVideoRequest(opts);
 		let resp = await this.$vod.createUploadVideo(createUploadVideoRequest);
 
 		resp = $tea.toMap(resp);
-		resp.body.UploadAddress =			JSON.parse(
-			Buffer.from(resp.body.UploadAddress, 'base64').toString('ascii'),
-		) || {};
-		resp.body.UploadAuth =			JSON.parse(
-			Buffer.from(resp.body.UploadAuth, 'base64').toString('ascii'),
-		) || {};
+		resp.body.UploadAddress = JSON.parse(Buffer.from(resp.body.UploadAddress, 'base64').toString('ascii')) || {};
+		resp.body.UploadAuth = JSON.parse(Buffer.from(resp.body.UploadAuth, 'base64').toString('ascii')) || {};
 		resp.body.VideoURL = `https://${ config.VOD_DOMAIN }/${ resp.body.UploadAddress.FileName }`;
 		resp.body.FileURL = `https://${ config.VOD_BUCKET }/${ config.VOD_REGION }.aliyuncs.com/${ resp.body.UploadAddress.FileName }`;
 
@@ -209,18 +186,12 @@ export class VodClient {
 			description,
 			tags,
 		};
-		const createUploadImageRequest = new $vod20170321.CreateUploadImageRequest(
-			opts,
-		);
+		const createUploadImageRequest = new $vod20170321.CreateUploadImageRequest(opts);
 		let resp = await this.$vod.createUploadImage(createUploadImageRequest);
 
 		resp = $tea.toMap(resp);
-		resp.body.UploadAddress =			JSON.parse(
-			Buffer.from(resp.body.UploadAddress, 'base64').toString('ascii'),
-		) || {};
-		resp.body.UploadAuth =			JSON.parse(
-			Buffer.from(resp.body.UploadAuth, 'base64').toString('ascii'),
-		) || {};
+		resp.body.UploadAddress = JSON.parse(Buffer.from(resp.body.UploadAddress, 'base64').toString('ascii')) || {};
+		resp.body.UploadAuth = JSON.parse(Buffer.from(resp.body.UploadAuth, 'base64').toString('ascii')) || {};
 
 		return resp;
 	}
@@ -240,18 +211,7 @@ export class VodClient {
 	 * @returns {Promise} -
 	 */
 	async signature(options = {}) {
-		const {
-			filename,
-			coverURL = '',
-			description = '',
-			tags = '',
-			title = '',
-			workflowId = config.VOD_WORKFLOW_ID,
-			userData = VodClient.USER_DATA,
-			imageType = 'default',
-			imageExt = 'jpg',
-			type,
-		} = options;
+		const { filename, coverURL = '', description = '', tags = '', title = '', workflowId = config.VOD_WORKFLOW_ID, userData = VodClient.USER_DATA, imageType = 'default', imageExt = 'jpg', type } = options;
 
 		let resp = null;
 		switch (type) {
@@ -323,15 +283,7 @@ export async function vodPreSignature(options = {}) {
 	}
 	const vod = new VodClient(accessKeyId, accessKeySecret);
 	const {
-		body: {
-			UploadAddress = {},
-			UploadAuth = {},
-			RequestId: requestId = '',
-			VideoId: videoId = '',
-			VideoURL: videoURL = '',
-			ImageId: imageId = '',
-			ImageURL: imageURL = '',
-		},
+		body: { UploadAddress = {}, UploadAuth = {}, RequestId: requestId = '', VideoId: videoId = '', VideoURL: videoURL = '', ImageId: imageId = '', ImageURL: imageURL = '' },
 	} = await vod.signature(opts);
 	const base = {
 		requestId,
@@ -377,10 +329,7 @@ export async function vodPreSignature(options = {}) {
  * @returns {String} -
  */
 export function ossComposeURL(filename, https = true) {
-	return `${ https ? 'https' : 'http' }://${ config.OSS_DOMAIN }/${ path.join(
-		'.',
-		filename,
-	) }`;
+	return `${ https ? 'https' : 'http' }://${ config.OSS_DOMAIN }/${ path.join('.', filename) }`;
 }
 /**
  * @description 阿里云对象存储生成验签
@@ -425,29 +374,16 @@ export async function ossGetPlayList(videoId) {
 	const {
 		PlayInfoList: { PlayInfo },
 	} = resp.body;
-	return PlayInfo.filter((video) => video.Status === 'Normal').reduce(
-		(previous, video) => {
-			if (video.Status === 'Normal') {
-				previous[video.Definition] = video.PlayURL;
-			}
-			return previous;
-		},
-		{},
-	);
+	return PlayInfo.filter((video) => video.Status === 'Normal').reduce((previous, video) => {
+		if (video.Status === 'Normal') {
+			previous[video.Definition] = video.PlayURL;
+		}
+		return previous;
+	}, {});
 }
 const configure = _.debounce(function() {
 	const specialKeys = ['AccessKeyId', 'AccessKeySecret'];
-	const keys = [
-		'Bucket',
-		'AccessKeyId',
-		'AccessKeySecret',
-		'Region',
-		'Endpoint',
-		'Domain',
-		'WorkFlowId',
-		'CateIdVideo',
-		'CateIdCover',
-	];
+	const keys = ['Bucket', 'AccessKeyId', 'AccessKeySecret', 'Region', 'Endpoint', 'Domain', 'WorkFlowId', 'CateIdVideo', 'CateIdCover'];
 	for (const key of keys) {
 		let ossKey = key.replace(/^\S/, (s) => s.toLowerCase());
 		ossKey = ossKey

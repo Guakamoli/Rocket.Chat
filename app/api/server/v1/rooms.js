@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 
 import { FileUpload } from '../../../file-upload';
-import { Rooms, Messages } from '../../../models';
+import { Rooms, Messages, Uploads } from '../../../models';
 import { API } from '../api';
 import { findAdminRooms, findChannelAndPrivateAutocomplete, findAdminRoom, findRoomsAvailableForTeams } from '../lib/rooms';
 import { sendFile, sendViaEmail } from '../../../../server/lib/channelExport';
@@ -10,6 +10,8 @@ import { Media } from '../../../../server/sdk';
 import { settings } from '../../../settings/server/index';
 import { getUploadFormData } from '../lib/getUploadFormData';
 import { SystemLogger } from '../../../logger/server';
+import { preSignature as aliyunPreSignature } from '../../../utils/lib/ossUtils';
+import { uuidv4 as uuid } from '../../../utils/lib/random';
 
 function findRoomByIdOrName({ params, checkedArchived = true }) {
 	if ((!params.roomId || !params.roomId.trim()) && (!params.roomName || !params.roomName.trim())) {
@@ -120,15 +122,69 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 });
 
 API.v1.addRoute('rooms.getAliyunUploadPaths', { authRequired: true }, {
-	get() {
+	// 1. 到阿里云去拿签名, 但是要注意签名是会过期的，太久没上传链接就传不了, 前端重传机制
+	// 2. 这里要如果已经有file条目，不需要创建直接更新即可
+	post() {
 		const { fileList } = this.queryParams;
 		if (!fileList.length) {
 			throw new Meteor.Error('error-fileList-param-invalid', 'The "fileList" query parameter must be a valid list.');
 		}
 		const result = [];
+		const fileStore = FileUpload.getStore('Uploads');
 		for (const fileItem of fileList) {
-			const signatureItem = Promise.await(aliyunSignature(fileItem));
-			result.push(...signatureItem);
+			let options = {};
+			if (fileItem.type.startsWith('video')) {
+				options = {
+					title: fileItem.name,
+					description: `达人ID: ${ this.userId }`,
+					tags: [this.userId].join(','),
+					type: 'video',
+					filename: fileItem.name,
+					contentType: fileItem.type,
+					containerName: 'video',
+					contentDisposition: true,
+				};
+			} else {
+				const filename = fileItem?.extra?.filename || `${ uuid() }.png`;
+				if (fileItem.extra) {
+					fileItem.extra.filename = filename;
+				} else {
+					fileItem.extra = {
+						filename,
+					};
+				}
+				options = {
+					filename,
+					contentType: fileItem.type,
+					containerName: 'default',
+					contentDisposition: true,
+				};
+			}
+			const signatureItem = Promise.await(aliyunPreSignature(options));
+			result.push({
+				...fileItem,
+				uploadFileUrl: signatureItem.fileUrl,
+				assetsUrl: signatureItem.imageURL || signatureItem.VideoURL,
+			});
+		}
+		// 循环查找如果不存在就创建一个
+		for (const item of result) {
+			let file = null;
+			if (item.extra && item.extra.file_id) {
+				file = Uploads.findOneById(item.extra.file_id);
+			}
+			if (!file) {
+				const details = {
+					name: file.name,
+					size: file.size,
+					type: file.type,
+					rid: this.urlParams.rid,
+					userId: this.userId,
+				};
+				const fileId = fileStore.store.create(details);
+				file = fileStore.model.findOneById(fileId);
+				item.extra.file_id = file.id;
+			}
 		}
 		return API.v1.success({
 			data: result,
@@ -142,10 +198,10 @@ API.v1.addRoute('rooms.saveUploadedFiles/:rid', { authRequired: true }, {
 		if (!room) {
 			return API.v1.unauthorized();
 		}
-		// filesList 内部先构造好 后端保存的的所有数据, 直接丢过来了就好
-		const { filesList } = this.bodyParams;
+		// fileList 内部先构造好 后端保存的的所有数据, 直接丢过来了就好
+		const { fileList, ...fields } = this.bodyParams;
 		SystemLogger.debug('rooms.saveUploadedFiles/:rid', this.request.headers);
-		const message = Meteor.call('sendUploadedFileMessage', this.urlParams.rid, filesList);
+		const message = Meteor.call('sendUploadedFileMessage', this.urlParams.rid, fileList, fields);
 		return API.v1.success({ message });
 	},
 });
