@@ -26,6 +26,8 @@
       "error",
       "syntax"
     ],
+    // "function-paren-newline": ["error", "never"],
+    "max-len":["error", {"code": 260, "tabWidth": 4}],
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": ["warn", {
       "additionalHooks": "(useComponentDidUpdate)"

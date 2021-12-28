@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
 
 Meteor.startup(function() {
+	return
 	Accounts.kameoSms.configure({
 		aliyun: {
 			accessKeyId: process.env.SMS_ACCESS_KEY_ID,

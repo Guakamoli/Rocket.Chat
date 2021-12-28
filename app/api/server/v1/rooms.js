@@ -119,6 +119,37 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 	},
 });
 
+API.v1.addRoute('rooms.getAliyunUploadPaths', { authRequired: true }, {
+	get() {
+		const { fileList } = this.queryParams;
+		if (!fileList.length) {
+			throw new Meteor.Error('error-fileList-param-invalid', 'The "fileList" query parameter must be a valid list.');
+		}
+		const result = [];
+		for (const fileItem of fileList) {
+			const signatureItem = Promise.await(aliyunSignature(fileItem));
+			result.push(...signatureItem);
+		}
+		return API.v1.success({
+			data: result,
+		});
+	},
+});
+
+API.v1.addRoute('rooms.saveUploadedFiles/:rid', { authRequired: true }, {
+	post() {
+		const room = Meteor.call('canAccessRoom', this.urlParams.rid, this.userId);
+		if (!room) {
+			return API.v1.unauthorized();
+		}
+		// filesList 内部先构造好 后端保存的的所有数据, 直接丢过来了就好
+		const { filesList } = this.bodyParams;
+		SystemLogger.debug('rooms.saveUploadedFiles/:rid', this.request.headers);
+		const message = Meteor.call('sendUploadedFileMessage', this.urlParams.rid, filesList);
+		return API.v1.success({ message });
+	},
+});
+
 API.v1.addRoute('rooms.saveNotification', { authRequired: true }, {
 	post() {
 		const saveNotifications = (notifications, roomId) => {

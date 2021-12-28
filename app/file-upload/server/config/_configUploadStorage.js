@@ -3,6 +3,7 @@ import _ from 'underscore';
 
 import { settings } from '../../../settings';
 import './AmazonS3.js';
+import './AliyunOSS.js';
 import './FileSystem.js';
 import './GoogleStorage.js';
 import './GridFS.js';
