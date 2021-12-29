@@ -25,6 +25,7 @@ Meteor.methods({
 		}
 		check(msgData, {
 			t: Match.Optional(String),
+			_id: Match.Optional(String),
 			avatar: Match.Optional(String),
 			emoji: Match.Optional(String),
 			alias: Match.Optional(String),
@@ -34,8 +35,6 @@ Meteor.methods({
 		});
 		const attachments: MessageAttachment[] = [];
 		const files = [];
-
-
 		for (const file of filesList) {
 			const fileUrl = file?.extra?.assetsUrl;
 			files.push({
