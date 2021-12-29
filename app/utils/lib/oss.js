@@ -1,7 +1,7 @@
 import path from 'path';
 
-import OpenApi from '@alicloud/openapi-client';
-import $vod20170321 from '@alicloud/vod20170321';
+import * as OpenApi from '@alicloud/openapi-client';
+import Vod20170321, * as $vod20170321 from '@alicloud/vod20170321';
 import * as $tea from '@alicloud/tea-typescript';
 import OSS from 'ali-oss';
 import _ from 'underscore';
@@ -10,7 +10,7 @@ import { md5 } from './random.js';
 import { settings } from '../../settings';
 
 const config = {};
-const { default: Vod20170321 } = $vod20170321;
+// const { default: Vod20170321 } = $vod20170321;
 
 export class OSSClient {
 	static ACCELERATE_ENDPOINT = config.OSS_ENDPOINT;
@@ -149,11 +149,9 @@ export class VodClient {
 		if (coverURL) {
 			opts.coverURL = coverURL;
 		}
-
 		const createUploadVideoRequest = new $vod20170321.CreateUploadVideoRequest(opts);
-		let resp = await this.$vod.createUploadVideo(createUploadVideoRequest);
-
-		resp = $tea.toMap(resp);
+		let resp = await this.$vod.createUploadVideo(createUploadVideoRequest.toMap());
+		resp = resp.toMap()
 		resp.body.UploadAddress = JSON.parse(Buffer.from(resp.body.UploadAddress, 'base64').toString('ascii')) || {};
 		resp.body.UploadAuth = JSON.parse(Buffer.from(resp.body.UploadAuth, 'base64').toString('ascii')) || {};
 		resp.body.VideoURL = `https://${ config.VOD_DOMAIN }/${ resp.body.UploadAddress.FileName }`;
@@ -187,9 +185,8 @@ export class VodClient {
 			tags,
 		};
 		const createUploadImageRequest = new $vod20170321.CreateUploadImageRequest(opts);
-		let resp = await this.$vod.createUploadImage(createUploadImageRequest);
-
-		resp = $tea.toMap(resp);
+		let resp = await this.$vod.createUploadImage(createUploadImageRequest.toMap());
+		resp = resp.toMap();
 		resp.body.UploadAddress = JSON.parse(Buffer.from(resp.body.UploadAddress, 'base64').toString('ascii')) || {};
 		resp.body.UploadAuth = JSON.parse(Buffer.from(resp.body.UploadAuth, 'base64').toString('ascii')) || {};
 
@@ -211,8 +208,7 @@ export class VodClient {
 	 * @returns {Promise} -
 	 */
 	async signature(options = {}) {
-		const { filename, coverURL = '', description = '', tags = '', title = '', workflowId = config.VOD_WORKFLOW_ID, userData = VodClient.USER_DATA, imageType = 'default', imageExt = 'jpg', type } = options;
-
+		const { filename, coverURL = '', description = '', tags = '', title = '', workflowId = config.VOD_WORK_FLOW_ID, userData = VodClient.USER_DATA, imageType = 'default', imageExt = 'jpg', type } = options;
 		let resp = null;
 		switch (type) {
 			case 'video':
@@ -267,11 +263,10 @@ export class VodClient {
 export async function vodPreSignature(options = {}) {
 	const accessKeyId = config.VOD_ACCESS_KEY_ID;
 	const accessKeySecret = config.VOD_ACCESS_KEY_SECRET;
-
 	const opts = {
 		...options,
 		title: options.title || options.filename,
-		workflowId: options.workflowId || config.VOD_WORKFLOW_ID,
+		workflowId: options.workflowId || config.VOD_WORK_FLOW_ID,
 	};
 
 	if (opts.type) {
@@ -281,6 +276,7 @@ export async function vodPreSignature(options = {}) {
 			delete opts.type;
 		}
 	}
+
 	const vod = new VodClient(accessKeyId, accessKeySecret);
 	const {
 		body: { UploadAddress = {}, UploadAuth = {}, RequestId: requestId = '', VideoId: videoId = '', VideoURL: videoURL = '', ImageId: imageId = '', ImageURL: imageURL = '' },
@@ -399,9 +395,15 @@ const configure = _.debounce(function() {
 			config[`VOD_${ ossKey }`] = vodValue;
 		}
 	}
-
+	VodClient.ENDPOINT = config.VOD_ENDPOINT;
 	OSSClient.ACCELERATE_ENDPOINT = config.OSS_ENDPOINT;
 	VodClient.VOD_ENDPOINT = config.VOD_ENDPOINT;
+	VodClient.USER_DATA = {
+		AccelerateConfig: {
+			Type: 'oss',
+			Domain: OSSClient.ACCELERATE_ENDPOINT,
+		},
+	};
 }, 500);
 
 settings.get(/^FileUpload_AliOSS_/, configure);

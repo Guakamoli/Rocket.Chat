@@ -4,6 +4,8 @@ import './lib/proxy';
 import './lib/requests';
 import './config/_configUploadStorage';
 import './methods/sendFileMessage';
+import './methods/sendUploadedFileMessage';
+
 import './methods/getS3FileUrl';
 import './startup/settings';
 

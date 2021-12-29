@@ -38,7 +38,7 @@ export class AliyunOSSStore extends UploadFS.Store {
 		super(options);
 
 		const classOptions = options;
-		const oss = new OSSClient.init(options.commonConfig);
+		// const oss = new OSSClient.init(options.commonConfig);
 		// const vod = new VodClient(options.videoConfig);
 		options.getPath =			options.getPath
 			|| function(file) {
@@ -52,13 +52,14 @@ export class AliyunOSSStore extends UploadFS.Store {
 		};
 
 		this.getRedirectURL = function(file, forceDownload = false, callback) {
-			const params = {
-				Key: this.getPath(file),
-				Expires: classOptions.URLExpiryTimeSpan,
-				ResponseContentDisposition: `${ forceDownload ? 'attachment' : 'inline' }; filename="${ encodeURI(file.name) }"`,
-			};
+			return ''
+			// const params = {
+			// 	Key: this.getPath(file),
+			// 	Expires: classOptions.URLExpiryTimeSpan,
+			// 	ResponseContentDisposition: `${ forceDownload ? 'attachment' : 'inline' }; filename="${ encodeURI(file.name) }"`,
+			// };
 
-			return oss.getSignedUrl('getObject', params, callback);
+			// return oss.getSignedUrl('getObject', params, callback);
 		};
 
 		/**
