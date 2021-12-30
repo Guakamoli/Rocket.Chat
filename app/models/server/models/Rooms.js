@@ -1388,8 +1388,8 @@ export class Rooms extends Base {
 		const query = {
 			'u._id': userId,
 			t: type,
+			individualMain: true,
 		};
-
 		return this.findOne(query, options);
 	}
 }

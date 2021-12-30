@@ -16,6 +16,8 @@ import { checkEmailAvailability, checkUsernameAvailability, setUserAvatar, setEm
 import { createRoom } from './createRoom';
 import { saveCustomFields } from './saveCustomFields';
 
+import { Rooms } from '/app/models';
+
 let html = '';
 let passwordChangedHtml = '';
 Meteor.startup(() => {
@@ -257,9 +259,12 @@ function changeRole(userData, oldAccount) {
 	const diffInfluencerRole = roles.includes('influencer') !== userDataRoles.includes('influencer');
 
 	if (diffCreatorRole || diffInfluencerRole) {
-		if (userDataRoles.includes('creator') && !oldAccount?.customFields?.defaultChannel) {
-			const room = createRoom('c', userData._id, oldAccount.username, [], false, {});
-			saveCustomFields(userData._id, { ...userData.customFields, defaultChannel: room.rid ?? '' });
+		if (userDataRoles.includes('creator')) {
+			let mainRoom = Rooms.findByUserIdAndType(oldAccount._id, 'c', { individualMain: true });
+			if (!mainRoom) {
+				mainRoom = createRoom('c', userData._id, oldAccount.username, [], false, { individualMain: true });
+			}
+			saveCustomFields(userData._id, { ...userData.customFields, defaultChannel: (mainRoom._id || mainRoom.rid) ?? '' });
 		}
 		Meteor.call('kameoRocketmqSendChangeRole', userData._id, { userId: userData._id, roles: userDataRoles });
 	}
