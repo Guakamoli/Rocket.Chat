@@ -26,7 +26,7 @@ const Result = () => {
 					fontWeight: 500,
 				}}
 			>
-				{type === 1 ? t('Verify_success') : t('Reset_success')}
+				{type === '1' ? t('Verify_success') : t('Reset_success')}
 			</div>
 			<div style={{ fontSize: '15px', color: '#7987A1' }}>{t('Back_to_login')}</div>
 		</div>
