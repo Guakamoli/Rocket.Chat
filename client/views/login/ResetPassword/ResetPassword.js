@@ -1,5 +1,6 @@
 import { TextInput } from '@rocket.chat/fuselage';
 import { useSafely } from '@rocket.chat/fuselage-hooks';
+import { Meteor } from 'meteor/meteor';
 import React, { useState, useCallback } from 'react';
 import toastr from 'toastr';
 
@@ -82,7 +83,7 @@ const ResetPassword = () => {
 					await resetPassword(token, newPassword);
 					toastr.success(t('Reset_password_success'));
 					// await Meteor.loginWithToken(result.token);
-					router.push({});
+					window.location.href = '/welcome?type=2';
 				} else {
 					await setUserPassword(newPassword);
 				}
@@ -99,7 +100,6 @@ const ResetPassword = () => {
 			token,
 			resetPassword,
 			newPassword,
-			router,
 			setUserPassword,
 			// setError,
 			t,
@@ -161,13 +161,20 @@ const ResetPassword = () => {
 			<div
 				style={{
 					display: 'flex',
-					flexDirection: 'column',
+					flexDirection: Meteor.settings.public.PRODUCT_CODE === 'GODUCK' ? 'column' : 'row',
 					justifyContent: 'center',
 					alignItems: 'center',
 					marginTop: '100px',
 				}}
 			>
-				<div style={{ color: '#9B9B9B' }}>{t('Login_has_not_account')}</div>
+				<div
+					style={{
+						color: '#9B9B9B',
+						marginRight: Meteor.settings.public.PRODUCT_CODE === 'GODUCK' ? '' : '10px',
+					}}
+				>
+					{t('Login_has_not_account')}
+				</div>
 				<button
 					type='button'
 					className='rc-button rc-button--nude register'

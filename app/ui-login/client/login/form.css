@@ -13,7 +13,13 @@
 	box-shadow: unset !important;
 }
 
+.rc-input__element {
+	height: 3em !important;
+}
+
 input {
+	padding: 0 !important;
+
 	border: 0 !important;
 	border-bottom: 1px solid #e6e6e6 !important;
 	outline: none !important;
