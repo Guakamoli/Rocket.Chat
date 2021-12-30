@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 
 import { FileUpload } from '../../../file-upload';
-import { Rooms, Messages, Uploads } from '../../../models';
+import { Rooms, Messages } from '../../../models';
 import { API } from '../api';
 import { findAdminRooms, findChannelAndPrivateAutocomplete, findAdminRoom, findRoomsAvailableForTeams } from '../lib/rooms';
 import { sendFile, sendViaEmail } from '../../../../server/lib/channelExport';
@@ -129,8 +129,6 @@ API.v1.addRoute('rooms.getAliyunUploadPaths', { authRequired: true }, {
 		if (!fileList?.length) {
 			throw new Meteor.Error('error-fileList-param-invalid', 'The "fileList" query parameter must be a valid list.');
 		}
-		const result = [];
-		const fileStore = FileUpload.getStore('Uploads');
 		for (const fileItem of fileList) {
 			let options = {};
 			if (fileItem.type.startsWith('video')) {
@@ -160,37 +158,12 @@ API.v1.addRoute('rooms.getAliyunUploadPaths', { authRequired: true }, {
 				};
 			}
 			const signatureItem = Promise.await(aliyunPreSignature(options));
-			const pushItem = {
-				...fileItem,
-			};
-			pushItem.extra.uploadFileUrl = signatureItem.fileURL;
-			pushItem.extra.uploadFileTs = Date.now();
-			pushItem.extra.assetsUrl = signatureItem.imageURL || signatureItem.videoURL;
-			result.push(pushItem);
-		}
-		// 循环查找如果不存在就创建一个
-		for (const item of result) {
-			let file = null;
-			if (item.extra && item.extra.file_id) {
-				file = Uploads.findOneById(item.extra.file_id);
-			}
-			if (!file) {
-				const details = {
-					name: item.name,
-					size: item.size,
-					type: item.type,
-					rid: this.urlParams.rid,
-					userId: this.userId,
-				};
-				const fileId = fileStore.store.create(details);
-				file = fileStore.model.findOneById(fileId);
-				if (file) {
-					item.extra.file_id = file._id;
-				}
-			}
+			fileItem.extra.uploadFileUrl = signatureItem.fileURL;
+			fileItem.extra.uploadFileTs = Date.now();
+			fileItem.extra.assetsUrl = signatureItem.imageURL || signatureItem.videoURL;
 		}
 		return API.v1.success({
-			message: result,
+			message: fileList,
 		});
 	},
 });
@@ -203,7 +176,7 @@ API.v1.addRoute('rooms.saveUploadedFiles/:rid', { authRequired: true }, {
 		}
 		const { fileList, ...fields } = this.bodyParams;
 		SystemLogger.debug('rooms.saveUploadedFiles/:rid', this.request.headers);
-		const message = Meteor.call('sendUploadedFileMessage', this.urlParams.rid, fileList, fields);
+		const message = Meteor.call('sendFileMessage', this.urlParams.rid, null, null, fields, fileList);
 		return API.v1.success({ message });
 	},
 });

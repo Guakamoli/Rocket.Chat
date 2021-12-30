@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 /* eslint-disable @typescript-eslint/camelcase */
 import { Meteor } from 'meteor/meteor';
 import { Match, check } from 'meteor/check';
@@ -13,23 +14,28 @@ import { FileAttachmentProps } from '../../../../definition/IMessage/MessageAtta
 import { IUser } from '../../../../definition/IUser';
 
 Meteor.methods({
-	async sendFileMessage(roomId, _store, file, msgData = {}) {
+	async sendFileMessage(roomId, _store, fileRaw, msgData = {}, fileList = []) {
 		const user = Meteor.user() as IUser | undefined;
 		if (!user) {
 			throw new Meteor.Error('error-invalid-user', 'Invalid user', { method: 'sendFileMessage' } as any);
 		}
-
 		const room = await Rooms.findOneById(roomId);
 
 		if (user?.type !== 'app' && !canAccessRoom(room, user)) {
 			return false;
 		}
+		const fileStore = FileUpload.getStore('Uploads');
 		const videoCover = msgData.cover;
 		if (videoCover) {
 			delete msgData.cover;
 		}
+		if (!fileList.length && fileRaw) {
+			fileList = [fileRaw];
+		}
+
 		check(msgData, {
 			t: Match.Optional(String),
+			_id: Match.Optional(String),
 			avatar: Match.Optional(String),
 			emoji: Match.Optional(String),
 			alias: Match.Optional(String),
@@ -38,108 +44,123 @@ Meteor.methods({
 			tmid: Match.Optional(String),
 			public: Match.Optional(Boolean),
 		});
-
-		Uploads.updateFileComplete(file._id, user._id, _.omit(file, '_id'));
-
-		const fileUrl = FileUpload.getPath(`${ file._id }/${ encodeURI(file.name) }`);
-
 		const attachments: MessageAttachment[] = [];
-
-		const files = [{
-			_id: file._id,
-			name: file.name,
-			type: file.type,
-		}];
-
-		if (/^image\/.+/.test(file.type)) {
-			const attachment: FileAttachmentProps = {
-				title: file.name,
-				type: 'file',
-				description: file.description,
-				title_link: fileUrl,
-				title_link_download: true,
-				image_url: fileUrl,
-				image_type: file.type,
-				image_size: file.size,
-			};
-
-			if (file.identify && file.identify.size) {
-				attachment.image_dimensions = file.identify.size;
+		const files = [];
+		for (const file of fileList) {
+			const hasBuffer = !!file.fileBuffer;
+			let fileId = file._id;
+			if (!hasBuffer) {
+				const details = {
+					name: file.name,
+					size: file.size,
+					type: file.type,
+					rid: roomId,
+					userId: user._id,
+					complete: true,
+					uploading: false,
+					progress: 1,
+				};
+				fileId = fileStore.store.create(details);
+			} else {
+				Uploads.updateFileComplete(fileId, user._id, _.omit(file, '_id'));
 			}
+			const fileUrl = file?.extra?.assetsUrl || FileUpload.getPath(`${ file._id }/${ encodeURI(file.name) }`);
+			files.push({
+				_id: fileId,
+				name: file.name,
+				type: file.type,
+			});
+			if (/^image\/.+/.test(file.type)) {
+				const attachment: FileAttachmentProps = {
+					title: file.name,
+					type: 'file',
+					description: file.description,
+					title_link: fileUrl,
+					title_link_download: true,
+					image_url: fileUrl,
+					image_type: file.type,
+					image_size: file.size,
+				};
 
-			try {
-				attachment.image_preview = await FileUpload.resizeImagePreview(file);
-				const thumbResult = await FileUpload.createImageThumbnail(file);
-				if (thumbResult) {
-					const { data: thumbBuffer, width, height } = thumbResult;
-					const thumbnail = FileUpload.uploadImageThumbnail(file, thumbBuffer, roomId, user._id);
-					const thumbUrl = FileUpload.getPath(`${ thumbnail._id }/${ encodeURI(file.name) }`);
-					attachment.image_url = thumbUrl;
-					attachment.image_type = thumbnail.type;
-					attachment.image_dimensions = {
-						width,
-						height,
+				if (file.identify && file.identify.size) {
+					attachment.image_dimensions = file.identify.size;
+				}
+				if (!hasBuffer) {
+					continue;
+				}
+				try {
+					attachment.image_preview = await FileUpload.resizeImagePreview(file);
+					const thumbResult = await FileUpload.createImageThumbnail(file);
+					if (thumbResult) {
+						const { data: thumbBuffer, width, height } = thumbResult;
+						const thumbnail = FileUpload.uploadImageThumbnail(file, thumbBuffer, roomId, user._id);
+						const thumbUrl = FileUpload.getPath(`${ thumbnail._id }/${ encodeURI(file.name) }`);
+						attachment.image_url = thumbUrl;
+						attachment.image_type = thumbnail.type;
+						attachment.image_dimensions = {
+							width,
+							height,
+						};
+						files.push({
+							_id: thumbnail._id,
+							name: file.name,
+							type: thumbnail.type,
+						});
+					}
+				} catch (e) {
+					console.error(e);
+				}
+				attachments.push(attachment);
+			} else if (/^audio\/.+/.test(file.type)) {
+				const attachment: FileAttachmentProps = {
+					title: file.name,
+					type: 'file',
+					description: file.description,
+					title_link: fileUrl,
+					title_link_download: true,
+					audio_url: fileUrl,
+					audio_type: file.type,
+					audio_size: file.size,
+				};
+				attachments.push(attachment);
+			} else if (/^video\/.+/.test(file.type)) {
+				const attachment: FileAttachmentProps = {
+					title: file.name,
+					type: 'file',
+					description: file.description,
+					title_link: fileUrl,
+					title_link_download: true,
+					video_url: fileUrl,
+					video_type: file.type,
+					video_size: file.size,
+					video_width: file.width,
+					video_height: file.height,
+				};
+				if (videoCover && hasBuffer) {
+					const cover = FileUpload.uploadImageThumbnail({ name: file.name, type: 'image/png' }, Buffer.from(videoCover.fileBuffer), roomId, user._id);
+					attachment.video_cover_url = FileUpload.getPath(`${ cover._id }/${ encodeURI(file.name) }`);
+					attachment.video_cover_type = cover.type;
+					attachment.video_cover_dimensions = {
+						width: file.width,
+						height: file.height,
 					};
 					files.push({
-						_id: thumbnail._id,
+						_id: cover._id,
 						name: file.name,
-						type: thumbnail.type,
+						type: cover.type,
 					});
 				}
-			} catch (e) {
-				console.error(e);
-			}
-			attachments.push(attachment);
-		} else if (/^audio\/.+/.test(file.type)) {
-			const attachment: FileAttachmentProps = {
-				title: file.name,
-				type: 'file',
-				description: file.description,
-				title_link: fileUrl,
-				title_link_download: true,
-				audio_url: fileUrl,
-				audio_type: file.type,
-				audio_size: file.size,
-			};
-			attachments.push(attachment);
-		} else if (/^video\/.+/.test(file.type)) {
-			const attachment: FileAttachmentProps = {
-				title: file.name,
-				type: 'file',
-				description: file.description,
-				title_link: fileUrl,
-				title_link_download: true,
-				video_url: fileUrl,
-				video_type: file.type,
-				video_size: file.size,
-				video_width: file.width,
-				video_height: file.height,
-			};
-
-			if (videoCover) {
-				const cover = FileUpload.uploadImageThumbnail({ name: file.name, type: 'image/png' }, Buffer.from(videoCover.fileBuffer), roomId, user._id);
-				attachment.video_cover_url = FileUpload.getPath(`${ cover._id }/${ encodeURI(file.name) }`);
-				attachment.video_cover_type = cover.type;
-				attachment.video_cover_dimensions = {
-					width: file.width,
-					height: file.height,
+				attachments.push(attachment);
+			} else {
+				const attachment = {
+					title: file.name,
+					type: 'file',
+					description: file.description,
+					title_link: fileUrl,
+					title_link_download: true,
 				};
-				files.push({
-					_id: cover._id,
-					name: file.name,
-					type: cover.type,
-				});
+				attachments.push(attachment);
 			}
-			attachments.push(attachment);
-		} else {
-			const attachment = {
-				title: file.name,
-				type: 'file',
-				description: file.description,
-				title_link: fileUrl,
-				title_link_download: true,
-			};
-			attachments.push(attachment);
 		}
 		const msg = Meteor.call('sendMessage', {
 			rid: roomId,
