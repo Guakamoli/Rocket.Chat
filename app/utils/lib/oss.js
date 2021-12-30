@@ -151,7 +151,7 @@ export class VodClient {
 		}
 		const createUploadVideoRequest = new $vod20170321.CreateUploadVideoRequest(opts);
 		let resp = await this.$vod.createUploadVideo(createUploadVideoRequest.toMap());
-		resp = resp.toMap()
+		resp = resp.toMap();
 		resp.body.UploadAddress = JSON.parse(Buffer.from(resp.body.UploadAddress, 'base64').toString('ascii')) || {};
 		resp.body.UploadAuth = JSON.parse(Buffer.from(resp.body.UploadAuth, 'base64').toString('ascii')) || {};
 		resp.body.VideoURL = `https://${ config.VOD_DOMAIN }/${ resp.body.UploadAddress.FileName }`;

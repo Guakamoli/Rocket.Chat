@@ -1,15 +1,8 @@
 /* eslint-disable new-cap */
-import stream from 'stream';
-
 import { check } from 'meteor/check';
 import { UploadFS } from 'meteor/jalik:ufs';
 import { Random } from 'meteor/random';
 import _ from 'underscore';
-
-import {
-	OSSClient,
-	// VodClient
-} from '../../../utils/lib/oss.js';
 
 /**
  * AliyunOss store
@@ -19,12 +12,6 @@ import {
 
 export class AliyunOSSStore extends UploadFS.Store {
 	constructor(options) {
-		// Default options
-		// options.secretAccessKey,
-		// options.accessKeyId,
-		// options.region,
-		// options.sslEnabled // optional
-
 		options = _.extend(
 			{
 				httpOptions: {
@@ -37,7 +24,6 @@ export class AliyunOSSStore extends UploadFS.Store {
 
 		super(options);
 
-		const classOptions = options;
 		// const oss = new OSSClient.init(options.commonConfig);
 		// const vod = new VodClient(options.videoConfig);
 		options.getPath =			options.getPath
@@ -51,15 +37,8 @@ export class AliyunOSSStore extends UploadFS.Store {
 			}
 		};
 
-		this.getRedirectURL = function(file, forceDownload = false, callback) {
-			return ''
-			// const params = {
-			// 	Key: this.getPath(file),
-			// 	Expires: classOptions.URLExpiryTimeSpan,
-			// 	ResponseContentDisposition: `${ forceDownload ? 'attachment' : 'inline' }; filename="${ encodeURI(file.name) }"`,
-			// };
-
-			// return oss.getSignedUrl('getObject', params, callback);
+		this.getRedirectURL = function() {
+			return '';
 		};
 
 		/**
@@ -99,16 +78,8 @@ export class AliyunOSSStore extends UploadFS.Store {
 		 * @param options
 		 * @return {*}
 		 */
-		this.getReadStream = function(fileId, file, options = {}) {
-			const params = {
-				name: this.getPath(file),
-			};
-
-			if (options.start && options.end) {
-				params.Range = `${ options.start } - ${ options.end }`;
-			}
-
-			return oss.getStream(params);
+		this.getReadStream = function() {
+			return null;
 		};
 
 		/**
@@ -118,35 +89,8 @@ export class AliyunOSSStore extends UploadFS.Store {
 		 * @param options
 		 * @return {*}
 		 */
-		this.getWriteStream = function(fileId, file /* , options*/) {
-			const writeStream = new stream.PassThrough();
-			writeStream.length = file.size;
-
-			writeStream.on('newListener', (event, listener) => {
-				if (event === 'finish') {
-					process.nextTick(() => {
-						writeStream.removeListener(event, listener);
-						writeStream.on('real_finish', listener);
-					});
-				}
-			});
-
-			oss.putStream(
-				{
-					name: this.getPath(file),
-					stream: writeStream,
-					mime: file.type,
-				},
-				(error) => {
-					if (error) {
-						console.error(error);
-					}
-
-					writeStream.emit('real_finish');
-				},
-			);
-
-			return writeStream;
+		this.getWriteStream = function() {
+			return null;
 		};
 	}
 }
