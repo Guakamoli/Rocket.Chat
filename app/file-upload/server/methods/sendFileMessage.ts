@@ -85,30 +85,29 @@ Meteor.methods({
 				if (file.identify && file.identify.size) {
 					attachment.image_dimensions = file.identify.size;
 				}
-				if (!hasBuffer) {
-					continue;
-				}
-				try {
-					attachment.image_preview = await FileUpload.resizeImagePreview(file);
-					const thumbResult = await FileUpload.createImageThumbnail(file);
-					if (thumbResult) {
-						const { data: thumbBuffer, width, height } = thumbResult;
-						const thumbnail = FileUpload.uploadImageThumbnail(file, thumbBuffer, roomId, user._id);
-						const thumbUrl = FileUpload.getPath(`${ thumbnail._id }/${ encodeURI(file.name) }`);
-						attachment.image_url = thumbUrl;
-						attachment.image_type = thumbnail.type;
-						attachment.image_dimensions = {
-							width,
-							height,
-						};
-						files.push({
-							_id: thumbnail._id,
-							name: file.name,
-							type: thumbnail.type,
-						});
+				if (hasBuffer) {
+					try {
+						attachment.image_preview = await FileUpload.resizeImagePreview(file);
+						const thumbResult = await FileUpload.createImageThumbnail(file);
+						if (thumbResult) {
+							const { data: thumbBuffer, width, height } = thumbResult;
+							const thumbnail = FileUpload.uploadImageThumbnail(file, thumbBuffer, roomId, user._id);
+							const thumbUrl = FileUpload.getPath(`${ thumbnail._id }/${ encodeURI(file.name) }`);
+							attachment.image_url = thumbUrl;
+							attachment.image_type = thumbnail.type;
+							attachment.image_dimensions = {
+								width,
+								height,
+							};
+							files.push({
+								_id: thumbnail._id,
+								name: file.name,
+								type: thumbnail.type,
+							});
+						}
+					} catch (e) {
+						console.error(e);
 					}
-				} catch (e) {
-					console.error(e);
 				}
 				attachments.push(attachment);
 			} else if (/^audio\/.+/.test(file.type)) {
