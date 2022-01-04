@@ -11,7 +11,6 @@ import { settings } from '../../../settings/server/index';
 import { getUploadFormData } from '../lib/getUploadFormData';
 import { SystemLogger } from '../../../logger/server';
 import { preSignature as aliyunPreSignature } from '../../../utils/lib/ossUtils';
-import { uuidv4 as uuid } from '../../../utils/lib/random';
 
 function findRoomByIdOrName({ params, checkedArchived = true }) {
 	if ((!params.roomId || !params.roomId.trim()) && (!params.roomName || !params.roomName.trim())) {
@@ -74,38 +73,45 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 			return API.v1.unauthorized();
 		}
 
-		const { file, ...fields } = Promise.await(getUploadFormData({
-			request: this.request,
-		}));
+		let uploadedFile = null;
+		let { file, ...fields } = this.bodyParams;
+		// 如果不符合条件则走原来的逻辑
+		uploadedFile = file;
+		if (!file?.[0]?.uri) {
+			fields = Promise.await(getUploadFormData({
+				request: this.request,
+			}));
+			file = fields.file;
+			Reflect.deleteProperty(fields, 'file');
+			if (!file) {
+				throw new Meteor.Error('invalid-field');
+			}
 
-		if (!file) {
-			throw new Meteor.Error('invalid-field');
-		}
+			const details = {
+				name: file.filename,
+				size: file.fileBuffer.length,
+				type: file.mimetype,
+				rid: this.urlParams.rid,
+				userId: this.userId,
+			};
 
-		const details = {
-			name: file.filename,
-			size: file.fileBuffer.length,
-			type: file.mimetype,
-			rid: this.urlParams.rid,
-			userId: this.userId,
-		};
+			const stripExif = settings.get('Message_Attachments_Strip_Exif');
+			const fileStore = FileUpload.getStore('Uploads');
+			if (stripExif) {
+				// No need to check mime. Library will ignore any files without exif/xmp tags (like BMP, ico, PDF, etc)
+				file.fileBuffer = Promise.await(Media.stripExifFromBuffer(file.fileBuffer));
+			}
+			uploadedFile = fileStore.insertSync(details, file.fileBuffer);
 
-		const stripExif = settings.get('Message_Attachments_Strip_Exif');
-		const fileStore = FileUpload.getStore('Uploads');
-		if (stripExif) {
-			// No need to check mime. Library will ignore any files without exif/xmp tags (like BMP, ico, PDF, etc)
-			file.fileBuffer = Promise.await(Media.stripExifFromBuffer(file.fileBuffer));
-		}
-		const uploadedFile = fileStore.insertSync(details, file.fileBuffer);
+			uploadedFile.description = fields.description;
 
-		uploadedFile.description = fields.description;
-
-		delete fields.description;
-		if (fields.video_width && fields.video_height) {
-			uploadedFile.width = Number(fields.video_width);
-			uploadedFile.height = Number(fields.video_height);
-			delete fields.video_width;
-			delete fields.video_height;
+			delete fields.description;
+			if (fields.video_width && fields.video_height) {
+				uploadedFile.width = Number(fields.video_width);
+				uploadedFile.height = Number(fields.video_height);
+				delete fields.video_width;
+				delete fields.video_height;
+			}
 		}
 
 		fields.public = fields?.public === 'free';
@@ -115,7 +121,6 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 			fields.t = messageType;
 		}
 		SystemLogger.debug('rooms.upload/:rid', this.request.headers, messageType, fields);
-
 		Meteor.call('sendFileMessage', this.urlParams.rid, null, uploadedFile, fields);
 		return API.v1.success({ message: Messages.getMessageByFileIdAndUsername(uploadedFile._id, this.userId) });
 	},
@@ -129,27 +134,21 @@ API.v1.addRoute('rooms.getAliyunUploadPaths', { authRequired: true }, {
 		if (!fileList?.length) {
 			throw new Meteor.Error('error-fileList-param-invalid', 'The "fileList" query parameter must be a valid list.');
 		}
+		const result = [];
 		for (const fileItem of fileList) {
 			let options = {};
+			const filename = fileItem.name;
 			if (/^video\/.+/.test(fileItem.type)) {
 				options = {
-					title: fileItem.name + (fileItem.name.endsWith('.mp4') ? '' : '.mp4'),
+					title: filename,
 					description: `达人ID: ${ this.userId }`,
-					tags: [this.userId].join(','),
+					tags: this.userId,
 					type: 'video',
-					filename: fileItem.name + (fileItem.name.endsWith('.mp4') ? '' : '.mp4'),
+					filename,
 					contentType: fileItem.type,
 					contentDisposition: true,
 				};
-			} else if (/^image\/.+/.test(file.type)) {
-				const filename = fileItem?.extra?.filename || `${ uuid() }.png`;
-				if (fileItem.extra) {
-					fileItem.extra.filename = filename;
-				} else {
-					fileItem.extra = {
-						filename,
-					};
-				}
+			} else if (/^image\/.+/.test(fileItem.type)) {
 				options = {
 					filename,
 					contentType: fileItem.type,
@@ -158,12 +157,14 @@ API.v1.addRoute('rooms.getAliyunUploadPaths', { authRequired: true }, {
 				};
 			}
 			const signatureItem = Promise.await(aliyunPreSignature(options));
-			fileItem.extra.uploadFileUrl = signatureItem.fileURL;
-			fileItem.extra.uploadFileTs = Date.now();
-			fileItem.extra.assetsUrl = signatureItem.imageURL || signatureItem.videoURL;
+			result.push({
+				uploadFileUrl: signatureItem.fileURL,
+				uploadFileTs: Date.now(),
+				assetsUrl: signatureItem.imageURL || signatureItem.videoURL,
+			});
 		}
 		return API.v1.success({
-			message: fileList,
+			result,
 		});
 	},
 });

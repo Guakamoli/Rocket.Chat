@@ -12,7 +12,6 @@ import { canAccessRoom } from '../../../authorization/server/functions/canAccess
 import { MessageAttachment } from '../../../../definition/IMessage/MessageAttachment/MessageAttachment';
 import { FileAttachmentProps } from '../../../../definition/IMessage/MessageAttachment/Files/FileAttachmentProps';
 import { UploadFileProp } from '../../../../definition/IMessage/MessageAttachment/Files/FileProp';
-
 import { IUser } from '../../../../definition/IUser';
 
 Meteor.methods({
@@ -26,10 +25,7 @@ Meteor.methods({
 			return false;
 		}
 		const fileStore = FileUpload.getStore('Uploads');
-		let fileList: Array<UploadFileProp> = []
-		if (!Array.isArray(file)) {
-			fileList = [file];
-		}
+		const fileList: Array<UploadFileProp> = Array.isArray(file) ? file : [file];
 		check(msgData, {
 			t: Match.Optional(String),
 			_id: Match.Optional(String),
@@ -133,17 +129,17 @@ Meteor.methods({
 					video_width: file.width,
 					video_height: file.height,
 				};
-				if (videoCover)  {
-					let cover = !hasBuffer ? null : FileUpload.uploadImageThumbnail({ name: file.name, type: 'image/png' }, Buffer.from(videoCover), roomId, user._id);
+				if (videoCover) {
+					const cover = !hasBuffer ? null : FileUpload.uploadImageThumbnail({ name: file.name, type: 'image/png' }, Buffer.from(videoCover), roomId, user._id);
 					const coverType = !hasBuffer ? 'image/png' : cover.type;
-					const coverName = !hasBuffer ? `${file.name}_cover`: file.name;
-					attachment.video_cover_url = !hasBuffer ? videoCover :FileUpload.getPath(`${ cover._id }/${ encodeURI(file.name) }`);
+					const coverName = file.name;
+					attachment.video_cover_url = !hasBuffer ? videoCover : FileUpload.getPath(`${ cover._id }/${ encodeURI(file.name) }`);
 					attachment.video_cover_type = coverType;
 					attachment.video_cover_dimensions = {
 						width: file.width,
 						height: file.height,
 					};
-					let fileId = null
+					let fileId = null;
 					if (!hasBuffer) {
 						const details = {
 							name: coverName,
@@ -157,7 +153,7 @@ Meteor.methods({
 						};
 						fileId = fileStore.store.create(details);
 					} else {
-						fileId = cover._id
+						fileId = cover._id;
 					}
 					files.push({
 						_id: fileId,
