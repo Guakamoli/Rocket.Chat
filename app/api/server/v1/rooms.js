@@ -131,7 +131,7 @@ API.v1.addRoute('rooms.getAliyunUploadPaths', { authRequired: true }, {
 		}
 		for (const fileItem of fileList) {
 			let options = {};
-			if (fileItem.type.startsWith('video')) {
+			if (/^video\/.+/.test(fileItem.type)) {
 				options = {
 					title: fileItem.name + (fileItem.name.endsWith('.mp4') ? '' : '.mp4'),
 					description: `达人ID: ${ this.userId }`,
@@ -141,7 +141,7 @@ API.v1.addRoute('rooms.getAliyunUploadPaths', { authRequired: true }, {
 					contentType: fileItem.type,
 					contentDisposition: true,
 				};
-			} else {
+			} else if (/^image\/.+/.test(file.type)) {
 				const filename = fileItem?.extra?.filename || `${ uuid() }.png`;
 				if (fileItem.extra) {
 					fileItem.extra.filename = filename;
@@ -165,19 +165,6 @@ API.v1.addRoute('rooms.getAliyunUploadPaths', { authRequired: true }, {
 		return API.v1.success({
 			message: fileList,
 		});
-	},
-});
-
-API.v1.addRoute('rooms.saveUploadedFiles/:rid', { authRequired: true }, {
-	post() {
-		const room = Meteor.call('canAccessRoom', this.urlParams.rid, this.userId);
-		if (!room) {
-			return API.v1.unauthorized();
-		}
-		const { fileList, ...fields } = this.bodyParams;
-		SystemLogger.debug('rooms.saveUploadedFiles/:rid', this.request.headers);
-		const message = Meteor.call('sendFileMessage', this.urlParams.rid, null, null, fields, fileList);
-		return API.v1.success({ message });
 	},
 });
 

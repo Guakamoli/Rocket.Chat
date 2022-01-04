@@ -22,17 +22,14 @@ Meteor.methods({
 			throw new Meteor.Error('error-invalid-user', 'Invalid user', { method: 'sendFileMessage' } as any);
 		}
 		const room = await Rooms.findOneById(roomId);
-
 		if (user?.type !== 'app' && !canAccessRoom(room, user)) {
 			return false;
 		}
 		const fileStore = FileUpload.getStore('Uploads');
-
 		let fileList: Array<UploadFileProp> = []
 		if (!Array.isArray(file)) {
 			fileList = [file];
 		}
-
 		check(msgData, {
 			t: Match.Optional(String),
 			_id: Match.Optional(String),
