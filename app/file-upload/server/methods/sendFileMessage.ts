@@ -11,10 +11,12 @@ import { FileUpload } from '../lib/FileUpload';
 import { canAccessRoom } from '../../../authorization/server/functions/canAccessRoom';
 import { MessageAttachment } from '../../../../definition/IMessage/MessageAttachment/MessageAttachment';
 import { FileAttachmentProps } from '../../../../definition/IMessage/MessageAttachment/Files/FileAttachmentProps';
+import { UploadFileProp } from '../../../../definition/IMessage/MessageAttachment/Files/FileProp';
+
 import { IUser } from '../../../../definition/IUser';
 
 Meteor.methods({
-	async sendFileMessage(roomId, _store, fileRaw, msgData = {}, fileList = []) {
+	async sendFileMessage(roomId, _store, file, msgData = {}) {
 		const user = Meteor.user() as IUser | undefined;
 		if (!user) {
 			throw new Meteor.Error('error-invalid-user', 'Invalid user', { method: 'sendFileMessage' } as any);
@@ -25,12 +27,10 @@ Meteor.methods({
 			return false;
 		}
 		const fileStore = FileUpload.getStore('Uploads');
-		const videoCover = msgData.cover;
-		if (videoCover) {
-			delete msgData.cover;
-		}
-		if (!fileList.length && fileRaw) {
-			fileList = [fileRaw];
+
+		let fileList: Array<UploadFileProp> = []
+		if (!Array.isArray(file)) {
+			fileList = [file];
 		}
 
 		check(msgData, {
@@ -64,7 +64,7 @@ Meteor.methods({
 			} else {
 				Uploads.updateFileComplete(fileId, user._id, _.omit(file, '_id'));
 			}
-			const fileUrl = file?.extra?.assetsUrl || FileUpload.getPath(`${ file._id }/${ encodeURI(file.name) }`);
+			const fileUrl = file.uri || FileUpload.getPath(`${ file._id }/${ encodeURI(file.name) }`);
 			files.push({
 				_id: fileId,
 				name: file.name,
@@ -123,6 +123,7 @@ Meteor.methods({
 				};
 				attachments.push(attachment);
 			} else if (/^video\/.+/.test(file.type)) {
+				const videoCover = file.video_cover;
 				const attachment: FileAttachmentProps = {
 					title: file.name,
 					type: 'file',
@@ -135,18 +136,36 @@ Meteor.methods({
 					video_width: file.width,
 					video_height: file.height,
 				};
-				if (videoCover && hasBuffer) {
-					const cover = FileUpload.uploadImageThumbnail({ name: file.name, type: 'image/png' }, Buffer.from(videoCover.fileBuffer), roomId, user._id);
-					attachment.video_cover_url = FileUpload.getPath(`${ cover._id }/${ encodeURI(file.name) }`);
-					attachment.video_cover_type = cover.type;
+				if (videoCover)  {
+					let cover = !hasBuffer ? null : FileUpload.uploadImageThumbnail({ name: file.name, type: 'image/png' }, Buffer.from(videoCover), roomId, user._id);
+					const coverType = !hasBuffer ? 'image/png' : cover.type;
+					const coverName = !hasBuffer ? `${file.name}_cover`: file.name;
+					attachment.video_cover_url = !hasBuffer ? videoCover :FileUpload.getPath(`${ cover._id }/${ encodeURI(file.name) }`);
+					attachment.video_cover_type = coverType;
 					attachment.video_cover_dimensions = {
 						width: file.width,
 						height: file.height,
 					};
+					let fileId = null
+					if (!hasBuffer) {
+						const details = {
+							name: coverName,
+							size: 1,
+							type: coverType,
+							rid: roomId,
+							userId: user._id,
+							complete: true,
+							uploading: false,
+							progress: 1,
+						};
+						fileId = fileStore.store.create(details);
+					} else {
+						fileId = cover._id
+					}
 					files.push({
-						_id: cover._id,
-						name: file.name,
-						type: cover.type,
+						_id: fileId,
+						name: coverName,
+						type: coverType,
 					});
 				}
 				attachments.push(attachment);
