@@ -80,8 +80,6 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 			throw new Meteor.Error('invalid-field');
 		}
 
-		console.log('------------------', file, fields);
-
 		const details = {
 			name: file.filename,
 			size: file.fileBuffer.length,
