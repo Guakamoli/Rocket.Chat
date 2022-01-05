@@ -15,8 +15,7 @@ import { saveUserIdentity } from './saveUserIdentity';
 import { checkEmailAvailability, checkUsernameAvailability, setUserAvatar, setEmail, setStatusText } from '.';
 import { createRoom } from './createRoom';
 import { saveCustomFields } from './saveCustomFields';
-
-import { Rooms } from '/app/models';
+import { Rooms } from '../../../models';
 
 let html = '';
 let passwordChangedHtml = '';
