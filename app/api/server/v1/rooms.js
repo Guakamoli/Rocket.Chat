@@ -78,6 +78,9 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 		// 如果不符合条件则走原来的逻辑
 		uploadedFile = file;
 		if (!file?.[0]?.uri) {
+			throw new Meteor.Error('upload-type-error', 'cant not send form-data');
+		}
+		if (!file?.[0]?.uri) {
 			fields = Promise.await(getUploadFormData({
 				request: this.request,
 			}));
