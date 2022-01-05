@@ -13,6 +13,7 @@ import { MessageAttachment } from '../../../../definition/IMessage/MessageAttach
 import { FileAttachmentProps } from '../../../../definition/IMessage/MessageAttachment/Files/FileAttachmentProps';
 import { UploadFileProp } from '../../../../definition/IMessage/MessageAttachment/Files/FileProp';
 import { IUser } from '../../../../definition/IUser';
+import { settings } from '../../../settings/server';
 
 Meteor.methods({
 	async sendFileMessage(roomId, _store, file, msgData = {}) {
@@ -64,13 +65,19 @@ Meteor.methods({
 				type: file.type,
 			});
 			if (/^image\/.+/.test(file.type)) {
+				let imageUrl = fileUrl;
+				if (!hasBuffer && settings.get('Message_Attachments_Thumbnails_Enabled')) {
+					const width = settings.get('Message_Attachments_Thumbnails_Width');
+					const height = settings.get('Message_Attachments_Thumbnails_Height');
+					imageUrl = `${ fileUrl }?x-oss-process=image/resize,w_${ width },h_${ height },limit_0`;
+				}
 				const attachment: FileAttachmentProps = {
 					title: file.name,
 					type: 'file',
 					description: file.description,
 					title_link: fileUrl,
 					title_link_download: true,
-					image_url: fileUrl,
+					image_url: imageUrl,
 					image_type: file.type,
 					image_size: file.size,
 				};

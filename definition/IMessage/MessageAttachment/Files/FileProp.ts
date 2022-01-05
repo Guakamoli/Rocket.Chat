@@ -1,4 +1,4 @@
-import { Base64 } from "aws-sdk/clients/ecr";
+import { Base64 } from 'aws-sdk/clients/ecr';
 
 export type FileProp = {
 	_id: string;
@@ -15,21 +15,20 @@ type ImageUploadFileProp = {
 			width: number;
 			height: number;
 		};
-	}
+	};
+	image_uri? : string;
 }
 type VideoUploadFileProp = {
-    video_cover?: string; // 视频的封面信息, 兼容旧接口
+	video_cover?: string; // 视频的封面信息, 兼容旧接口
 	width: number;
 	height: number;
-	
 }
 export type UploadFileProp = {
 	_id?: string;
 	name: string;
 	type: string;
 	size: number;
-    uri?: string; // 如果有传就直接作为结果存储
-	description?:  string;
+	uri?: string; // 如果有传就直接作为结果存储
+	description?: string;
 	fileBuffer?: Buffer;
-	
-} & ( VideoUploadFileProp & ImageUploadFileProp)
+} & (VideoUploadFileProp & ImageUploadFileProp)
