@@ -80,6 +80,8 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 			throw new Meteor.Error('invalid-field');
 		}
 
+		console.log('------------------', file, fields);
+
 		const details = {
 			name: file.filename,
 			size: file.fileBuffer.length,
@@ -105,6 +107,8 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 			delete fields.video_width;
 			delete fields.video_height;
 		}
+
+		fields.public = fields?.public === 'free';
 
 		const messageType = this.request.headers['x-upload-type'] || null;
 		if (messageType && ['post', 'story'].includes(messageType)) {

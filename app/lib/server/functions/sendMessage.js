@@ -244,12 +244,15 @@ export const sendMessage = function(user, message, room, upsert = false) {
 			message._id = Messages.insert(message);
 		}
 
+		console.log('------------------------ sendMessage message:', message);
 		if (message.t === 'post') {
+			console.log('发post了哦', message);
 			// 发送mq事件给到Java
 			Meteor.call('kameoRocketmqSendPostMessage', {
 				messageId: message._id,
 				ts: message.ts,
 				influencerId: message.u._id,
+				public: message.public || false, // 兼容没有免费作品的情况
 			});
 
 			Meteor.runAsUser(user._id, () => Meteor.call('createDiscussion', {
