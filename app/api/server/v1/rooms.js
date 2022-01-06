@@ -109,11 +109,11 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 			uploadedFile.description = fields.description;
 
 			delete fields.description;
-			if (fields.video_width && fields.video_height) {
-				uploadedFile.width = Number(fields.video_width);
-				uploadedFile.height = Number(fields.video_height);
-				delete fields.video_width;
-				delete fields.video_height;
+			if (fields.width && fields.height) {
+				uploadedFile.width = Number(fields.width);
+				uploadedFile.height = Number(fields.height);
+				delete fields.width;
+				delete fields.height;
 			}
 		}
 
