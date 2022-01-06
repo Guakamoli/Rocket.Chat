@@ -153,6 +153,10 @@
 		"webpack": "^4.44.1"
 	},
 	"dependencies": {
+		"ali-oss": "^6.15.0",
+		"@alicloud/openapi-client": "^0.3.3",
+		"@alicloud/tea-typescript": "^1.7.1",
+		"@alicloud/vod20170321": "^2.0.1",
 		"@aliyunmq/mq-http-sdk": "^1.0.3",
 		"@babel/runtime": "^7.14.6",
 		"@google-cloud/language": "^3.8.0",

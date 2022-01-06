@@ -10,6 +10,7 @@ import { Media } from '../../../../server/sdk';
 import { settings } from '../../../settings/server/index';
 import { getUploadFormData } from '../lib/getUploadFormData';
 import { SystemLogger } from '../../../logger/server';
+import { preSignature as aliyunPreSignature } from '../../../utils/lib/ossUtils';
 
 function findRoomByIdOrName({ params, checkedArchived = true }) {
 	if ((!params.roomId || !params.roomId.trim()) && (!params.roomName || !params.roomName.trim())) {
@@ -72,38 +73,48 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 			return API.v1.unauthorized();
 		}
 
-		const { file, ...fields } = Promise.await(getUploadFormData({
-			request: this.request,
-		}));
-
-		if (!file) {
-			throw new Meteor.Error('invalid-field');
+		let uploadedFile = null;
+		let { file, ...fields } = this.bodyParams;
+		// 如果不符合条件则走原来的逻辑
+		uploadedFile = file;
+		if (!file?.[0]?.uri) {
+			throw new Meteor.Error('upload-type-error', 'cant not send form-data');
 		}
+		if (!file?.[0]?.uri) {
+			fields = Promise.await(getUploadFormData({
+				request: this.request,
+			}));
+			file = fields.file;
+			Reflect.deleteProperty(fields, 'file');
+			if (!file) {
+				throw new Meteor.Error('invalid-field');
+			}
 
-		const details = {
-			name: file.filename,
-			size: file.fileBuffer.length,
-			type: file.mimetype,
-			rid: this.urlParams.rid,
-			userId: this.userId,
-		};
+			const details = {
+				name: file.filename,
+				size: file.fileBuffer.length,
+				type: file.mimetype,
+				rid: this.urlParams.rid,
+				userId: this.userId,
+			};
 
-		const stripExif = settings.get('Message_Attachments_Strip_Exif');
-		const fileStore = FileUpload.getStore('Uploads');
-		if (stripExif) {
-			// No need to check mime. Library will ignore any files without exif/xmp tags (like BMP, ico, PDF, etc)
-			file.fileBuffer = Promise.await(Media.stripExifFromBuffer(file.fileBuffer));
-		}
-		const uploadedFile = fileStore.insertSync(details, file.fileBuffer);
+			const stripExif = settings.get('Message_Attachments_Strip_Exif');
+			const fileStore = FileUpload.getStore('Uploads');
+			if (stripExif) {
+				// No need to check mime. Library will ignore any files without exif/xmp tags (like BMP, ico, PDF, etc)
+				file.fileBuffer = Promise.await(Media.stripExifFromBuffer(file.fileBuffer));
+			}
+			uploadedFile = fileStore.insertSync(details, file.fileBuffer);
 
-		uploadedFile.description = fields.description;
+			uploadedFile.description = fields.description;
 
-		delete fields.description;
-		if (fields.video_width && fields.video_height) {
-			uploadedFile.width = Number(fields.video_width);
-			uploadedFile.height = Number(fields.video_height);
-			delete fields.video_width;
-			delete fields.video_height;
+			delete fields.description;
+			if (fields.width && fields.height) {
+				uploadedFile.width = Number(fields.width);
+				uploadedFile.height = Number(fields.height);
+				delete fields.width;
+				delete fields.height;
+			}
 		}
 
 		fields.public = fields?.public === 'free';
@@ -113,9 +124,52 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 			fields.t = messageType;
 		}
 		SystemLogger.debug('rooms.upload/:rid', this.request.headers, messageType, fields);
-
 		Meteor.call('sendFileMessage', this.urlParams.rid, null, uploadedFile, fields);
 		return API.v1.success({ message: Messages.getMessageByFileIdAndUsername(uploadedFile._id, this.userId) });
+	},
+});
+
+API.v1.addRoute('rooms.getAliyunUploadPaths', { authRequired: true }, {
+	// 1. 到阿里云去拿签名, 但是要注意签名是会过期的，太久没上传链接就传不了, 前端重传机制
+	// 2. 这里要如果已经有file条目，不需要创建直接更新即可
+	post() {
+		const { fileList } = this.bodyParams;
+		if (!fileList?.length) {
+			throw new Meteor.Error('error-fileList-param-invalid', 'The "fileList" query parameter must be a valid list.');
+		}
+		const result = [];
+		for (const fileItem of fileList) {
+			let options = {};
+			const filename = fileItem.name;
+			if (/^video\/.+/.test(fileItem.type)) {
+				options = {
+					title: filename,
+					description: `达人ID: ${ this.userId }`,
+					tags: this.userId,
+					type: 'video',
+					filename,
+					contentType: fileItem.type,
+					contentDisposition: true,
+				};
+			} else if (/^image\/.+/.test(fileItem.type)) {
+				options = {
+					filename,
+					contentType: fileItem.type,
+					containerName: 'default',
+					contentDisposition: true,
+				};
+			}
+			const signatureItem = Promise.await(aliyunPreSignature(options));
+			result.push({
+				filename,
+				uploadFileUrl: signatureItem.fileURL,
+				uploadFileTs: Date.now(),
+				assetsUrl: signatureItem.imageURL || signatureItem.videoURL,
+			});
+		}
+		return API.v1.success({
+			result,
+		});
 	},
 });
 
