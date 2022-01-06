@@ -106,6 +106,8 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 			delete fields.video_height;
 		}
 
+		fields.public = fields?.public === 'free';
+
 		const messageType = this.request.headers['x-upload-type'] || null;
 		if (messageType && ['post', 'story'].includes(messageType)) {
 			fields.t = messageType;
