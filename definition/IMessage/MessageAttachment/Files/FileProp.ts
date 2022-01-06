@@ -17,6 +17,8 @@ type ImageUploadFileProp = {
 		};
 	};
 	image_uri? : string;
+	width: number;
+	height: number;
 }
 type VideoUploadFileProp = {
 	video_cover?: string; // 视频的封面信息, 兼容旧接口

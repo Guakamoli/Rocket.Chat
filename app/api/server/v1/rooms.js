@@ -161,6 +161,7 @@ API.v1.addRoute('rooms.getAliyunUploadPaths', { authRequired: true }, {
 			}
 			const signatureItem = Promise.await(aliyunPreSignature(options));
 			result.push({
+				filename,
 				uploadFileUrl: signatureItem.fileURL,
 				uploadFileTs: Date.now(),
 				assetsUrl: signatureItem.imageURL || signatureItem.videoURL,

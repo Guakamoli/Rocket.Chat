@@ -80,6 +80,8 @@ Meteor.methods({
 					image_url: imageUrl,
 					image_type: file.type,
 					image_size: file.size,
+					image_width: file.width,
+					image_height: file.height,
 				};
 
 				if (file.identify && file.identify.size) {

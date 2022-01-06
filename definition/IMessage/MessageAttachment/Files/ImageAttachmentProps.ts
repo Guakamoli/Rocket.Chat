@@ -10,6 +10,8 @@ export type ImageAttachmentProps = {
 	image_url: string;
 	image_type: string;
 	image_size?: number;
+	image_width: number;
+	image_height: number;
 	file?: FileProp;
 } & MessageAttachmentBase;
 
