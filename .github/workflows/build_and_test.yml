@@ -7,21 +7,19 @@ on:
       - master
       - kameo/develop
       - kameo/master
-      - test
+    tags:
+      - "v*"
+      - "kameo-v*"
 
 env:
   CI: true
   MONGO_URL: mongodb://mongo-svc:27017
   TOOL_NODE_FLAGS: --max_old_space_size=4096
   IMAGE_NAME: rocketchat
-  TAG_NAME: dev
   ALIYUN_CR: registry.cn-qingdao.aliyuncs.com
-  ALIYUN_NS: paiya
-  AZURE_CR: goduck.azurecr.io
-  AZK8S_CTX: goduck-dev-context
 
 jobs:
-  meteor-build-and-store:
+  meteor-build:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/pull/') != true
 
@@ -508,9 +506,9 @@ jobs:
   #           -d '{"tag":"'$GIT_TAG'"}'
   #       fi
 
-  docker-build-and-publish:
+  docker-publish:
     runs-on: ubuntu-latest
-    needs: meteor-build-and-store
+    needs: meteor-build
     
     steps:
     - uses: actions/checkout@v2
@@ -544,22 +542,49 @@ jobs:
           cp ${DOCKER_PATH}/entrypoint.sh .
         fi;
 
+    - name: Set tag name
+      run: |
+        PRE_TAG_NAME="$GITHUB_REF_NAME-${GITHUB_SHA: 0:8}"
+        if [ "$GITHUB_REF" == "refs/heads/kameo/develop" ] || [ "$GITHUB_REF" == "refs/heads/develop" ]; then
+          PRE_TAG_NAME=dev
+        fi
+        echo "TAG_NAME=$PRE_TAG_NAME" >> $GITHUB_ENV
     - name: Build Docker image for tag
       run: |
         cd /tmp/build
-        TAG_NAME=$(date +'%Y%m%d%H%M%S')
-        if [ "$GITHUB_REF" == "refs/heads/kameo/master" ] || [ "$GITHUB_REF" == "refs/heads/master" ]; then
-          TAG_NAME=production
-        fi
-        if [ "$GITHUB_REF" == "refs/heads/kameo/develop" ] || [ "$GITHUB_REF" == "refs/heads/develop" ]; then
-          TAG_NAME=dev
-        fi
+        IMAGE_PAIYA=${{env.ALIYUN_CR}}/paiya/${{env.IMAGE_NAME}}:${{env.TAG_NAME}}
+        docker build -t ${IMAGE_PAIYA} .
+        echo "Build Docker image: '${IMAGE_PAIYA}', tag: '${{env.TAG_NAME}}'"
+        docker push ${IMAGE_PAIYA}
 
-        IMAGE=${{env.ALIYUN_CR}}/${{env.ALIYUN_NS}}/${{env.IMAGE_NAME}}:${TAG_NAME}
-        echo "Build Docker image: '${IMAGE}', tag: '${TAG_NAME}'"
+        IMAGE_GODUCK=${{env.ALIYUN_CR}}/goduck/${{env.IMAGE_NAME}}:${{env.TAG_NAME}}
+        docker tag ${IMAGE_PAIYA} ${IMAGE_GODUCK}
+        echo "Build Docker image: '${IMAGE_GODUCK}', tag: '${{env.TAG_NAME}}'"
+        docker push ${IMAGE_GODUCK}
 
-        docker build -t ${IMAGE} .
-        docker push ${IMAGE}
+    # - name: Set tag name
+    #   run: |
+    #     cd /tmp/build
+    #     PRE_TAG_NAME="$GITHUB_REF_NAME-${GITHUB_SHA: 0:8}"
+    #     if [ "$GITHUB_REF" == "refs/heads/kameo/develop" ] || [ "$GITHUB_REF" == "refs/heads/develop" ]; then
+    #       PRE_TAG_NAME=dev
+    #     fi
+    #     echo "TAG_NAME=$PRE_TAG_NAME" >> $GITHUB_ENV
+    # - name: Set up Docker Buildx
+    #   uses: docker/setup-buildx-action@v1
+    #   with:
+    #     version: v0.6.0
+    # - name: Build Docker image and Publish
+    #   id: docker_build
+    #   uses: docker/build-push-action@v2
+    #   with:
+    #     tags: |
+    #       ${{env.ALIYUN_CR}}/paiya/${{env.IMAGE_NAME}}:${{env.TAG_NAME}}
+    #       ${{env.ALIYUN_CR}}/goduck/${{env.IMAGE_NAME}}:${{env.TAG_NAME}}
+    #     pull: true
+    #     push: true
+    #     cache-to: type=gha
+    #     cache-from: type=gha
 
   # image-build:
   #   runs-on: ubuntu-latest
