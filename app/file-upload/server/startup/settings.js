@@ -122,7 +122,22 @@ settings.addGroup('FileUpload', function() {
 				value: 'AliyunOSS',
 			},
 		});
-
+		this.add('FileUpload_AliOSS_Video_AccessKeyId', '', {
+			type: 'string',
+			enableQuery: {
+				_id: 'FileUpload_Storage_Type',
+				value: 'AliyunOSS',
+			},
+			secret: true,
+		});
+		this.add('FileUpload_AliOSS_Video_AccessKeySecret', '', {
+			type: 'string',
+			enableQuery: {
+				_id: 'FileUpload_Storage_Type',
+				value: 'AliyunOSS',
+			},
+			secret: true,
+		});
 		this.add('FileUpload_AliOSS_Video_Bucket', '', {
 			type: 'string',
 			enableQuery: {
