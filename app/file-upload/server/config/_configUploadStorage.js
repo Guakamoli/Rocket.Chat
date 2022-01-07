@@ -10,8 +10,10 @@ import './GridFS.js';
 import './Webdav.js';
 
 const configStore = _.debounce(() => {
-	const store = settings.get('FileUpload_Storage_Type');
-
+	let store = settings.get('FileUpload_Storage_Type');
+	if (store === 'AliyunOSS') {
+		store = 'FileSystem'
+	}
 	if (store) {
 		console.log('Setting default file store to', store);
 		UploadFS.getStores().Avatars = UploadFS.getStore(`${ store }:Avatars`);
