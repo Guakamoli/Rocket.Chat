@@ -87,13 +87,9 @@ const configure = _.debounce(function() {
 	for (const key of keys) {
 		const lowKey = key.replace(/^\S/, (s) => s.toLowerCase());
 		config.commonConfig[lowKey] = settings.get(`FileUpload_AliOSS_${ key }`);
-		if (specialKeys.indexOf(key) > -1) {
-			config.videoConfig[lowKey] = settings.get(`FileUpload_AliOSS_${ key }`);
-		} else {
-			config.videoConfig[lowKey] = settings.get(
-				`FileUpload_AliOSS_Video_${ key }`,
-			);
-		}
+		config.videoConfig[lowKey] = settings.get(
+			`FileUpload_AliOSS_Video_${ key }`,
+		);
 	}
 	for (const key of videoKeys) {
 		const lowKey = key.replace(/^\S/, (s) => s.toLowerCase());

@@ -389,11 +389,7 @@ const configure = _.debounce(function() {
 		const ossValue = settings.get(`FileUpload_AliOSS_${ key }`);
 		const vodValue = settings.get(`FileUpload_AliOSS_Video_${ key }`);
 		config[`OSS_${ ossKey }`] = ossValue;
-		if (specialKeys.indexOf(key) > -1) {
-			config[`VOD_${ ossKey }`] = ossValue;
-		} else {
-			config[`VOD_${ ossKey }`] = vodValue;
-		}
+		config[`VOD_${ ossKey }`] = vodValue;
 	}
 	VodClient.ENDPOINT = config.VOD_ENDPOINT;
 	OSSClient.ACCELERATE_ENDPOINT = config.OSS_ENDPOINT;
