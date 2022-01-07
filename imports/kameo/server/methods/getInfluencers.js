@@ -34,7 +34,7 @@ Meteor.methods({
 		};
 
 		const extraQuery = [{
-			roles: 'influencer',
+			roles: { $in: ['influencer', 'creator'] },
 		}];
 		let result;
 		if (workspace === 'all') {

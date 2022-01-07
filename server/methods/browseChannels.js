@@ -212,12 +212,12 @@ Meteor.methods({
 	browseChannels({ text = '', workspace = '', type = 'channels', sortBy = 'name', sortDirection = 'asc', page, offset, limit = 10 }) {
 		const searchTerm = s.trim(escapeRegExp(text));
 
-		if (!['channels', 'users', 'teams', 'influencers'].includes(type) || !['asc', 'desc'].includes(sortDirection) || ((!page && page !== 0) && (!offset && offset !== 0))) {
+		if (!['channels', 'users', 'teams', 'influencers', 'creator'].includes(type) || !['asc', 'desc'].includes(sortDirection) || ((!page && page !== 0) && (!offset && offset !== 0))) {
 			return;
 		}
 
 		const roomParams = ['channels', 'teams'].includes(type) ? ['usernames', 'lastMessage'] : [];
-		const userParams = ['users', 'influencers'].includes(type) ? ['username', 'email', 'bio', 'customFields'] : [];
+		const userParams = ['users', 'influencers', 'creator'].includes(type) ? ['username', 'email', 'bio', 'customFields'] : [];
 
 		if (!['name', 'createdAt', 'usersCount', ...roomParams, ...userParams].includes(sortBy)) {
 			return;
