@@ -12,7 +12,7 @@ import './Webdav.js';
 const configStore = _.debounce(() => {
 	let store = settings.get('FileUpload_Storage_Type');
 	if (store === 'AliyunOSS') {
-		store = 'FileSystem'
+		store = 'FileSystem';
 	}
 	if (store) {
 		console.log('Setting default file store to', store);
