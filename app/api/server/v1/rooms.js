@@ -125,7 +125,7 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 		}
 		SystemLogger.debug('rooms.upload/:rid', this.request.headers, messageType, fields);
 		Meteor.call('sendFileMessage', this.urlParams.rid, null, fileList, fields);
-		return API.v1.success({ message: Messages.findOneByRoomIdAndMessageId(fields._id, this.userId) });
+		return API.v1.success({ message: Messages.findOneByRoomIdAndMessageId(this.urlParams.rid, fields._id) });
 	},
 });
 

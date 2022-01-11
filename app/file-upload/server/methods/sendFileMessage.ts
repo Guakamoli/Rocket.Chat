@@ -82,6 +82,7 @@ Meteor.methods({
 					image_size: file.size,
 					image_width: file.width,
 					image_height: file.height,
+					crop_params: file.cropParams,
 				};
 
 				if (file.identify && file.identify.size) {
@@ -137,6 +138,8 @@ Meteor.methods({
 					video_size: file.size,
 					video_width: file.width,
 					video_height: file.height,
+					crop_params: file.cropParams,
+
 				};
 				if (videoCover) {
 					const cover = !hasBuffer ? null : FileUpload.uploadImageThumbnail({ name: file.name, type: 'image/png' }, Buffer.from(videoCover), roomId, user._id);

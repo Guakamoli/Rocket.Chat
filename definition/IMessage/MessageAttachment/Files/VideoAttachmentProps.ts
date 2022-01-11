@@ -17,6 +17,7 @@ export type VideoAttachmentProps = {
 	video_width: number;
 	video_height: number;
 	file?: FileProp;
+	crop_params?: any;
 } & VideoAttachmentCoverProps & MessageAttachmentBase;
 
 export const isFileVideoAttachment = (
