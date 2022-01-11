@@ -20,3 +20,10 @@ callbacks.add('afterSetReaction', (message, { user, reaction }) => {
 		}
 	}
 }, callbacks.priority.LOW, 'kameo_after_set_reaction');
+
+callbacks.add('afterDeleteMessage', function(message) {
+	const deleteMsg = { messageId: message._id, isDeleted: true };
+	Meteor.call('kameoRocketmqSendPostMessage', deleteMsg);
+
+	return message;
+}, callbacks.priority.LOW, 'kameo_after_delete_message');
