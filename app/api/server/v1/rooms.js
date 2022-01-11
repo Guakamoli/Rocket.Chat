@@ -73,23 +73,23 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 			return API.v1.unauthorized();
 		}
 
-		let uploadedFile = null;
-		let { file, ...fields } = this.bodyParams;
+		const { file, ...fields } = Promise.await(getUploadFormData({
+			request: this.request,
+		}));
+		let fileList = fields['file[]'];
+		if (fileList) {
+			fileList = fileList.map((i) => JSON.parse(i));
+		}
+		Reflect.deleteProperty(fields, 'file[]');
+
 		// 如果不符合条件则走原来的逻辑
-		uploadedFile = file;
-		if (!file?.[0]?.uri) {
+		if (!fileList) {
 			throw new Meteor.Error('upload-type-error', 'cant not send form-data');
 		}
-		if (!file?.[0]?.uri) {
-			fields = Promise.await(getUploadFormData({
-				request: this.request,
-			}));
-			file = fields.file;
-			Reflect.deleteProperty(fields, 'file');
+		if (!fileList) {
 			if (!file) {
 				throw new Meteor.Error('invalid-field');
 			}
-
 			const details = {
 				name: file.filename,
 				size: file.fileBuffer.length,
@@ -104,7 +104,7 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 				// No need to check mime. Library will ignore any files without exif/xmp tags (like BMP, ico, PDF, etc)
 				file.fileBuffer = Promise.await(Media.stripExifFromBuffer(file.fileBuffer));
 			}
-			uploadedFile = fileStore.insertSync(details, file.fileBuffer);
+			const uploadedFile = fileStore.insertSync(details, file.fileBuffer);
 
 			uploadedFile.description = fields.description;
 
@@ -124,8 +124,8 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 			fields.t = messageType;
 		}
 		SystemLogger.debug('rooms.upload/:rid', this.request.headers, messageType, fields);
-		Meteor.call('sendFileMessage', this.urlParams.rid, null, uploadedFile, fields);
-		return API.v1.success({ message: Messages.getMessageByFileIdAndUsername(uploadedFile._id, this.userId) });
+		Meteor.call('sendFileMessage', this.urlParams.rid, null, fileList, fields);
+		return API.v1.success({ message: Messages.findOneByRoomIdAndMessageId(fields._id, this.userId) });
 	},
 });
 

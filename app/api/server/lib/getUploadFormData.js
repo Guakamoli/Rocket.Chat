@@ -19,7 +19,16 @@ export const getUploadFormData = async ({ request }) => new Promise((resolve, re
 		});
 	});
 
-	busboy.on('field', (fieldname, value) => { fields[fieldname] = value; });
+	busboy.on('field', (fieldname, value) => {
+		if (fieldname.endsWith(']')) {
+			if (!fields[fieldname]) {
+				fields[fieldname] = [];
+			}
+			fields[fieldname].push(value);
+			return;
+		}
+		fields[fieldname] = value;
+	});
 
 	busboy.on('finish', () => resolve(fields));
 
