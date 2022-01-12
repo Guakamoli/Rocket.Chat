@@ -424,9 +424,6 @@ export const FileUpload = {
 
 	getStore(modelName) {
 		let storageType = settings.get('FileUpload_Storage_Type');
-		if (storageType === 'AliyunOSS') {
-			storageType = 'FileSystem';
-		}
 		const handlerName = `${ storageType }:${ modelName }`;
 
 		return this.getStoreByName(handlerName);
