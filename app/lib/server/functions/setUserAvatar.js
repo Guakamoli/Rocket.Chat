@@ -6,6 +6,7 @@ import { RocketChatFile } from '../../../file';
 import { FileUpload } from '../../../file-upload';
 import { Users } from '../../../models';
 import { api } from '../../../../server/sdk/api';
+import { Random } from 'meteor/random';
 import { settings } from '../../../settings/server/index';
 
 export const setUserAvatar = function(user, dataURI, contentType, service) {
