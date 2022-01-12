@@ -20,7 +20,7 @@ export const getUploadFormData = async ({ request }) => new Promise((resolve, re
 	});
 
 	busboy.on('field', (fieldname, value) => {
-		if (fieldname.endsWith(']')) {
+		if (/^[a-zA-Z0-9]+\[(0|[1-9][0-9]*){0,1}\]$/.test(fieldname)) {
 			if (!fields[fieldname]) {
 				fields[fieldname] = [];
 			}
