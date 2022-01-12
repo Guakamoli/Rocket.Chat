@@ -71,6 +71,7 @@ const AliyunOSSAvatars = new FileUploadClass({
 				res.end();
 				return;
 			}
+		
 			const filePath = this.store.getFilePath(file._id, file);
 			const stat = statSync(filePath);
 
