@@ -80,9 +80,8 @@ const FileSystemAvatars = new FileUploadClass({
 	get(file, req, res) {
 		try {
 			if (file.url && file.store === 'AliyunOSS:Avatars') {
-				const url = file.url
 				res.status(302);
-				res.setHeader('Location', url);
+				res.setHeader('Location', file.url);
 				res.end();
 				return;
 			}
