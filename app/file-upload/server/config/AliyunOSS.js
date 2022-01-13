@@ -67,7 +67,7 @@ const AliyunOSSAvatars = new FileUploadClass({
 		try {
 			if (file.url && file.store === 'AliyunOSS:Avatars') {
 				res.status(302);
-				res.setHeader('Location', url);
+				res.setHeader('Location', file.url);
 				res.end();
 				return;
 			}
