@@ -63,10 +63,11 @@ const AliyunOSSUploads = new FileUploadClass({
 const AliyunOSSAvatars = new FileUploadClass({
 	name: 'AliyunOSS:Avatars',
 	copy,
-	get(file, req, res, avatarSize) {
+	get(file, req, res) {
 		try {
+			console.info(file.url, '你看')
 			if (file.url && file.store === 'AliyunOSS:Avatars') {
-				const url = `${ file.url }${ avatarSize ? `?x-oss-process=image/resize,w_${ avatarSize },h_${ avatarSize },limit_0` : '' }`;
+				const url = file.url
 				res.status(302);
 				res.setHeader('Location', url);
 				res.end();

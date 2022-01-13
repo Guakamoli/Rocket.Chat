@@ -77,10 +77,10 @@ const FileSystemAvatars = new FileUploadClass({
 	name: 'FileSystem:Avatars',
 	// store setted bellow
 
-	get(file, req, res, avatarSize) {
+	get(file, req, res) {
 		try {
 			if (file.url && file.store === 'AliyunOSS:Avatars') {
-				const url = `${ file.url }${ avatarSize ? `?x-oss-process=image/resize,w_${ avatarSize },h_${ avatarSize },limit_0` : '' }`;
+				const url = file.url
 				res.status(302);
 				res.setHeader('Location', url);
 				res.end();
