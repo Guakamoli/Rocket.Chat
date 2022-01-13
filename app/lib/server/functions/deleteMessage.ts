@@ -49,8 +49,6 @@ export const deleteMessage = function(message: IMessage, user: IUser): void {
 		});
 	}
 
-	Meteor.call('kameoRocketmqSendPostMessage', { messageId: message._id, isDeleted: true });
-
 	const room = Rooms.findOneById(message.rid, { fields: { lastMessage: 1, prid: 1, mid: 1 } });
 	callbacks.run('afterDeleteMessage', deletedMsg, room);
 

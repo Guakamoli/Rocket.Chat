@@ -63,11 +63,11 @@ async function rocketmqSendLoginUser(userId) {
 		id: userId,
 	};
 
-	await rocketmqSend(topicIds.login, JSON.stringify({ ...user }), 'mqLoginUser', 'LoginUser', props);
+	await rocketmqSend(topicIds.login, JSON.stringify({ ...user }), 'mqLoginUser', 'rocketchat', props);
 }
 
 async function rocketmqSendPostMessage(message) {
-	await rocketmqSend(topicIds.postMessage, JSON.stringify({ ...message }), 'mqPostMessage', 'PostMessage');
+	await rocketmqSend(topicIds.postMessage, JSON.stringify({ ...message }), 'mqPostMessage', 'rocketchat');
 }
 
 async function rocketmqSendNotification(notification) {
@@ -75,7 +75,7 @@ async function rocketmqSendNotification(notification) {
 		id: notification.postId,
 	};
 
-	await rocketmqSend(topicIds.notification, JSON.stringify({ ...notification }), 'mqNotification', 'Notification', props);
+	await rocketmqSend(topicIds.notification, JSON.stringify({ ...notification }), 'mqNotification', 'rocketchat', props);
 }
 
 async function rocketmqSendUpdateProfile(userId, profile) {
@@ -87,7 +87,7 @@ async function rocketmqSendUpdateProfile(userId, profile) {
 		profile.picture = `${ process.env.ROOT_URL }/avatar/${ profile.username }#`;
 	}
 
-	await rocketmqSend(topicIds.account, JSON.stringify({ ...profile }), 'mqUpdateAccount', 'Account', props);
+	await rocketmqSend(topicIds.account, JSON.stringify({ ...profile }), 'mqUpdateAccount', 'rocketchat', props);
 }
 
 async function rocketmqSendAliyunPush(userId, payload, tag = 'notification') {
@@ -108,7 +108,7 @@ async function rocketmqSendAliyunPush(userId, payload, tag = 'notification') {
 	}
 
 	logger.debug('SendAliyunPush', { user, payload });
-	await rocketmqSend(topicIds.aliyunPush, JSON.stringify({ ...payload }), tag, 'AliyunPush');
+	await rocketmqSend(topicIds.aliyunPush, JSON.stringify({ ...payload }), tag, 'rocketchat');
 }
 
 async function rocketmqSendChangeRole(userId, payload, tag = 'mqRole') {
@@ -116,7 +116,7 @@ async function rocketmqSendChangeRole(userId, payload, tag = 'mqRole') {
 		id: userId,
 	};
 	logger.debug('SendChangeCreator', { ...payload });
-	await rocketmqSend(topicIds.creatorRole, JSON.stringify({ ...payload }), tag, 'ChangeRole', props);
+	await rocketmqSend(topicIds.creatorRole, JSON.stringify({ ...payload }), tag, 'rocketchat', props);
 }
 
 Meteor.methods({
