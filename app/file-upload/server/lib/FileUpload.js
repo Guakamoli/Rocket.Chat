@@ -423,7 +423,7 @@ export const FileUpload = {
 	},
 
 	getStore(modelName) {
-		let storageType = settings.get('FileUpload_Storage_Type');
+		const storageType = settings.get('FileUpload_Storage_Type');
 		const handlerName = `${ storageType }:${ modelName }`;
 
 		return this.getStoreByName(handlerName);

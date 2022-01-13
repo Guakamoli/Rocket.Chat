@@ -10,7 +10,7 @@ import './GridFS.js';
 import './Webdav.js';
 
 const configStore = _.debounce(() => {
-	let store = settings.get('FileUpload_Storage_Type');
+	const store = settings.get('FileUpload_Storage_Type');
 	if (store) {
 		console.log('Setting default file store to', store);
 		UploadFS.getStores().Avatars = UploadFS.getStore(`${ store }:Avatars`);

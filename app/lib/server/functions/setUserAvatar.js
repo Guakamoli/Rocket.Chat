@@ -1,11 +1,11 @@
 import { Meteor } from 'meteor/meteor';
 import { HTTP } from 'meteor/http';
+import { Random } from 'meteor/random';
 
 import { RocketChatFile } from '../../../file';
 import { FileUpload } from '../../../file-upload';
 import { Users } from '../../../models';
 import { api } from '../../../../server/sdk/api';
-import { Random } from 'meteor/random';
 import { settings } from '../../../settings/server/index';
 
 export const setUserAvatar = function(user, dataURI, contentType, service) {
@@ -15,13 +15,13 @@ export const setUserAvatar = function(user, dataURI, contentType, service) {
 	if (service === 'initials') {
 		return Users.setAvatarData(user._id, service, null);
 	} if (service === 'url') {
-		const directSave = settings.get("Accounts_Direct_Save_Avatar_Url") || true
+		const directSave = settings.get('Accounts_Direct_Save_Avatar_Url');
 		if (directSave) {
 			// 在这里直接存储用户的头像和file数据
 			const avatarStore = FileUpload.getStore('Avatars');
 			const fileStore = FileUpload.getStore('Uploads');
-			const etag = Random.id();
 			avatarStore.deleteByName(user.username);
+			const etag = Random.id();
 			const details = {
 				name: user.username,
 				type: contentType,
@@ -31,18 +31,18 @@ export const setUserAvatar = function(user, dataURI, contentType, service) {
 				progress: 1,
 				url: dataURI,
 				path: dataURI,
-				etag,
 				size: 1024,
 				store: avatarStore.name,
-				uploadedAt: new Date()
+				uploadedAt: new Date(),
+				etag,
 			};
-			avatarStore.store.create(details)
-			fileStore.store.create(details)
+			avatarStore.store.create(details);
+			fileStore.store.create(details);
 			Meteor.setTimeout(function() {
 				Users.setAvatarData(user._id, service, etag);
 				api.broadcast('user.avatarUpdate', { username: user.username, avatarETag: etag });
 			}, 500);
-			return 
+			return;
 		}
 		let result = null;
 

@@ -46,7 +46,7 @@ export const userAvatar = Meteor.bindEnvironment(function(req, res) {
 		res.setHeader('Content-Type', file.type);
 		res.setHeader('Content-Length', file.size);
 
-		return FileUpload.get(file, req, res);
+		return FileUpload.get(file, req, res, avatarSize);
 	}
 
 	// if still using "letters fallback"
