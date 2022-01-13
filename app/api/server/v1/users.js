@@ -529,11 +529,6 @@ API.v1.addRoute('users.update', { authRequired: true, twoFactorRequired: true },
 		}
 		const { fields } = this.parseJsonQuery();
 
-		if (this.bodyParams.userId) {
-			const currentUser = Meteor.users.findOne({ _id: this.bodyParams.userId });
-			Meteor.call('kameoRocketmqSendUpdateProfile', this.bodyParams.userId, currentUser);
-		}
-
 		return API.v1.success({ user: Users.findOneById(this.bodyParams.userId, { fields }) });
 	},
 });
