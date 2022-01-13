@@ -14,13 +14,11 @@ import { Users, Avatars } from '../../../app/models/server';
 // request /avatar/@name forces returning the svg
 export const userAvatar = Meteor.bindEnvironment(function(req, res) {
 	const requestUsername = decodeURIComponent(req.url.substr(1).replace(/\?.*$/, ''));
-
 	if (!requestUsername) {
 		res.writeHead(404);
 		res.end();
 		return;
 	}
-
 	const avatarSize = req.query.size && parseInt(req.query.size);
 
 	setCacheAndDispositionHeaders(req, res);
@@ -33,7 +31,6 @@ export const userAvatar = Meteor.bindEnvironment(function(req, res) {
 	}
 
 	const reqModifiedHeader = req.headers['if-modified-since'];
-
 	const file = Avatars.findOneByName(requestUsername);
 	if (file) {
 		res.setHeader('Content-Security-Policy', 'default-src \'none\'');
@@ -49,7 +46,7 @@ export const userAvatar = Meteor.bindEnvironment(function(req, res) {
 		res.setHeader('Content-Type', file.type);
 		res.setHeader('Content-Length', file.size);
 
-		return FileUpload.get(file, req, res);
+		return FileUpload.get(file, req, res, avatarSize);
 	}
 
 	// if still using "letters fallback"

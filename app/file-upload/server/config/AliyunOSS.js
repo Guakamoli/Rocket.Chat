@@ -1,11 +1,16 @@
+
+import fs from 'fs';
 import http from 'http';
 import https from 'https';
 
 import _ from 'underscore';
+import { Meteor } from 'meteor/meteor';
 
 import { settings } from '../../../settings';
 import { FileUploadClass, FileUpload } from '../lib/FileUpload';
 import '../../ufs/AliyunOSS/server.js';
+
+const statSync = Meteor.wrapAsync(fs.stat);
 
 const get = function(file, req, res) {
 	const forceDownload = typeof req.query.download !== 'undefined';
@@ -57,8 +62,29 @@ const AliyunOSSUploads = new FileUploadClass({
 
 const AliyunOSSAvatars = new FileUploadClass({
 	name: 'AliyunOSS:Avatars',
-	get,
 	copy,
+	get(file, req, res, avatarSize) {
+		try {
+			if (file.url && file.store === 'AliyunOSS:Avatars') {
+				const url = `${ file.url }${ avatarSize ? `?x-oss-process=image/resize,w_${ avatarSize },h_${ avatarSize },limit_0` : '' }`;
+				res.status(302);
+				res.setHeader('Location', url);
+				res.end();
+				return;
+			}
+			const filePath = this.store.getFilePath(file._id, file);
+			const stat = statSync(filePath);
+
+			if (stat && stat.isFile()) {
+				file = FileUpload.addExtensionTo(file);
+
+				this.store.getReadStream(file._id, file).pipe(res);
+			}
+		} catch (e) {
+			res.writeHead(404);
+			res.end();
+		}
+	},
 	// store setted bellow
 });
 

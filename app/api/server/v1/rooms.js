@@ -155,7 +155,7 @@ API.v1.addRoute('rooms.getAliyunUploadPaths', { authRequired: true }, {
 				options = {
 					filename,
 					contentType: fileItem.type,
-					containerName: 'default',
+					containerName: fileItem.containerName || 'default',
 					contentDisposition: true,
 				};
 			}
