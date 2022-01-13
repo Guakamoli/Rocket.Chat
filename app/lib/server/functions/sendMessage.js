@@ -251,6 +251,7 @@ export const sendMessage = function(user, message, room, upsert = false) {
 				ts: message.ts,
 				influencerId: message.u._id,
 				public: message.public || false, // 兼容没有免费作品的情况
+				msg: message.msg || '',
 			});
 
 			Meteor.runAsUser(user._id, () => Meteor.call('createDiscussion', {
