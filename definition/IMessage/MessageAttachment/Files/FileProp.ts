@@ -33,4 +33,5 @@ export type UploadFileProp = {
 	uri?: string; // 如果有传就直接作为结果存储
 	description?: string;
 	fileBuffer?: Buffer;
+	cropParams?: any;
 } & (VideoUploadFileProp & ImageUploadFileProp)
