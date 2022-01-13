@@ -63,7 +63,7 @@ const AliyunOSSUploads = new FileUploadClass({
 const AliyunOSSAvatars = new FileUploadClass({
 	name: 'AliyunOSS:Avatars',
 	copy,
-	get(file, req, res, avatarSize) {
+	get(file, req, res) {
 		try {
 			if (file.url && file.store === 'AliyunOSS:Avatars') {
 				res.status(302);
