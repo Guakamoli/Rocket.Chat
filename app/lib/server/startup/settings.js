@@ -1550,11 +1550,11 @@ settings.addGroup('Layout', function() {
 			type: 'boolean',
 			public: true,
 		});
-		this.add('Accounts_Direct_Save_Avatar_Url', true, {
-			type: 'boolean',
+		this.add('UI_Use_Default_Avatar', '', {
+			type: 'string',
 			public: true,
 		});
-		this.add('UI_Click_Direct_Message', false, {
+		this.add('Accounts_Direct_Save_Avatar_Url', true, {
 			type: 'boolean',
 			public: true,
 		});

@@ -4032,6 +4032,7 @@
   "UI_Use_Name_Avatar": "使用全名縮寫來生成預設頭像",
   "UI_Use_Real_Name": "使用真實姓名",
   "UI_Use_Default_Avatar": "设置默认头像URL",
+  "Accounts_Direct_Save_Avatar_Url": "直接保存图像链接",
   "unable-to-get-file": "無法取得檔案",
   "Unarchive": "取消封存",
   "unarchive-room": "Room 取消封存",
