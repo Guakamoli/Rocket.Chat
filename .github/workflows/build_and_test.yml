@@ -8,17 +8,15 @@ on:
       - kameo/develop
       - kameo/master
       - test
+    tags:
+      - "v*"
 
 env:
   CI: true
   MONGO_URL: mongodb://mongo-svc:27017
   TOOL_NODE_FLAGS: --max_old_space_size=4096
   IMAGE_NAME: rocketchat
-  TAG_NAME: dev
   ALIYUN_CR: registry.cn-qingdao.aliyuncs.com
-  ALIYUN_NS: paiya
-  AZURE_CR: goduck.azurecr.io
-  AZK8S_CTX: goduck-dev-context
 
 jobs:
   meteor-build-and-store:
@@ -547,18 +545,30 @@ jobs:
     - name: Build Docker image for tag
       run: |
         cd /tmp/build
-        TAG_NAME=$(date +'%Y%m%d%H%M%S')
-        if [ "$GITHUB_REF" == "refs/heads/kameo/master" ] || [ "$GITHUB_REF" == "refs/heads/master" ]; then
-          TAG_NAME=production
+        TAG_NAME=$GITHUB_REF_NAME-${GITHUB_SHA: 0:8}
+        if [ "$GITHUB_REF" == "refs/heads/kameo/master" ]; then
+          TAG_NAME="kameo-master-${GITHUB_SHA: 0:8}"
         fi
-        if [ "$GITHUB_REF" == "refs/heads/kameo/develop" ] || [ "$GITHUB_REF" == "refs/heads/develop" ]; then
-          TAG_NAME=dev
+        if [ "$GITHUB_REF" == "refs/heads/kameo/develop" ]; then
+          TAG_NAME="kameo-develop-${GITHUB_SHA: 0:8}"
         fi
+        if [ "$GITHUB_REF" == "refs/heads/test" ]; then
+          TAG_NAME="test"
+        fi
+        echo "" >> $GITHUB_ENV
+        echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
 
-        IMAGE=${{env.ALIYUN_CR}}/${{env.ALIYUN_NS}}/${{env.IMAGE_NAME}}:${TAG_NAME}
+        IMAGE=${{env.ALIYUN_CR}}/paiya/${{env.IMAGE_NAME}}:${TAG_NAME}
         echo "Build Docker image: '${IMAGE}', tag: '${TAG_NAME}'"
 
         docker build -t ${IMAGE} .
+        docker push ${IMAGE}
+
+        OLD_IMAGE=$IMAGE
+        IMAGE=${{env.ALIYUN_CR}}/goduck/${{env.IMAGE_NAME}}:${TAG_NAME}
+        echo "Build Docker image: '${IMAGE}', tag: '${TAG_NAME}'"
+
+        docker tag ${OLD_IMAGE} ${IMAGE}
         docker push ${IMAGE}
 
   # image-build:
