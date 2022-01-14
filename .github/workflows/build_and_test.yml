@@ -9,7 +9,7 @@ on:
       - kameo/master
       - test
     tags:
-      - "v*"
+      - "kameo-v*"
 
 env:
   CI: true
@@ -555,7 +555,6 @@ jobs:
         if [ "$GITHUB_REF" == "refs/heads/test" ]; then
           TAG_NAME="test"
         fi
-        echo "" >> $GITHUB_ENV
         echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
 
         IMAGE=${{env.ALIYUN_CR}}/paiya/${{env.IMAGE_NAME}}:${TAG_NAME}
