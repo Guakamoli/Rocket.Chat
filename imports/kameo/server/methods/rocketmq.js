@@ -91,6 +91,10 @@ async function rocketmqSendUpdateProfile(userId, profile) {
 }
 
 async function rocketmqSendAliyunPush(userId, payload, tag = 'notification') {
+	if (userId === 'rocket.cat') {
+		return;
+	}
+
 	const user = Users.findOneById(userId);
 
 	if (Array.isArray(user.emails) && user.emails.find((email) => email.verified)) {
