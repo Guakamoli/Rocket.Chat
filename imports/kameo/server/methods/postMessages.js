@@ -23,6 +23,17 @@ Meteor.methods({
 			return Rooms.findOneById(rid);
 		});
 
+		if (message.metadata.category === 'reaction') {
+			const existMsg = Messages.findOne({
+				t: 'activity',
+				'metadata.category': message.metadata.category,
+				'metadata.messageId': message.metadata.messageId,
+			});
+			if (existMsg) {
+				return;
+			}
+		}
+
 		if (message.metadata.rid && message.metadata.category !== 'reaction') {
 			const firstDiscussionMessage = Messages.findOne({ rid: message.metadata.rid }, { sort: { ts: 1 } });
 			message.metadata.messageId = firstDiscussionMessage._id;
