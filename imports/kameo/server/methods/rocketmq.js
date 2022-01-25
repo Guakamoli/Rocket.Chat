@@ -95,23 +95,9 @@ async function rocketmqSendAliyunPush(userId, payload, tag = 'notification') {
 		return;
 	}
 
-	const user = Users.findOneById(userId);
+	payload.targetValue = userId;
 
-	if (Array.isArray(user.emails) && user.emails.find((email) => email.verified)) {
-		const email = user.emails.find((email) => email.verified); // 查找第一个已验证的邮箱
-		payload.targetValue = email.address;
-	}
-
-	if (user.services?.sms?.realPhoneNumber) {
-		payload.targetValue = user.services.sms.realPhoneNumber;
-	}
-
-	// 不存在 targetValue 字段，不发送消息
-	if (!payload.targetValue) {
-		throw new Meteor.Error('no-target-value', 'no target value', { ...payload });
-	}
-
-	logger.debug('SendAliyunPush', { user, payload });
+	logger.debug('SendAliyunPush', { ...payload });
 	await rocketmqSend(topicIds.aliyunPush, JSON.stringify({ ...payload }), tag, 'rocketchat');
 }
 
