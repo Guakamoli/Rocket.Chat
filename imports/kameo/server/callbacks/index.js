@@ -60,7 +60,7 @@ callbacks.add('afterSaveMessage', function(message, room, userId) {
 
 // 评论作品及回复评论
 callbacks.add('afterSaveMessage', function(message, room) {
-	if (!allowMessageTypes.includes(message.t) && message.rid && message.msg && message.u._id !== room.u._id) {
+	if (!allowMessageTypes.includes(message.t) && message.rid && message.msg) {
 		const notificationMessage = {
 			t: 'activity',
 			ts: new Date(),
@@ -70,6 +70,9 @@ callbacks.add('afterSaveMessage', function(message, room) {
 				rid: message.rid,
 			},
 		};
+		if (message.tmid) {
+			notificationMessage.metadata.tmid = message.tmid;
+		}
 		Meteor.call('kameoBotForwardMessage', notificationMessage, message.u, room.u._id);
 	}
 }, callbacks.priority.LOW, 'kameo_after_save_message_to_notification');

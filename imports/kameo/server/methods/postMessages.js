@@ -18,11 +18,6 @@ Meteor.methods({
 		});
 	},
 	kameoBotForwardMessage(message, sender, receiverId) {
-		const room = Meteor.runAsUser(receiverId, function() {
-			const { rid } = Meteor.call('createDirectMessage', 'rocket.cat');
-			return Rooms.findOneById(rid);
-		});
-
 		if (message.metadata.category === 'reaction') {
 			const existMsg = Messages.findOne({
 				t: 'activity',
@@ -35,12 +30,22 @@ Meteor.methods({
 		}
 
 		if (message.metadata.rid && message.metadata.category !== 'reaction') {
+			if (message.metadata.tmid) {
+				const threadMessage = Messages.findOne({ _id: message.metadata.tmid });
+				receiverId = threadMessage.u._id;
+			}
+
 			const firstDiscussionMessage = Messages.findOne({ rid: message.metadata.rid }, { sort: { ts: 1 } });
 			message.metadata.messageId = firstDiscussionMessage._id;
 			message.metadata.prid = firstDiscussionMessage.prid;
 			message.metadata.drid = firstDiscussionMessage.drid;
 			message.attachments = firstDiscussionMessage.attachments || [];
 		}
+
+		const room = Meteor.runAsUser(receiverId, function() {
+			const { rid } = Meteor.call('createDirectMessage', 'rocket.cat');
+			return Rooms.findOneById(rid);
+		});
 
 		Promise.await(sendMessage(sender, message, room, false));
 	},
