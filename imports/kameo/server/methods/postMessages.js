@@ -32,6 +32,10 @@ Meteor.methods({
 		if (message.metadata.rid && message.metadata.category !== 'reaction') {
 			if (message.metadata.tmid) {
 				const threadMessage = Messages.findOne({ _id: message.metadata.tmid });
+				// 在 thread 里自己评论自己
+				if (sender._id === threadMessage.u._id) {
+					return;
+				}
 				receiverId = threadMessage.u._id;
 			}
 
@@ -40,6 +44,11 @@ Meteor.methods({
 			message.metadata.prid = firstDiscussionMessage.prid;
 			message.metadata.drid = firstDiscussionMessage.drid;
 			message.attachments = firstDiscussionMessage.attachments || [];
+		}
+
+		// 在 channel 里自己评论自己
+		if (sender._id === receiverId) {
+			return;
 		}
 
 		const room = Meteor.runAsUser(receiverId, function() {
