@@ -1,7 +1,7 @@
 import { TextInput } from '@rocket.chat/fuselage';
 import { useSafely } from '@rocket.chat/fuselage-hooks';
 import { Meteor } from 'meteor/meteor';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import toastr from 'toastr';
 
 import { useRouteParameter, useRoute } from '../../../contexts/RouterContext';
@@ -83,6 +83,7 @@ const ResetPassword = () => {
 					await resetPassword(token, newPassword);
 					toastr.success(t('Reset_password_success'));
 					// await Meteor.loginWithToken(result.token);
+					await Meteor.logout();
 					window.location.href = '/welcome?type=2';
 				} else {
 					await setUserPassword(newPassword);
