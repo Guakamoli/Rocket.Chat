@@ -1,6 +1,6 @@
 import { Match, check } from 'meteor/check';
 import { parser } from '@rocket.chat/message-parser';
-import { Meteor } from 'meteor/meteor';
+// import { Meteor } from 'meteor/meteor';
 
 import { settings } from '../../../settings';
 import { callbacks } from '../../../callbacks';
@@ -164,7 +164,9 @@ export const sendMessage = function(user, message, room, upsert = false) {
 		return false;
 	}
 
-	validateMessage(message, room, user);
+	if (message.t !== 'activity') {
+		validateMessage(message, room, user);
+	}
 
 	if (!message.ts) {
 		message.ts = new Date();
@@ -243,27 +245,6 @@ export const sendMessage = function(user, message, room, upsert = false) {
 			}
 			message._id = Messages.insert(message);
 		}
-
-		if (message.t === 'post') {
-			// 发送mq事件给到Java
-			Meteor.call('kameoRocketmqSendPostMessage', {
-				messageId: message._id,
-				ts: message.ts,
-				influencerId: message.u._id,
-				public: message.public || false, // 兼容没有免费作品的情况
-				msg: message.msg || '',
-			});
-
-			Meteor.runAsUser(user._id, () => Meteor.call('createDiscussion', {
-				prid: room._id,
-				pmid: message._id,
-				t_name: `discussion-${ message._id }`,
-				reply: '',
-				users: [],
-				encrypted: false,
-			}));
-		}
-		console.log('Meteor sendMessage message ->', message);
 
 		if (Apps && Apps.isLoaded()) {
 			// This returns a promise, but it won't mutate anything about the message

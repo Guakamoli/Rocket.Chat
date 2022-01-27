@@ -8,7 +8,7 @@ import { IUser } from '../../../../definition/IUser';
 import { settings } from '../../../../app/settings/server';
 import { metrics } from '../../../../app/metrics/server';
 import { currentProduct } from './index';
-import { IAliyunPushRequest } from '../definition/IAliyun';
+import { IAliyunPushRequest, IAliyunPushNotification } from '../definition/IAliyun';
 
 const {
 	NOTIFICATIONS_WORKER_TIMEOUT = 2000,
@@ -105,6 +105,10 @@ export default class NotificationClass {
 	push({ uid }: INotification, item: INotificationItemPush): void {
 		const { roomName, username, message, payload, badge = 1, category } = item.data;
 
+		if (uid === 'rocket.cat' || payload.messageType !== 'activity') {
+			return;
+		}
+
 		const idOnly = settings.get('Push_request_content_from_server');
 		const title = idOnly ? '' : payload.sender.name || username || roomName;
 
@@ -166,8 +170,8 @@ export default class NotificationClass {
 		// eslint-disable-next-line @typescript-eslint/camelcase
 		metrics.notificationsSent.inc({ notification_type: 'mobile' });
 
-		Meteor.call('kameoRocketmqSendAliyunPush', uid, iOSRequest);
-		Meteor.call('kameoRocketmqSendAliyunPush', uid, androidRequest);
+		const notifications: IAliyunPushNotification[] = [{ uid, request: iOSRequest }, { uid, request: androidRequest }];
+		Meteor.call('kameoRocketmqSendAliyunPush', 'notification', ...notifications);
 	}
 
 	email(item: INotificationItemEmail): void {

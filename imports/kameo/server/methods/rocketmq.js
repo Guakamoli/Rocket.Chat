@@ -90,25 +90,17 @@ async function rocketmqSendUpdateProfile(userId, profile) {
 	await rocketmqSend(topicIds.account, JSON.stringify({ ...profile }), 'mqUpdateAccount', 'rocketchat', props);
 }
 
-async function rocketmqSendAliyunPush(userId, payload, tag = 'notification') {
-	const user = Users.findOneById(userId);
+async function rocketmqSendAliyunPush(tag = 'notification', ...notifications) {
+	for await (const { uid, request } of notifications) {
+		if (uid === 'rocket.cat') {
+			continue;
+		}
 
-	if (Array.isArray(user.emails) && user.emails.find((email) => email.verified)) {
-		const email = user.emails.find((email) => email.verified); // 查找第一个已验证的邮箱
-		payload.targetValue = email.address;
+		const payload = { ...request, targetValue: uid };
+
+		logger.debug('SendAliyunPush', payload);
+		await rocketmqSend(topicIds.aliyunPush, JSON.stringify(payload), tag, 'rocketchat');
 	}
-
-	if (user.services?.sms?.realPhoneNumber) {
-		payload.targetValue = user.services.sms.realPhoneNumber;
-	}
-
-	// 不存在 targetValue 字段，不发送消息
-	if (!payload.targetValue) {
-		throw new Meteor.Error('no-target-value', 'no target value', { ...payload });
-	}
-
-	logger.debug('SendAliyunPush', { user, payload });
-	await rocketmqSend(topicIds.aliyunPush, JSON.stringify({ ...payload }), tag, 'rocketchat');
 }
 
 async function rocketmqSendChangeRole(userId, payload, tag = 'mqRole') {
