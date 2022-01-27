@@ -7,7 +7,7 @@ const allowPushReactions = [':heart:', ':+1:'];
 
 // 机器人转发点赞消息至收件人通知
 callbacks.add('afterSetReaction', (message, { user, reaction }) => {
-	if (allowMessageTypes.includes(message.t) && allowPushReactions.includes(reaction) && message.u._id !== user._id) {
+	if (allowPushReactions.includes(reaction) && message.u._id !== user._id) {
 		const notificationMessage = {
 			t: 'activity',
 			ts: new Date(),
@@ -20,6 +20,7 @@ callbacks.add('afterSetReaction', (message, { user, reaction }) => {
 				prid: message.prid || '',
 				drid: message.drid || '',
 				tmid: message.tmid || '',
+				receiverId: message.u._id,
 			},
 		};
 		Meteor.call('kameoBotForwardMessage', notificationMessage, user, message.u._id);

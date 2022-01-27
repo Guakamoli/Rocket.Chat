@@ -3,7 +3,7 @@ import { Meteor } from 'meteor/meteor';
 import { INotification, INotificationItemPush, INotificationItemEmail, NotificationItem } from '../../../definition/INotification';
 import { NotificationQueue, Users } from '../../models/server/raw';
 import { sendEmailFromData } from '../../lib/server/functions/notifications/email';
-import { PushNotification } from '../../push-notifications/server';
+// import { PushNotification } from '../../push-notifications/server';
 import { IUser } from '../../../definition/IUser';
 import { NotificationClass as KameoNotificationClass } from '../../../imports/kameo/server';
 
@@ -14,6 +14,9 @@ const {
 	NOTIFICATIONS_SCHEDULE_DELAY_AWAY = 0,
 	NOTIFICATIONS_SCHEDULE_DELAY_OFFLINE = 0,
 } = process.env;
+
+// export const Notification = new NotificationClass();
+export const Notification = new KameoNotificationClass();
 
 export class NotificationClass {
 	private running = false;
@@ -99,13 +102,14 @@ export class NotificationClass {
 		return NotificationQueue.findNextInQueueOrExpired(expired);
 	}
 
-	push({ uid, rid, mid }: INotification, item: INotificationItemPush): void {
-		PushNotification.send({
-			rid,
-			uid,
-			mid,
-			...item.data,
-		});
+	push(notification: INotification, item: INotificationItemPush): void {
+		// PushNotification.send({
+		// 	rid,
+		// 	uid,
+		// 	mid,
+		// 	...item.data,
+		// });
+		Notification.push(notification, item);
 	}
 
 	email(item: INotificationItemEmail): void {
@@ -147,10 +151,6 @@ export class NotificationClass {
 		});
 	}
 }
-
-// export const Notification = new NotificationClass();
-
-export const Notification = new KameoNotificationClass();
 
 Meteor.startup(() => {
 	Notification.initWorker();

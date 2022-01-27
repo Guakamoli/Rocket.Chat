@@ -8,6 +8,7 @@ export interface INotificationItemPush {
 				name?: string;
 			};
 			type: string;
+			messageType?: string;
 		};
 		roomName: string;
 		username: string;
@@ -15,6 +16,7 @@ export interface INotificationItemPush {
 		badge: number;
 		category: string;
 	};
+	mid?: string;
 }
 
 export interface INotificationItemEmail {

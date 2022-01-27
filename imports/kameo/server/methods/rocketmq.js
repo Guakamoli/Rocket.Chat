@@ -90,15 +90,17 @@ async function rocketmqSendUpdateProfile(userId, profile) {
 	await rocketmqSend(topicIds.account, JSON.stringify({ ...profile }), 'mqUpdateAccount', 'rocketchat', props);
 }
 
-async function rocketmqSendAliyunPush(userId, payload, tag = 'notification') {
-	if (userId === 'rocket.cat') {
-		return;
+async function rocketmqSendAliyunPush(tag = 'notification', ...notifications) {
+	for await (const { uid, request } of notifications) {
+		if (uid === 'rocket.cat') {
+			continue;
+		}
+
+		const payload = { ...request, targetValue: uid };
+
+		logger.debug('SendAliyunPush', payload);
+		await rocketmqSend(topicIds.aliyunPush, JSON.stringify(payload), tag, 'rocketchat');
 	}
-
-	payload.targetValue = userId;
-
-	logger.debug('SendAliyunPush', { ...payload });
-	await rocketmqSend(topicIds.aliyunPush, JSON.stringify({ ...payload }), tag, 'rocketchat');
 }
 
 async function rocketmqSendChangeRole(userId, payload, tag = 'mqRole') {

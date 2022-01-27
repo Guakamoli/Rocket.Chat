@@ -18,17 +18,6 @@ Meteor.methods({
 		});
 	},
 	kameoBotForwardMessage(message, sender, receiverId) {
-		if (message.metadata.category === 'reaction') {
-			const existMsg = Messages.findOne({
-				t: 'activity',
-				'metadata.category': message.metadata.category,
-				'metadata.messageId': message.metadata.messageId,
-			});
-			if (existMsg) {
-				return;
-			}
-		}
-
 		if (message.metadata.rid && message.metadata.category !== 'reaction') {
 			if (message.metadata.tmid) {
 				const threadMessage = Messages.findOne({ _id: message.metadata.tmid });
@@ -44,6 +33,21 @@ Meteor.methods({
 			message.metadata.prid = firstDiscussionMessage.prid;
 			message.metadata.drid = firstDiscussionMessage.drid;
 			message.attachments = firstDiscussionMessage.attachments || [];
+		}
+
+		if (message.metadata.category === 'reaction') {
+			const existMsg = Messages.findOne({
+				t: 'activity',
+				'u._id': sender._id,
+				'metadata.category': message.metadata.category,
+				'metadata.messageId': message.metadata.messageId,
+				'metadata.reaction': message.metadata.reaction,
+				'metadata.receiverId': receiverId,
+			});
+			// 重复点赞
+			if (existMsg) {
+				return;
+			}
 		}
 
 		// 在 channel 里自己评论自己

@@ -17,6 +17,11 @@ import { logger } from '../../../push/server/logger';
 
 let TroubleshootDisableNotifications;
 
+const {
+	NOTIFICATION_TEMPLATE_REACTION = '有人为你点了赞，请点击查看》',
+	NOTIFICATION_TEMPLATE_COMMENT = '您收到一条评论消息，请点击查看》',
+} = process.env;
+
 export const sendNotification = async ({
 	subscription,
 	sender,
@@ -70,7 +75,17 @@ export const sendNotification = async ({
 
 	const isThread = !!message.tmid && !message.tshow;
 
-	notificationMessage = parseMessageTextPerUser(notificationMessage, message, receiver);
+	if (message.t !== 'activity') {
+		notificationMessage = parseMessageTextPerUser(notificationMessage, message, receiver);
+	} else {
+		if (message.metadata.category === 'reaction') {
+			notificationMessage = NOTIFICATION_TEMPLATE_REACTION;
+		}
+
+		if (['comment', 'reply'].includes(message.metadata.category)) {
+			notificationMessage = NOTIFICATION_TEMPLATE_COMMENT;
+		}
+	}
 
 	if (['post', 'story'].includes(message.t)) {
 		if (!message.msg && message.attachments && message.attachments[0]) {

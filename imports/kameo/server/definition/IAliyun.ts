@@ -63,3 +63,8 @@ export interface IAliyunPushRequest {
 	smsDelaySecs?: number;
 	smsSendPolicy?: number;
 }
+
+export type IAliyunPushNotification = {
+	uid: string;
+	request: IAliyunPushRequest;
+};
