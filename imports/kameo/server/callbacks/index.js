@@ -38,8 +38,8 @@ callbacks.add('afterDeleteMessage', function(message) {
 }, callbacks.priority.MEDIUM, 'kameo_after_delete_message');
 
 // 保存消息时创建 discussion, 并转发消息至推荐系统
-callbacks.add('afterSaveMessage', function(message, room, userId) {
-	if (allowMessageTypes.includes(message.t)) {
+callbacks.add('afterSaveMessage', function(message, room = {}) {
+	if (allowMessageTypes.includes(message.t) && room._id) {
 		Meteor.call('kameoRocketmqSendPostMessage', {
 			messageId: message._id,
 			ts: message.ts,
@@ -48,7 +48,7 @@ callbacks.add('afterSaveMessage', function(message, room, userId) {
 			msg: message.msg || '',
 		});
 
-		Meteor.runAsUser(userId, () => Meteor.call('createDiscussion', {
+		Meteor.runAsUser(message.u._id, () => Meteor.call('createDiscussion', {
 			prid: room._id,
 			pmid: message._id,
 			t_name: `discussion-${ message._id }`,
