@@ -1,7 +1,7 @@
 import { TextInput } from '@rocket.chat/fuselage';
 import { useSafely } from '@rocket.chat/fuselage-hooks';
 import { Meteor } from 'meteor/meteor';
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import toastr from 'toastr';
 
 import { useRouteParameter, useRoute } from '../../../contexts/RouterContext';

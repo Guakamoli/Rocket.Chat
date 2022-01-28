@@ -4,9 +4,7 @@ on:
   push:
     branches:
       - develop
-      - master
       - kameo/develop
-      - kameo/master
       - test
     tags:
       - "kameo-v*"
@@ -19,10 +17,26 @@ env:
   ALIYUN_CR: registry.cn-qingdao.aliyuncs.com
 
 jobs:
-  meteor-build-and-store:
+  check-alicr:
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/pull/') != true
-
+    outputs:
+      alicr-uid-exist: ${{ steps.alicr-uid-env.outputs.defined }}
+      alicr-pwd-exist: ${{ steps.alicr-pwd-env.outputs.defined }}
+    steps:
+      - id: alicr-uid-env
+        env:
+          ALICR_UID: ${{ secrets.ALICR_UID }}
+        if: "${{ env.ALICR_UID != '' }}"
+        run: echo "::set-output name=defined::true"
+      - id: alicr-pwd-env
+        env:
+          ALICR_PWD: ${{ secrets.ALICR_PWD }}
+        if: "${{ env.ALICR_PWD != '' }}"
+        run: echo "::set-output name=defined::true"
+  meteor-build:
+    needs: [check-alicr]
+    if: startsWith(github.ref, 'refs/pull/') != true && needs.check-alicr.outputs.alicr-uid-exist == 'true' && needs.check-alicr.outputs.alicr-pwd-exist == 'true'
+    runs-on: ubuntu-latest
     steps:
 
     - name: Github Info
@@ -506,9 +520,9 @@ jobs:
   #           -d '{"tag":"'$GIT_TAG'"}'
   #       fi
 
-  docker-build-and-publish:
+  docker-publish:
     runs-on: ubuntu-latest
-    needs: meteor-build-and-store
+    needs: meteor-build
     
     steps:
     - uses: actions/checkout@v2
@@ -546,16 +560,9 @@ jobs:
       run: |
         cd /tmp/build
         TAG_NAME=$GITHUB_REF_NAME-${GITHUB_SHA: 0:8}
-        if [ "$GITHUB_REF" == "refs/heads/kameo/master" ]; then
-          TAG_NAME="kameo-master-${GITHUB_SHA: 0:8}"
-        fi
-        if [ "$GITHUB_REF" == "refs/heads/kameo/develop" ]; then
+        if [ "$GITHUB_REF" == "refs/heads/kameo/develop" ] || [ "$GITHUB_REF" == "refs/heads/develop" ] || [ "$GITHUB_REF" == "refs/heads/test" ]; then
           TAG_NAME="kameo-develop-${GITHUB_SHA: 0:8}"
         fi
-        if [ "$GITHUB_REF" == "refs/heads/test" ]; then
-          TAG_NAME="test"
-        fi
-        echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
 
         IMAGE=${{env.ALIYUN_CR}}/paiya/${{env.IMAGE_NAME}}:${TAG_NAME}
         echo "Build Docker image: '${IMAGE}', tag: '${TAG_NAME}'"
