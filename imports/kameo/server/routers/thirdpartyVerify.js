@@ -1,28 +1,22 @@
-import { Meteor } from 'meteor/meteor';
 import { WebApp } from 'meteor/webapp';
+import express from 'express';
 
 import { currentProduct } from '../utils';
+import { Users } from '../../../../app/models';
 
-// 占位页面
-WebApp.connectHandlers.use('/perch', Meteor.bindEnvironment(function(req, res/* , next*/) {
-	res.writeHead(200);
-	res.write('');
-	res.end();
-}));
+const app = express();
 
-WebApp.connectHandlers.use('/h9esIHXgl4.txt', Meteor.bindEnvironment(function(req, res/* , next*/) {
-	res.writeHead(200);
-	res.write('d7eb4f6879fd40a737bc2887988a344f');
-	res.end();
-}));
+app.disable('x-powered-by');
 
-WebApp.connectHandlers.use('/kdGu9D1xAS.txt', Meteor.bindEnvironment(function(req, res/* , next*/) {
-	res.writeHead(200);
-	res.write('17a3dcf4d4c56546d2a63b08c1e94ded');
-	res.end();
-}));
+app.use('/h9esIHXgl4.txt', (req, res) => {
+	res.send('d7eb4f6879fd40a737bc2887988a344f');
+});
 
-WebApp.connectHandlers.use('/.well-known/apple-app-site-association', Meteor.bindEnvironment(function(req, res/* , next*/) {
+app.use('/kdGu9D1xAS.txt', (req, res) => {
+	res.send('17a3dcf4d4c56546d2a63b08c1e94ded');
+});
+
+app.use('/.well-known/apple-app-site-association', (req, res) => {
 	const details = currentProduct({
 		PAIYA: [
 			{
@@ -53,7 +47,20 @@ WebApp.connectHandlers.use('/.well-known/apple-app-site-association', Meteor.bin
 		},
 	};
 
-	res.writeHead(200, { 'content-type': 'application/json' });
-	res.write(JSON.stringify(data));
+	res.send(data);
+});
+
+// 存活检查
+app.use('/ping', (req, res) => {
+	res.send('pong');
+});
+
+// 就绪检查
+app.use('/healthz', (req, res) => {
+	if (!Users.findOneById('rocket.cat')) {
+		res.status(500);
+	}
 	res.end();
-}));
+});
+
+WebApp.connectHandlers.use(app);
