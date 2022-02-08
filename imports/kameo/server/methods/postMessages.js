@@ -22,7 +22,7 @@ Meteor.methods({
 			if (message.metadata.tmid) {
 				const threadMessage = Messages.findOne({ _id: message.metadata.tmid });
 				// 在 thread 里自己评论自己
-				if (sender._id === threadMessage.u._id) {
+				if (sender._id === threadMessage.u._id && message.metadata.category === 'comment') {
 					return;
 				}
 				receiverId = threadMessage.u._id;
