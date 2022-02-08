@@ -1,8 +1,14 @@
 /* eslint-disable new-cap */
+import stream from 'stream';
+
 import { check } from 'meteor/check';
 import { UploadFS } from 'meteor/jalik:ufs';
 import { Random } from 'meteor/random';
 import _ from 'underscore';
+
+import { md5 } from '../../../utils/lib/random';
+import { preSignature } from '../../../utils/lib/ossUtils.js';
+import { OSSClient, ossComposeURL } from '../../../utils/lib/oss';
 
 /**
  * AliyunOss store
@@ -23,18 +29,14 @@ export class AliyunOSSStore extends UploadFS.Store {
 		);
 
 		super(options);
-
-		// const oss = new OSSClient.init(options.commonConfig);
 		// const vod = new VodClient(options.videoConfig);
-		options.getPath =			options.getPath
+		options.getPath = options.getPath
 			|| function(file) {
 				return file._id;
 			};
 
 		this.getPath = function(file) {
-			if (file.AliyunOSS) {
-				return file.AliyunOSS.path;
-			}
+			return file.path;
 		};
 
 		this.getRedirectURL = function() {
@@ -57,7 +59,10 @@ export class AliyunOSSStore extends UploadFS.Store {
 			file.AliyunOSS = {
 				path: this.options.getPath(file),
 			};
-
+			if (file.type.startsWith('image')) {
+				const imageId = md5(file.name);
+				file.name = `default/${ imageId }/${ file.name }`;
+			}
 			file.store = this.options.name; // assign store to file
 			return this.getCollection().insert(file, callback);
 		};
@@ -78,10 +83,18 @@ export class AliyunOSSStore extends UploadFS.Store {
 		 * @param options
 		 * @return {*}
 		 */
-		this.getReadStream = function() {
-			return null;
+		this.getReadStream = function(fileId) {
+			let url = this.getFileURL(fileId);
+			if (!url) {
+				const file = this.getCollection().findOne({ _id: fileId });
+				url = file.url;
+			}
+			return Promise.await(fetch(url)).body;
 		};
-
+		this.getFileURL = function() {
+			// 直接返回链接
+			return this.url;
+		};
 		/**
 		 * Returns the file write stream
 		 * @param fileId
@@ -89,8 +102,48 @@ export class AliyunOSSStore extends UploadFS.Store {
 		 * @param options
 		 * @return {*}
 		 */
-		this.getWriteStream = function() {
-			return null;
+		this.getWriteStream = function(fileId, file/* , options*/) {
+			const writeStream = new stream.PassThrough();
+			writeStream.length = file.size;
+			writeStream.on('newListener', (event, listener) => {
+				if (event === 'finish') {
+					process.nextTick(() => {
+						writeStream.removeListener(event, listener);
+						writeStream.on('real_finish', listener);
+					});
+				}
+			});
+			this.oss = null;
+			let ossConfig = this.options.commonConfig;
+			let filename = file.name;
+			if (file.type.startsWith('video')) {
+				// 视频需要先获取到视频的上传凭证, 然后中传给oss继续处理
+				const options = {
+					title: filename,
+					description: `达人ID: ${ file.userId }`,
+					tags: file.userId,
+					type: 'video',
+					filename,
+					contentType: file.type,
+					contentDisposition: true,
+				};
+				ossConfig = Promise.await(preSignature(options));
+				filename = ossConfig.filename;
+				this.url = ossConfig.videoURL;
+			} else {
+				this.url = ossComposeURL(filename);
+			}
+			this.oss = OSSClient.init(ossConfig);
+
+			this.oss.$store.putStream(
+				filename,
+				writeStream,
+			).then((result) => {
+				if (result.res.status === 200) {
+					writeStream.emit('real_finish');
+				}
+			});
+			return writeStream;
 		};
 	}
 }
