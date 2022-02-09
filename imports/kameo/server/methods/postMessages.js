@@ -17,6 +17,14 @@ Meteor.methods({
 			return msg;
 		});
 	},
+	kameoCountDiscussionMessage(rid) {
+		check(rid, String);
+
+		// 没有类型，有消息内容，有房间ID
+		const query = { rid, msg: { $exists: true }, t: { $exists: false } };
+
+		return Messages.find(query).count();
+	},
 	kameoBotForwardMessage(message, sender, receiverId) {
 		if (message.metadata.rid && message.metadata.category !== 'reaction') {
 			if (message.metadata.tmid) {
