@@ -27,7 +27,11 @@ function saveUserProfile(settings, customFields) {
 
 	const mqProfile = { _id: this.userId };
 
-	if (settings.realname || settings.username) {
+	if (settings.realname) {
+		mqProfile.name = settings.realname;
+	}
+
+	if (settings.username) {
 		if (!saveUserIdentity({
 			_id: this.userId,
 			name: settings.realname,
