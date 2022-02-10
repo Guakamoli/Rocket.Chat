@@ -209,7 +209,7 @@
 		"connect": "^3.7.0",
 		"core-js": "^3.14.0",
 		"cors": "^2.8.5",
-		"csv-parse": "^4.16.0",
+		"csv-parse": "^5.0.4",
 		"date-fns": "^2.23.0",
 		"dompurify": "^2.2.9",
 		"ejson": "^2.2.1",
