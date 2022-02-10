@@ -55,8 +55,28 @@ const copy = function(file, out) {
 
 const AliyunOSSUploads = new FileUploadClass({
 	name: 'AliyunOSS:Uploads',
-	get,
 	copy,
+	get(file, req, res) {
+		try {
+			if (file.url && file.store === 'AliyunOSS:Uploads') {
+				res.status(302);
+				res.setHeader('Location', file.url);
+				res.end();
+				return;
+			}
+			const filePath = this.store.getFilePath(file._id, file);
+			const stat = statSync(filePath);
+
+			if (stat && stat.isFile()) {
+				file = FileUpload.addExtensionTo(file);
+
+				this.store.getReadStream(file._id, file).pipe(res);
+			}
+		} catch (e) {
+			res.writeHead(404);
+			res.end();
+		}
+	},
 	// store setted bellow
 });
 

@@ -82,10 +82,6 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 		}
 		Reflect.deleteProperty(fields, 'file[]');
 
-		// 如果不符合条件则走原来的逻辑
-		if (!fileList) {
-			throw new Meteor.Error('upload-type-error', 'cant not send form-data');
-		}
 		if (!fileList) {
 			if (!file) {
 				throw new Meteor.Error('invalid-field');
@@ -107,7 +103,8 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 			const uploadedFile = fileStore.insertSync(details, file.fileBuffer);
 
 			uploadedFile.description = fields.description;
-
+			uploadedFile.uri = uploadedFile.url;
+			fileList = [uploadedFile];
 			delete fields.description;
 			if (fields.width && fields.height) {
 				uploadedFile.width = Number(fields.width);

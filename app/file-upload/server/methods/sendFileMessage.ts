@@ -41,9 +41,9 @@ Meteor.methods({
 		const attachments: MessageAttachment[] = [];
 		const files = [];
 		for (const file of fileList) {
-			const hasBuffer = !!file.fileBuffer;
+			const isAliyunStore = fileStore.name === 'AliyunOSS:Uploads';
 			let fileId = file._id;
-			if (!hasBuffer) {
+			if (isAliyunStore) {
 				const details = {
 					name: file.name,
 					size: file.size,
@@ -66,7 +66,7 @@ Meteor.methods({
 			});
 			if (/^image\/.+/.test(file.type)) {
 				let imageUrl = fileUrl;
-				if (!hasBuffer && settings.get('Message_Attachments_Thumbnails_Enabled')) {
+				if (isAliyunStore && settings.get('Message_Attachments_Thumbnails_Enabled')) {
 					const width = settings.get('Message_Attachments_Thumbnails_Width');
 					const height = settings.get('Message_Attachments_Thumbnails_Height');
 					imageUrl = `${ fileUrl }?x-oss-process=image/resize,w_${ width },h_${ height },limit_0`;
@@ -88,7 +88,7 @@ Meteor.methods({
 				if (file.identify && file.identify.size) {
 					attachment.image_dimensions = file.identify.size;
 				}
-				if (hasBuffer) {
+				if (!isAliyunStore) {
 					try {
 						attachment.image_preview = await FileUpload.resizeImagePreview(file);
 						const thumbResult = await FileUpload.createImageThumbnail(file);
@@ -142,17 +142,17 @@ Meteor.methods({
 
 				};
 				if (videoCover) {
-					const cover = !hasBuffer ? null : FileUpload.uploadImageThumbnail({ name: file.name, type: 'image/png' }, Buffer.from(videoCover), roomId, user._id);
-					const coverType = !hasBuffer ? 'image/png' : cover.type;
+					const cover = isAliyunStore ? null : FileUpload.uploadImageThumbnail({ name: file.name, type: 'image/png' }, Buffer.from(videoCover), roomId, user._id);
+					const coverType = isAliyunStore ? 'image/png' : cover.type;
 					const coverName = file.name;
-					attachment.video_cover_url = !hasBuffer ? videoCover : FileUpload.getPath(`${ cover._id }/${ encodeURI(file.name) }`);
+					attachment.video_cover_url = isAliyunStore ? videoCover : FileUpload.getPath(`${ cover._id }/${ encodeURI(file.name) }`);
 					attachment.video_cover_type = coverType;
 					attachment.video_cover_dimensions = {
 						width: file.width,
 						height: file.height,
 					};
 					let fileId = null;
-					if (!hasBuffer) {
+					if (!isAliyunStore) {
 						const details = {
 							name: coverName,
 							size: 1,
