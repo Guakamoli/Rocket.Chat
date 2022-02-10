@@ -41,9 +41,10 @@ Meteor.methods({
 		const attachments: MessageAttachment[] = [];
 		const files = [];
 		for (const file of fileList) {
+			const hasBuffer = !!file.fileBuffer;
 			const isAliyunStore = fileStore.name === 'AliyunOSS:Uploads';
 			let fileId = file._id;
-			if (isAliyunStore) {
+			if (!hasBuffer) {
 				const details = {
 					name: file.name,
 					size: file.size,
@@ -152,7 +153,7 @@ Meteor.methods({
 						height: file.height,
 					};
 					let fileId = null;
-					if (!isAliyunStore) {
+					if (!hasBuffer) {
 						const details = {
 							name: coverName,
 							size: 1,
