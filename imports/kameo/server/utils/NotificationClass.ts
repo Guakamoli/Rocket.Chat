@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor';
+import EJSON from 'ejson';
 
 import { INotification, INotificationItemPush, INotificationItemEmail, NotificationItem } from '../../../../definition/INotification';
 import { NotificationQueue, Users } from '../../../../app/models/server/raw';
@@ -126,7 +127,7 @@ export default class NotificationClass {
 			iOSBadge: badge,
 			body: message,
 		};
-		iOSRequest.iOSExtParameters = JSON.stringify({ extras: payload });
+		iOSRequest.iOSExtParameters = JSON.stringify({ ejson: EJSON.stringify(payload) });
 		if (title) {
 			iOSRequest.title = title;
 		}
@@ -165,7 +166,7 @@ export default class NotificationClass {
 			});
 		}
 		androidRequest.androidPopupTitle = title;
-		androidRequest.androidExtParameters = JSON.stringify({ extras: payload });
+		androidRequest.androidExtParameters = JSON.stringify({ ejson: EJSON.stringify(payload) });
 
 		// eslint-disable-next-line @typescript-eslint/camelcase
 		metrics.notificationsSent.inc({ notification_type: 'mobile' });
