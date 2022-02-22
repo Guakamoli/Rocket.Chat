@@ -1674,6 +1674,26 @@ Find users to send a message by email if:
 
 		return this.findOne(query, options);
 	}
+
+	setWithSetUsername(_id) {
+		const update = {
+			$set: {
+				withSetUsername: true,
+			},
+		};
+
+		return this.update(_id, update);
+	}
+
+	unSetWithSetUsername(_id) {
+		const update = {
+			$unset: {
+				withSetUsername: true,
+			},
+		};
+
+		return this.update(_id, update);
+	}
 }
 
 export default new Users(Meteor.users, true);

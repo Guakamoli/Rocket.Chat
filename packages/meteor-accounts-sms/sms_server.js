@@ -151,6 +151,15 @@ async function sendSms({ userId, phoneNumber, verificationCode, countryCode }) {
 	}
 }
 
+function getUsername(username) {
+	const oldUser = Meteor.call('kameoFindPhoneUser', { username });
+	if (oldUser) {
+		const newUsername = `user-${ Math.random().toString(16).substr(2) }`;
+		getUsername(newUsername);
+	}
+	return username;
+}
+
 /**
  * @name insertUser
  * @param data -
@@ -166,6 +175,7 @@ function insertUser(data) {
 		return user._id;
 	}
 
+	const username = getUsername(`user-${ Math.random().toString(16).substr(2) }`);
 	user = {
 		_id: userId,
 		createdAt: new Date(),
@@ -182,6 +192,8 @@ function insertUser(data) {
 		roles: [
 			'user',
 		],
+		username,
+		withSetUsername: true,
 		name: `User${ String(phoneNumber).slice(-8) }`,
 	};
 	Accounts.users.insert(user);
@@ -251,12 +263,12 @@ Accounts.kameoSms.verifyCode = function(phone, code, username) {
 	if (verificationCode.when.getTime() + 10 * 60 * 1000 < new Date()) {
 		throw new Meteor.Error('Expired verification code');
 	}
+	//
+	// if (user && !user.username && username) {
+	// 	handleUsername(username, modifier);
+	// }
 
-	if (user && !user.username && username) {
-		handleUsername(username, modifier);
-	}
-
-	if (user && !user.username && !username) {
+	if (user && !user.username) {
 		const username = `user-${ Math.random().toString(16).substr(2) }`;
 		handleUsername(username, modifier);
 	}

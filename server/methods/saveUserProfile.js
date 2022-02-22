@@ -34,14 +34,16 @@ function saveUserProfile(settings, customFields) {
 	if (settings.username) {
 		if (!saveUserIdentity({
 			_id: this.userId,
-			name: settings.realname,
 			username: settings.username,
 		})) {
 			throw new Meteor.Error('error-could-not-save-identity', 'Could not save user identity', { method: 'saveUserProfile' });
 		}
 
-		mqProfile.name = settings.realname;
 		mqProfile.username = settings.username;
+
+		if (user.withSetUsername) {
+			Users.unSetWithSetUsername(this.userId);
+		}
 	}
 
 	if (settings.statusText || settings.statusText === '') {
