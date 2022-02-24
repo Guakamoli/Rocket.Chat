@@ -42,7 +42,7 @@ function saveUserProfile(settings, customFields) {
 		mqProfile.username = settings.username;
 
 		if (user.withSetUsername) {
-			Users.unSetWithSetUsername(this.userId);
+			Users.removeWithSetUsername(this.userId);
 		}
 	}
 
