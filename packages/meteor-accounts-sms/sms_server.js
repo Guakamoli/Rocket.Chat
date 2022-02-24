@@ -151,15 +151,6 @@ async function sendSms({ userId, phoneNumber, verificationCode, countryCode }) {
 	}
 }
 
-function getUsername(username) {
-	const oldUser = Meteor.call('kameoFindPhoneUser', { username });
-	if (oldUser) {
-		const newUsername = `user-${ Math.random().toString(16).substr(2) }`;
-		getUsername(newUsername);
-	}
-	return username;
-}
-
 /**
  * @name insertUser
  * @param data -
@@ -168,15 +159,13 @@ function getUsername(username) {
 function insertUser(data) {
 	const { phoneNumber, countryCode } = data;
 	const userId = Random.id();
-	let user;
 
-	user = Meteor.users.findOne({ 'services.sms.realPhoneNumber': `${ countryCode }${ phoneNumber }` });
+	const user = Meteor.users.findOne({ 'services.sms.realPhoneNumber': `${ countryCode }${ phoneNumber }` });
 	if (user) {
 		return user._id;
 	}
 
-	const username = getUsername(`user-${ Math.random().toString(16).substr(2) }`);
-	user = {
+	const newUser = {
 		_id: userId,
 		createdAt: new Date(),
 		services: {
@@ -192,11 +181,19 @@ function insertUser(data) {
 		roles: [
 			'user',
 		],
-		username,
-		withSetUsername: true,
-		name: `User${ String(phoneNumber).slice(-8) }`,
 	};
-	Accounts.users.insert(user);
+	Accounts.insertUserDoc({}, newUser);
+
+	Meteor.runAsUser(userId, () => {
+		const username = Meteor.call('getUsernameSuggestion');
+		Meteor.users.update({ _id: userId }, {
+			$set: {
+				name: username,
+				username,
+				withSetUsername: true,
+			},
+		});
+	});
 
 	return userId;
 }

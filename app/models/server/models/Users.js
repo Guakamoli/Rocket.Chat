@@ -1685,7 +1685,7 @@ Find users to send a message by email if:
 		return this.update(_id, update);
 	}
 
-	unSetWithSetUsername(_id) {
+	removeWithSetUsername(_id) {
 		const update = {
 			$unset: {
 				withSetUsername: true,
