@@ -40,7 +40,7 @@ Accounts.registerLoginHandler('kameoSms', function(options) {
 		username: Match.Optional(String),
 		verificationCode: Match.Optional(NonEmptyString),
 	});
-	return Accounts.kameoSms.verifyCode(options.phone, options.verificationCode, options.username);
+	return Accounts.kameoSms.verifyCode(options.phone, options.verificationCode);
 });
 
 /**
@@ -159,14 +159,13 @@ async function sendSms({ userId, phoneNumber, verificationCode, countryCode }) {
 function insertUser(data) {
 	const { phoneNumber, countryCode } = data;
 	const userId = Random.id();
-	let user;
 
-	user = Meteor.users.findOne({ 'services.sms.realPhoneNumber': `${ countryCode }${ phoneNumber }` });
+	const user = Meteor.users.findOne({ 'services.sms.realPhoneNumber': `${ countryCode }${ phoneNumber }` });
 	if (user) {
 		return user._id;
 	}
 
-	user = {
+	const newUser = {
 		_id: userId,
 		createdAt: new Date(),
 		services: {
@@ -182,9 +181,19 @@ function insertUser(data) {
 		roles: [
 			'user',
 		],
-		name: `User${ String(phoneNumber).slice(-8) }`,
 	};
-	Accounts.users.insert(user);
+	Accounts.insertUserDoc({}, newUser);
+
+	Meteor.runAsUser(userId, () => {
+		const username = Meteor.call('getUsernameSuggestion');
+		Meteor.users.update({ _id: userId }, {
+			$set: {
+				name: username,
+				username,
+				withSetUsername: true,
+			},
+		});
+	});
 
 	return userId;
 }
@@ -215,21 +224,12 @@ Accounts.kameoSms.sendCode = async function(phone) {
 	await sendSms({ userId, phoneNumber, verificationCode, countryCode });
 };
 
-function handleUsername(username, modifier) {
-	const oldUser = Meteor.call('kameoFindPhoneUser', { username });
-	if (oldUser && oldUser.username) {
-		throw new Meteor.Error('The current nickname has been registered!');
-	}
-	modifier.username = username;
-	modifier.name = username;
-}
-
 /**
  * Send a 6 digit verification sms with aliyun or twilio.
  * @param phone
  * @param code
  */
-Accounts.kameoSms.verifyCode = function(phone, code, username) {
+Accounts.kameoSms.verifyCode = function(phone, code) {
 	const { phoneNumber, countryCode: regionCode } = phone;
 	const countryCode = `+${ regionCode }`;
 	const modifier = {
@@ -250,15 +250,6 @@ Accounts.kameoSms.verifyCode = function(phone, code, username) {
 
 	if (verificationCode.when.getTime() + 10 * 60 * 1000 < new Date()) {
 		throw new Meteor.Error('Expired verification code');
-	}
-
-	if (user && !user.username && username) {
-		handleUsername(username, modifier);
-	}
-
-	if (user && !user.username && !username) {
-		const username = `user-${ Math.random().toString(16).substr(2) }`;
-		handleUsername(username, modifier);
 	}
 
 	if (!user.active) {

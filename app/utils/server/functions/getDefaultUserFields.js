@@ -33,4 +33,5 @@ export const getDefaultUserFields = () => ({
 	_updatedAt: 1,
 	avatarETag: 1,
 	note: 1,
+	withSetUsername: 1,
 });
