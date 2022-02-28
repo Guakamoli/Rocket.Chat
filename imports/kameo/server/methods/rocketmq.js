@@ -91,7 +91,8 @@ async function rocketmqSendUpdateProfile(userId, profile) {
 }
 
 async function rocketmqSendAliyunPush(tag = 'notification', ...notifications) {
-	for await (const { uid, request } of notifications) {
+	const results = [];
+	for (const { uid, request } of notifications) {
 		if (uid === 'rocket.cat') {
 			continue;
 		}
@@ -99,8 +100,10 @@ async function rocketmqSendAliyunPush(tag = 'notification', ...notifications) {
 		const payload = { ...request, targetValue: uid };
 
 		logger.debug('SendAliyunPush', payload);
-		await rocketmqSend(topicIds.aliyunPush, JSON.stringify(payload), tag, 'rocketchat');
+		results.push(rocketmqSend(topicIds.aliyunPush, JSON.stringify(payload), tag, 'rocketchat'));
 	}
+
+	await Promise.all(results);
 }
 
 async function rocketmqSendChangeRole(userId, payload, tag = 'mqRole') {
