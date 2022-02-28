@@ -6,13 +6,18 @@ import { WechatAPI, decodeAES128CBC } from '../utils/wechat';
 import { Users } from '../../../../app/models';
 import { defaultUsernameSuggestion } from '../../../../app/lib/server/functions/getUsernameSuggestion';
 
-export const wechatCreateUser = (serviceName, serviceData, { tokenExpires }) => {
+export const wechatCreateUser = (serviceName, serviceData, { tokenExpires, smsServiceData }) => {
 	const newUser = {
 		active: true,
-		services: { [serviceName]: serviceData },
+		services: {
+			[serviceName]: serviceData,
+		},
+		username: defaultUsernameSuggestion(),
 		withSetUsername: true,
 	};
-	newUser.username = defaultUsernameSuggestion();
+	if (smsServiceData) {
+		newUser.services.sms = smsServiceData;
+	}
 	const userId = Accounts.insertUserDoc({}, newUser);
 
 	const { token } = Accounts._generateStampedLoginToken();
@@ -25,19 +30,21 @@ export const wechatCreateUser = (serviceName, serviceData, { tokenExpires }) => 
 	};
 };
 
-Accounts.registerLoginHandler('wechatMiniProgram', function(options) {
+const WECHAT_MINIPROGRAM = 'wechatMiniProgram';
+
+Accounts.registerLoginHandler(WECHAT_MINIPROGRAM, function(options) {
 	if (!options.wechatMiniProgram) {
 		return;
 	}
 
-	check(options.wechatMiniProgram, Match.ObjectIncluding({
+	check(options[WECHAT_MINIPROGRAM], Match.ObjectIncluding({
 		loginCode: String,
 		code: Match.Optional(String),
 		iv: String,
 		encryptedData: String,
 	}));
 
-	const { loginCode, code, iv, encryptedData } = options.wechatMiniProgram;
+	const { loginCode, code, iv, encryptedData } = options[WECHAT_MINIPROGRAM];
 	const {
 		errcode,
 		errmsg,
@@ -48,7 +55,7 @@ Accounts.registerLoginHandler('wechatMiniProgram', function(options) {
 	if (errcode && errcode !== 0) {
 		console.log('微信小程序登录失败[sns/jscode2session] errcode:', errcode, ', errmsg:', errmsg);
 		return {
-			type: 'wechatMiniProgram',
+			type: WECHAT_MINIPROGRAM,
 			error: new Meteor.Error(Accounts.LoginCancelledError.numericError, 'User creation failed from WeChat response token'),
 		};
 	}
@@ -56,11 +63,11 @@ Accounts.registerLoginHandler('wechatMiniProgram', function(options) {
 	const tokenExpires = new Date();
 	tokenExpires.setMonth(tokenExpires.getMonth() + 1);
 
-	const user = Meteor.users.findOne({ 'services.wechatMiniProgram.id': openId });
+	const user = Meteor.users.findOne({ [`services.${ WECHAT_MINIPROGRAM }.id`]: openId });
 	if (user) {
 		const { token } = Accounts._generateStampedLoginToken();
 		return {
-			type: 'wechatMiniProgram',
+			type: WECHAT_MINIPROGRAM,
 			userId: user._id,
 			token,
 			tokenExpires,
@@ -78,7 +85,7 @@ Accounts.registerLoginHandler('wechatMiniProgram', function(options) {
 		if (errcode && errcode !== 0) {
 			console.log('微信小程序登录失败[wxa/business/getuserphonenumber] errcode:', errcode, ', errmsg:', errmsg);
 			return {
-				type: 'wechatMiniProgram',
+				type: WECHAT_MINIPROGRAM,
 				error: new Meteor.Error(Accounts.LoginCancelledError.numericError, 'User creation failed from WeChat response token'),
 			};
 		}
@@ -93,11 +100,16 @@ Accounts.registerLoginHandler('wechatMiniProgram', function(options) {
 		id: openId,
 		openId,
 		unionId,
+	};
+	const smsServiceData = {
 		realPhoneNumber: `+${ countryCode }${ purePhoneNumber }`,
+		purePhoneNumber,
+		countryCode: `+${ countryCode }`,
+		verificationCodes: [],
 	};
 
 	const smsUser = Meteor.users.findOne({
-		'services.sms.realPhoneNumber': serviceData.realPhoneNumber,
+		'services.sms.realPhoneNumber': smsServiceData.realPhoneNumber,
 	});
 	if (smsUser) {
 		const { _id: userId } = smsUser;
@@ -105,17 +117,17 @@ Accounts.registerLoginHandler('wechatMiniProgram', function(options) {
 
 		Users.update({ _id: userId }, {
 			$set: {
-				'services.wechatMiniProgram': serviceData,
+				[`services.${ WECHAT_MINIPROGRAM }`]: serviceData,
 			},
 		});
 
 		return {
-			type: 'wechatMiniProgram',
+			type: WECHAT_MINIPROGRAM,
 			userId,
 			token,
 			tokenExpires,
 		};
 	}
 
-	return wechatCreateUser('WechatMiniProgram', serviceData, { tokenExpires });
+	return wechatCreateUser(WECHAT_MINIPROGRAM, serviceData, { tokenExpires, smsServiceData });
 });
