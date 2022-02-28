@@ -11,8 +11,7 @@ export class WechatCredManager {
 			url.searchParams.set(key, query[key]);
 		});
 		const response = HTTP.get(url.toString());
-		const result = JSON.parse(response.content);
-		return result.value;
+		return JSON.parse(response.content);
 	}
 
 	static paiyaMiniKey() {
@@ -20,7 +19,8 @@ export class WechatCredManager {
 	}
 
 	static paiyaMiniAccessToken() {
-		return this._request('/api/v1/wechat/mini');
+		const result = this._request('/api/v1/wechat/mini');
+		return result.value;
 	}
 }
 
