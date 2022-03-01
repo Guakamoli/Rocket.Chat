@@ -95,11 +95,12 @@ Accounts.registerLoginHandler(WECHAT_MINIPROGRAM, function(options) {
 		phoneNumber = JSON.parse(parseData);
 	}
 
-	const { countryCode, purePhoneNumber } = phoneNumber;
+	const { countryCode, purePhoneNumber, watermark } = phoneNumber;
 	const serviceData = {
 		id: openId,
 		openId,
 		unionId,
+		appId: watermark.appid,
 	};
 	const smsServiceData = {
 		realPhoneNumber: `+${ countryCode }${ purePhoneNumber }`,
