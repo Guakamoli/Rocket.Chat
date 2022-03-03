@@ -22,7 +22,6 @@ export const deleteMessage = function(message: IMessage, user: IUser): void {
 			throw new Meteor.Error('error-app-prevented-deleting', 'A Rocket.Chat App prevented the message deleting.');
 		}
 	}
-
 	if (deletedMsg.tmid) {
 		Messages.decreaseReplyCountById(deletedMsg.tmid, -1);
 	}
