@@ -22,7 +22,6 @@ export const deleteMessage = function(message: IMessage, user: IUser): void {
 			throw new Meteor.Error('error-app-prevented-deleting', 'A Rocket.Chat App prevented the message deleting.');
 		}
 	}
-
 	if (deletedMsg.tmid) {
 		Messages.decreaseReplyCountById(deletedMsg.tmid, -1);
 	}
@@ -50,7 +49,6 @@ export const deleteMessage = function(message: IMessage, user: IUser): void {
 	}
 
 	const room = Rooms.findOneById(message.rid, { fields: { lastMessage: 1, prid: 1, mid: 1 } });
-	callbacks.run('afterDeleteMessage', deletedMsg, room);
 
 	// update last message
 	if (settings.get('Store_Last_Message')) {
@@ -71,4 +69,5 @@ export const deleteMessage = function(message: IMessage, user: IUser): void {
 	if (bridges) {
 		bridges.getListenerBridge().messageEvent('IPostMessageDeleted', deletedMsg);
 	}
+	callbacks.run('afterDeleteMessage', deletedMsg, room);
 };
