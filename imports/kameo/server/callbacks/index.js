@@ -37,8 +37,12 @@ callbacks.add('afterDeleteMessage', function(message) {
 	return message;
 }, callbacks.priority.MEDIUM, 'kameo_after_delete_message');
 
-// 保存消息时创建 discussion, 并转发消息至推荐系统
 callbacks.add('afterSaveMessage', function(message, room = {}) {
+	if (message.t === 'activity' && message.metadata.category === 'system') {
+		return;
+	}
+
+	// 保存消息时创建 discussion, 并转发消息至推荐系统
 	if (allowMessageTypes.includes(message.t) && room._id) {
 		Meteor.call('kameoRocketmqSendPostMessage', {
 			messageId: message._id,
@@ -57,10 +61,8 @@ callbacks.add('afterSaveMessage', function(message, room = {}) {
 			encrypted: false,
 		}));
 	}
-}, callbacks.priority.MEDIUM, 'kameo_after_save_post_message');
 
-// 评论作品及回复评论
-callbacks.add('afterSaveMessage', function(message, room) {
+	// 评论作品及回复评论
 	if (!allowMessageTypes.includes(message.t) && message.rid && message.msg) {
 		const notificationMessage = {
 			t: 'activity',
@@ -76,4 +78,4 @@ callbacks.add('afterSaveMessage', function(message, room) {
 		}
 		Meteor.call('kameoBotForwardMessage', notificationMessage, message.u, room.u._id);
 	}
-}, callbacks.priority.LOW, 'kameo_after_save_message_to_notification');
+}, callbacks.priority.MEDIUM, 'kameo_after_save_post_message');

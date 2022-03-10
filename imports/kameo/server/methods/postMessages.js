@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
 
-import { Messages, Rooms } from '../../../../app/models';
+import { Messages, Rooms, Users } from '../../../../app/models';
 import { sendMessage } from '../../../../app/lib/server/functions';
 
 Meteor.methods({
@@ -69,5 +69,28 @@ Meteor.methods({
 		});
 
 		Promise.await(sendMessage(sender, message, room, false));
+	},
+	kameoBotForwardSystemMessage(message, receiverId) {
+		if (!message.msg) {
+			return;
+		}
+
+		const systemMessage = {
+			t: 'activity',
+			ts: new Date(),
+			attachments: [],
+			metadata: {
+				category: 'system',
+			},
+			...message,
+		};
+
+		const room = Meteor.runAsUser(receiverId, function() {
+			const { rid } = Meteor.call('createDirectMessage', 'rocket.cat');
+			return Rooms.findOneById(rid);
+		});
+		const sender = Users.findOneById('rocket.cat');
+
+		Promise.await(sendMessage(sender, systemMessage, room, false));
 	},
 });
