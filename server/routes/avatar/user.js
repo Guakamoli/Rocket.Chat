@@ -23,6 +23,13 @@ export const userAvatar = Meteor.bindEnvironment(function(req, res) {
 
 	setCacheAndDispositionHeaders(req, res);
 
+	if (settings.get('UI_Use_Default_Avatar_RocketCat') && requestUsername === 'rocket.cat') {
+		res.status(302);
+		res.setHeader('Location', settings.get('UI_Use_Default_Avatar_RocketCat'));
+		res.end();
+		return;
+	}
+
 	// if request starts with @ always return the svg letters
 	if (requestUsername[0] === '@') {
 		const svg = renderSVGLetters(requestUsername.substr(1), avatarSize);
