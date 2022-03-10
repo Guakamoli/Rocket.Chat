@@ -1554,10 +1554,6 @@ settings.addGroup('Layout', function() {
 			type: 'string',
 			public: true,
 		});
-		this.add('UI_Use_Default_Avatar_RocketCat', '', {
-			type: 'string',
-			public: true,
-		});
 		this.add('Accounts_Direct_Save_Avatar_Url', true, {
 			type: 'boolean',
 			public: true,
