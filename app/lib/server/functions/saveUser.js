@@ -261,7 +261,7 @@ function changeRole(userData, oldAccount) {
 		if (userDataRoles.includes('creator')) {
 			let mainRoom = Rooms.findByUserIdAndType(oldAccount._id, 'c', { individualMain: true });
 			if (!mainRoom) {
-				mainRoom = createRoom('c', userData._id, oldAccount.username, [], false, { individualMain: true });
+				mainRoom = createRoom('c', userData._id, oldAccount.username, [], true, { individualMain: true, broadcast: true });
 			}
 			saveCustomFields(userData._id, { ...userData.customFields, defaultChannel: (mainRoom._id || mainRoom.rid) ?? '' });
 		}
