@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor';
 
 import { callbacks } from '../../../../app/callbacks';
 
-const allowMessageTypes = ['post', 'story'];
+const allowMessageTypes = ['post'];
 const allowPushReactions = [':heart:', ':+1:'];
 
 // 机器人转发点赞消息至收件人通知
@@ -63,7 +63,7 @@ callbacks.add('afterSaveMessage', function(message, room = {}) {
 	}
 
 	// 评论作品及回复评论
-	if (!allowMessageTypes.includes(message.t) && message.rid && message.msg) {
+	if (!allowMessageTypes.concat('story').includes(message.t) && message.rid && message.msg) {
 		const notificationMessage = {
 			t: 'activity',
 			ts: new Date(),

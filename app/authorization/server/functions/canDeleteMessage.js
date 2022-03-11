@@ -36,8 +36,8 @@ export const canDeleteMessageAsync = async (uid, { u, rid, ts }) => {
 		return timeElapsedForMessage <= blockDeleteInMinutes;
 	}
 
-	const room = await Rooms.findOneById(rid, { fields: { ro: 1, unmuted: 1 } });
-	if (room.ro === true && !await hasPermissionAsync(uid, 'post-readonly', rid)) {
+	const room = await Rooms.findOneById(rid, { fields: { ro: 1, unmuted: 1, individualMain: 1 } });
+	if (room.individualMain !== true && room.ro === true && !await hasPermissionAsync(uid, 'post-readonly', rid)) {
 		// Unless the user was manually unmuted
 		if (!(room.unmuted || []).includes(u.username)) {
 			throw new Error('You can\'t delete messages because the room is readonly.');

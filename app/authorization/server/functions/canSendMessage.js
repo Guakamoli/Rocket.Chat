@@ -26,7 +26,7 @@ export const validateRoomMessagePermissionsAsync = async (room, { uid, username,
 		}
 	}
 
-	if (room.ro === true && !await hasPermissionAsync(uid, 'post-readonly', room._id)) {
+	if (room.individualMain !== true && room.ro === true && !await hasPermissionAsync(uid, 'post-readonly', room._id)) {
 		// Unless the user was manually unmuted
 		if (!(room.unmuted || []).includes(username)) {
 			throw new Error('You can\'t send messages because the room is readonly.');

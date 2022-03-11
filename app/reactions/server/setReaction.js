@@ -24,7 +24,7 @@ async function setReaction(room, user, message, reaction, shouldReact) {
 		throw new Meteor.Error('error-not-allowed', 'Invalid emoji provided.', { method: 'setReaction' });
 	}
 
-	if (room.ro === true && (!room.reactWhenReadOnly && !hasPermission(user._id, 'post-readonly', room._id))) {
+	if (room.individualMain !== true && room.ro === true && (!room.reactWhenReadOnly && !hasPermission(user._id, 'post-readonly', room._id))) {
 		// Unless the user was manually unmuted
 		if (!(room.unmuted || []).includes(user.username)) {
 			throw new Error('You can\'t send messages because the room is readonly.');
