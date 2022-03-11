@@ -22,6 +22,7 @@ export const deleteMessage = function(message: IMessage, user: IUser): void {
 			throw new Meteor.Error('error-app-prevented-deleting', 'A Rocket.Chat App prevented the message deleting.');
 		}
 	}
+
 	if (deletedMsg.tmid) {
 		Messages.decreaseReplyCountById(deletedMsg.tmid, -1);
 	}
@@ -58,7 +59,7 @@ export const deleteMessage = function(message: IMessage, user: IUser): void {
 	}
 
 	// decrease message count
-	Rooms.decreaseMessageCountById(message.rid, 1);
+	Rooms.decreaseMessageCountById(message.rid, 1 + (message.tcount || 0));
 
 	if (showDeletedStatus) {
 		Messages.setAsDeletedByIdAndUser(message._id, user);
