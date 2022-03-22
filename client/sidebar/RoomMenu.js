@@ -123,7 +123,7 @@ const RoomMenu = ({ rid, unread, threadUnread, alert, roomOpen, type, cl, name =
 	const handleToggleRead = useMutableCallback(async () => {
 		try {
 			if (isUnread) {
-				await readMessages(rid);
+				await readMessages({ rid });
 				return;
 			}
 			await unreadMessages(null, rid);

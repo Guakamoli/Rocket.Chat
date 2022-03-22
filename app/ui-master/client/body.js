@@ -39,7 +39,7 @@ Template.body.onRendered(function() {
 
 				subscriptions.forEach((subscription) => {
 					if (subscription.alert || subscription.unread > 0) {
-						Meteor.call('readMessages', subscription.rid);
+						Meteor.call('readMessages', { rid: subscription.rid });
 					}
 				});
 

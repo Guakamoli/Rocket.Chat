@@ -77,7 +77,7 @@ export const readMessage = new class extends Emitter {
 			return;
 		}
 
-		return Meteor.call('readMessages', rid, () => {
+		return Meteor.call('readMessages', { rid }, () => {
 			RoomHistoryManager.getRoom(rid).unreadNotLoaded.set(0);
 			return this.emit(rid);
 		});
