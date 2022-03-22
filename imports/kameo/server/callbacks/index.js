@@ -2,7 +2,8 @@ import { Meteor } from 'meteor/meteor';
 
 import { callbacks } from '../../../../app/callbacks';
 
-const allowMessageTypes = ['post'];
+const allowMessageTypes = ['post', 'story', 'activity'];
+const allowMediaMessageTypes = ['post', 'story'];
 const allowPushReactions = [':heart:', ':+1:'];
 
 // 机器人转发点赞消息至收件人通知
@@ -29,7 +30,7 @@ callbacks.add('afterSetReaction', (message, { user, reaction }) => {
 
 // 标记推荐消息删除
 callbacks.add('afterDeleteMessage', function(message) {
-	if (allowMessageTypes.includes(message.t)) {
+	if (allowMediaMessageTypes.includes(message.t)) {
 		const deleteMsg = { messageId: message._id, isDeleted: true };
 		Meteor.call('kameoRocketmqSendPostMessage', deleteMsg);
 	}
@@ -38,19 +39,25 @@ callbacks.add('afterDeleteMessage', function(message) {
 }, callbacks.priority.MEDIUM, 'kameo_after_delete_message');
 
 callbacks.add('afterSaveMessage', function(message, room = {}) {
-	if (message.t === 'activity' && message.metadata.category === 'system') {
+	if (!allowMessageTypes.includes(message.t)) {
+		return;
+	}
+
+	if (message?.metadata?.category === 'system') {
 		return;
 	}
 
 	// 保存消息时创建 discussion, 并转发消息至推荐系统
-	if (allowMessageTypes.includes(message.t) && room._id) {
-		Meteor.call('kameoRocketmqSendPostMessage', {
-			messageId: message._id,
-			ts: message.ts,
-			influencerId: message.u._id,
-			public: message.public || false, // 兼容没有免费作品的情况
-			msg: message.msg || '',
-		});
+	if (allowMediaMessageTypes.includes(message.t) && message?.metadata?.audit?.state === 'pass' && room._id) {
+		if (message.t === 'post') {
+			Meteor.call('kameoRocketmqSendPostMessage', {
+				messageId: message._id,
+				ts: message.ts,
+				influencerId: message.u._id,
+				public: message.public || false, // 兼容没有免费作品的情况
+				msg: message.msg || '',
+			});
+		}
 
 		Meteor.runAsUser(message.u._id, () => Meteor.call('createDiscussion', {
 			prid: room._id,
@@ -63,7 +70,7 @@ callbacks.add('afterSaveMessage', function(message, room = {}) {
 	}
 
 	// 评论作品及回复评论
-	if (!allowMessageTypes.concat('story').includes(message.t) && message.rid && message.msg) {
+	if (!allowMediaMessageTypes.includes(message.t) && message.rid && message.msg) {
 		const notificationMessage = {
 			t: 'activity',
 			ts: new Date(),

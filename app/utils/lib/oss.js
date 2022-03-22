@@ -208,14 +208,17 @@ export class VodClient {
 	 * @returns {Promise} -
 	 */
 	async signature(options = {}) {
-		const { filename, coverURL = '', description = '', tags = '', title = '', workflowId = config.VOD_WORK_FLOW_ID, userData = VodClient.USER_DATA, imageType = 'default', imageExt = 'jpg', type } = options;
+		const { filename, coverURL = '', description = '', tags = '', title = '', workflowId = config.VOD_WORK_FLOW_ID, userData = {}, imageType = 'default', imageExt = 'jpg', type } = options;
 		let resp = null;
 		switch (type) {
 			case 'video':
 				resp = await this.createVideo(filename, title, {
 					coverURL,
 					workflowId,
-					userData,
+					userData: {
+						...VodClient.USER_DATA,
+						...userData,
+					},
 					description,
 					tags,
 				});
