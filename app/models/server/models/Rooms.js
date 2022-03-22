@@ -900,7 +900,10 @@ export class Rooms extends Base {
 		if (lastMessage) {
 			update.$set.lastMessage = lastMessage;
 		}
-
+		if (lastMessage.t === 'story') {
+			update.$set.storyLastMessage = lastMessage;
+			update.$set.slm = lastMessageTimestamp;
+		}
 		return this.update(query, update);
 	}
 
