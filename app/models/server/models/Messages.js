@@ -1264,6 +1264,12 @@ export class Messages extends Base {
 
 		return this.update({ _id }, update);
 	}
+
+	findOneByMediaId(mediaId, options) {
+		const query = { 'metadata.audit.mediaId': mediaId };
+
+		return this.find(query, options);
+	}
 }
 
 export default new Messages();

@@ -759,9 +759,15 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 
 API.v1.addRoute('chat.audit', { authRequired: true }, {
 	post() {
-		const { messageId, mediaType, pass } = this.bodyParams;
+		const { messageId, mediaId, mediaType, pass } = this.bodyParams;
 
-		const msg = Messages.findOneById(messageId);
+		let msg;
+		if (!messageId) {
+			msg = Messages.findOneByMediaId(mediaId);
+		} else {
+			msg = Messages.findOneById(messageId);
+		}
+
 		if (!msg) {
 			return API.v1.success({ message: 'Message not found' });
 		}
@@ -772,6 +778,7 @@ API.v1.addRoute('chat.audit', { authRequired: true }, {
 				...msg?.metadata || {},
 				audit: {
 					state: pass ? 'pass' : 'review',
+					mediaId,
 				},
 			},
 		};
