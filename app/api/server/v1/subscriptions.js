@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor';
-import { check } from 'meteor/check';
+import { Match, check } from 'meteor/check';
 
 import { Subscriptions } from '../../../models';
 import { API } from '../api';
@@ -59,10 +59,11 @@ API.v1.addRoute('subscriptions.read', { authRequired: true }, {
 	post() {
 		check(this.bodyParams, {
 			rid: String,
+			t: Match.Optional(String),
 		});
 
 		Meteor.runAsUser(this.userId, () =>
-			Meteor.call('readMessages', this.bodyParams.rid),
+			Meteor.call('readMessages', this.bodyParams),
 		);
 
 		return API.v1.success();

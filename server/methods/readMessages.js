@@ -1,14 +1,17 @@
 import { Meteor } from 'meteor/meteor';
-import { check } from 'meteor/check';
+import { Match, check } from 'meteor/check';
 
 import { markRoomAsRead } from '../lib/markRoomAsRead';
 import { canAccessRoom } from '../../app/authorization/server';
 import { Rooms } from '../../app/models/server';
 
 Meteor.methods({
-	readMessages(rid) {
-		check(rid, String);
-
+	readMessages(params) {
+		check(params, {
+			rid: String,
+			t: Match.Optional(String),
+		});
+		const { rid, t } = params;
 		const userId = Meteor.userId();
 		if (!userId) {
 			throw new Meteor.Error('error-invalid-user', 'Invalid user', {
@@ -22,6 +25,6 @@ Meteor.methods({
 			throw new Meteor.Error('error-not-allowed', 'Not allowed', { method: 'readMessages' });
 		}
 
-		Promise.await(markRoomAsRead(rid, userId));
+		Promise.await(markRoomAsRead(rid, userId, t));
 	},
 });
