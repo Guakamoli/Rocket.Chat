@@ -27,7 +27,10 @@ Meteor.methods({
 		if (!subscriptionIgnoredUser) {
 			throw new Meteor.Error('error-invalid-subscription', 'Invalid subscription', { method: 'ignoreUser' });
 		}
+		const ignoreUser = Subscriptions.ignoreUser({ _id: subscription._id, ignoredUser, ignore });
 
-		return !!Subscriptions.ignoreUser({ _id: subscription._id, ignoredUser, ignore });
+		Meteor.call('kameoRocketmqSendBlocked', { userId, influencerId: ignoredUser, ignore, subscriptionId: subscription._id, roomId: subscription.rid });
+
+		return !!ignoreUser;
 	},
 });

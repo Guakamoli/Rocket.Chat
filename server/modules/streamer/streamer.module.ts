@@ -1,4 +1,5 @@
 import { EventEmitter } from 'eventemitter3';
+import EJSON from 'ejson';
 
 class StreamerCentralClass extends EventEmitter {
 	public instances: Record<string, Streamer> = {};
@@ -353,6 +354,15 @@ export abstract class Streamer extends EventEmitter implements IStreamer {
 			if (allowed) {
 				const msg = typeof getMsg === 'string' ? getMsg : getMsg(this, subscription, eventName, args, allowed);
 				if (msg) {
+					const parseMsg = EJSON.parse(msg);
+					const newMsg = parseMsg?.fields?.args?.[0] ?? {};
+					const hasMe = newMsg?.u?._id === subscription.subscription.userId;
+					const hasPost = ['post', 'story'].includes(newMsg?.t);
+					const hasCollection = parseMsg?.collection === 'stream-room-messages';
+					const hasPass = newMsg?.metadata?.audit?.state === 'pass';
+					if (!hasMe && hasCollection && hasPost && !hasPass) {
+						return;
+					}
 					subscription.subscription._session.socket?.send(msg);
 				}
 			}

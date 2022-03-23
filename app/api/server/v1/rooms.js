@@ -119,6 +119,9 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 		const messageType = this.request.headers['x-upload-type'] || null;
 		if (messageType && ['post', 'story'].includes(messageType)) {
 			fields.t = messageType;
+			fields.metadata = {
+				audit: { state: 'audit' },
+			};
 		}
 		SystemLogger.debug('rooms.upload/:rid', this.request.headers, messageType, fields);
 		Meteor.call('sendFileMessage', this.urlParams.rid, null, fileList, fields);
@@ -147,6 +150,11 @@ API.v1.addRoute('rooms.getAliyunUploadPaths', { authRequired: true }, {
 					filename,
 					contentType: fileItem.type,
 					contentDisposition: true,
+					userData: {
+						Extend: {
+							messageId: fileItem.extra.message_id,
+						},
+					},
 				};
 			} else if (/^image\/.+/.test(fileItem.type)) {
 				options = {

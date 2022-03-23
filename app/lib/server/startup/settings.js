@@ -235,7 +235,7 @@ settings.addGroup('Accounts', function() {
 			type: 'boolean',
 			public: true,
 		});
-		this.add('Accounts_CustomFields', '', {
+		this.add('Accounts_CustomFields', '{"note":{"public":true,"required":false,"maxLength":2000},"defaultChannel":{"public":true,"required":false}}', {
 			type: 'code',
 			public: true,
 			i18nLabel: 'Custom_Fields',

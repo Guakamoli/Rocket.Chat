@@ -19,6 +19,7 @@ const topicIds = {
 	account: process.env.MQ_TOPIC_ID_ROCKETCHAT_ACCOUNT,
 	aliyunPush: process.env.MQ_TOPIC_ID_ALIYUN_PUSH,
 	creatorRole: process.env.MQ_TOPIC_ID_ROCKETCHAT_ROLE,
+	blockedUser: process.env.MQ_TOPIC_ID_ROCKETCHAT_BLOCKED,
 };
 
 const mqClient = new MQClient(endpoint, accessKeyId, accessKeySecret);
@@ -114,6 +115,11 @@ async function rocketmqSendChangeRole(userId, payload, tag = 'mqRole') {
 	await rocketmqSend(topicIds.creatorRole, JSON.stringify({ ...payload }), tag, 'rocketchat', props);
 }
 
+async function rocketmqSendBlocked(payload, tag = 'mqBlocked') {
+	logger.debug('rocketmqSendBlocked', { ...payload });
+	await rocketmqSend(topicIds.blockedUser, JSON.stringify({ ...payload }), tag, 'rocketchat');
+}
+
 Meteor.methods({
 	kameoRocketmqSend: rocketmqSend,
 	kameoRocketmqSendLoginUser: rocketmqSendLoginUser,
@@ -122,4 +128,5 @@ Meteor.methods({
 	kameoRocketmqSendUpdateProfile: rocketmqSendUpdateProfile,
 	kameoRocketmqSendAliyunPush: rocketmqSendAliyunPush,
 	kameoRocketmqSendChangeRole: rocketmqSendChangeRole,
+	kameoRocketmqSendBlocked: rocketmqSendBlocked,
 });

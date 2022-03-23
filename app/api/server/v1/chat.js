@@ -14,6 +14,7 @@ import Users from '../../../models/server/models/Users';
 import Subscriptions from '../../../models/server/models/Subscriptions';
 import { settings } from '../../../settings';
 import { findMentionedMessages, findStarredMessages, findSnippetedMessageById, findSnippetedMessages, findDiscussionsFromRoom } from '../lib/messages';
+import { updateMessage } from '../../../lib/server/functions';
 
 API.v1.addRoute('chat.delete', { authRequired: true }, {
 	post() {
@@ -753,5 +754,38 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 		return API.v1.success({
 			data,
 		});
+	},
+});
+
+API.v1.addRoute('chat.audit', { authRequired: true }, {
+	post() {
+		const { messageId, mediaId, mediaType, pass } = this.bodyParams;
+
+		let msg;
+		if (!messageId) {
+			msg = Messages.findOneByMediaId(mediaId);
+		} else {
+			msg = Messages.findOneById(messageId);
+		}
+
+		if (!msg) {
+			return API.v1.success({ message: 'Message not found' });
+		}
+
+		const newMsg = {
+			...msg,
+			metadata: {
+				...msg?.metadata || {},
+				audit: {
+					state: pass ? 'pass' : 'review',
+					mediaId,
+				},
+			},
+		};
+
+		const user = Meteor.users.findOne(newMsg.u._id);
+		updateMessage(newMsg, user, msg);
+
+		return API.v1.success({ messageId, mediaType, pass });
 	},
 });

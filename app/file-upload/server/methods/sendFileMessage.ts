@@ -37,6 +37,7 @@ Meteor.methods({
 			msg: Match.Optional(String),
 			tmid: Match.Optional(String),
 			public: Match.Optional(Boolean),
+			metadata: Match.Optional(Object),
 		});
 		const attachments: MessageAttachment[] = [];
 		const files = [];
@@ -196,6 +197,16 @@ Meteor.methods({
 			attachments,
 			...msgData,
 		});
+
+		// 只处理存在图片的 message，视频交由阿里云视频点播服务回调处理
+		if (attachments.filter((a) => 'image_url' in a).length > 0) {
+			Meteor.call('kameoMNSSend', {
+				EventType: 'KameoImageAudit',
+				Extend: {
+					messageId: msg._id,
+				},
+			});
+		}
 
 		callbacks.runAsync('afterFileUpload', { user, room, message: msg });
 
