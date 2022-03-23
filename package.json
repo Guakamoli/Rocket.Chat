@@ -158,7 +158,7 @@
 		"@alicloud/tea-typescript": "^1.7.1",
 		"@alicloud/vod20170321": "^2.0.1",
 		"@aliyunmq/mq-http-sdk": "^1.0.3",
-		"@babel/runtime": "^7.14.6",
+		"@babel/runtime": "^7.17.8",
 		"@google-cloud/language": "^3.8.0",
 		"@google-cloud/storage": "^2.5.0",
 		"@google-cloud/vision": "^1.11.0",
