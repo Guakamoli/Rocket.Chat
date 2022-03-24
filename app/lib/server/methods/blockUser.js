@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
 
-import { Subscriptions } from '../../../models';
+import { Subscriptions, Users } from '../../../models';
 import { roomTypes, RoomMemberActions } from '../../../utils/server';
 import { Rooms } from '../../../models/server';
 
@@ -11,6 +11,7 @@ Meteor.methods({
 		check(blocked, String);
 
 		const userId = Meteor.userId();
+		let subscription2 = null;
 
 		if (!userId) {
 			throw new Meteor.Error('error-invalid-user', 'Invalid user', { method: 'blockUser' });
@@ -23,17 +24,19 @@ Meteor.methods({
 		}
 
 		const subscription = Subscriptions.findOneByRoomIdAndUserId(rid, userId);
-		if (!subscription) {
+
+		const user = Users.findOneById(userId);
+		if (user?.customFields?.defaultChannel) {
+			subscription2 = Subscriptions.findOneByRoomIdAndUserId(user.customFields.defaultChannel, blocked);
+		}
+
+		// tip: 不存在相关的关系则直接改recommend
+		if (!subscription && !subscription2) {
 			Meteor.call('kameoRocketmqSendBlocked', { userId, influencerId: blocked, blocked: true, subscriptionId: subscription?._id, roomId: subscription?.rid });
 			return true;
 		}
-		const subscription2 = Subscriptions.findOneByRoomIdAndUserId(rid, blocked);
 
-		if (!subscription || !subscription2) {
-			throw new Meteor.Error('error-invalid-room', 'Invalid room', { method: 'blockUser' });
-		}
-
-		Subscriptions.setBlockedByRoomId(rid, blocked, userId);
+		Subscriptions.setNewBlockedByRoomId(subscription?.rid, blocked, userId, subscription2?.rid);
 
 		Meteor.call('kameoRocketmqSendBlocked', { userId, influencerId: blocked, blocked: true, subscriptionId: subscription?._id, roomId: subscription?.rid });
 
