@@ -298,7 +298,7 @@ export class Messages extends Base {
 		return this.find(query, options);
 	}
 
-	findForUpdates(roomId, timestamp, options) {
+	findForUpdates(roomId, timestamp, options, filters = {}) {
 		const query = {
 			_hidden: {
 				$ne: true,
@@ -307,6 +307,7 @@ export class Messages extends Base {
 			_updatedAt: {
 				$gt: timestamp,
 			},
+			...filters,
 		};
 		return this.find(query, options);
 	}
@@ -325,7 +326,7 @@ export class Messages extends Base {
 		return this.find(query, options);
 	}
 
-	findVisibleByRoomIdBeforeTimestampNotContainingTypes(roomId, timestamp, types, options, showThreadMessages = true, inclusive = false) {
+	findVisibleByRoomIdBeforeTimestampNotContainingTypes(roomId, timestamp, types, options, showThreadMessages = true, inclusive = false, filters = {}) {
 		const query = {
 			_hidden: {
 				$ne: true,
@@ -341,6 +342,7 @@ export class Messages extends Base {
 					tshow: true,
 				}],
 			},
+			...filters,
 		};
 
 		if (Match.test(types, [String]) && (types.length > 0)) {
@@ -350,7 +352,7 @@ export class Messages extends Base {
 		return this.find(query, options);
 	}
 
-	findVisibleByRoomIdBetweenTimestampsNotContainingTypes(roomId, afterTimestamp, beforeTimestamp, types, options, showThreadMessages = true, inclusive = false) {
+	findVisibleByRoomIdBetweenTimestampsNotContainingTypes(roomId, afterTimestamp, beforeTimestamp, types, options, showThreadMessages = true, inclusive = false, filters = {}) {
 		const query = {
 			_hidden: {
 				$ne: true,
@@ -367,6 +369,7 @@ export class Messages extends Base {
 					tshow: true,
 				}],
 			},
+			...filters,
 		};
 
 		if (Match.test(types, [String]) && (types.length > 0)) {
