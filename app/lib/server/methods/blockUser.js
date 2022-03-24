@@ -10,7 +10,9 @@ Meteor.methods({
 		check(rid, String);
 		check(blocked, String);
 
-		if (!Meteor.userId()) {
+		const userId = Meteor.userId();
+
+		if (!userId) {
 			throw new Meteor.Error('error-invalid-user', 'Invalid user', { method: 'blockUser' });
 		}
 
@@ -20,14 +22,20 @@ Meteor.methods({
 			throw new Meteor.Error('error-invalid-room', 'Invalid room', { method: 'blockUser' });
 		}
 
-		const subscription = Subscriptions.findOneByRoomIdAndUserId(rid, Meteor.userId());
+		const subscription = Subscriptions.findOneByRoomIdAndUserId(rid, userId);
+		if (!subscription) {
+			Meteor.call('kameoRocketmqSendBlocked', { userId, influencerId: blocked, blocked: true, subscriptionId: subscription?._id, roomId: subscription?.rid });
+			return true;
+		}
 		const subscription2 = Subscriptions.findOneByRoomIdAndUserId(rid, blocked);
 
 		if (!subscription || !subscription2) {
 			throw new Meteor.Error('error-invalid-room', 'Invalid room', { method: 'blockUser' });
 		}
 
-		Subscriptions.setBlockedByRoomId(rid, blocked, Meteor.userId());
+		Subscriptions.setBlockedByRoomId(rid, blocked, userId);
+
+		Meteor.call('kameoRocketmqSendBlocked', { userId, influencerId: blocked, blocked: true, subscriptionId: subscription?._id, roomId: subscription?.rid });
 
 		return true;
 	},

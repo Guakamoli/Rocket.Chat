@@ -119,7 +119,7 @@ export class PublicRoomType extends RoomTypeConfig {
 	allowMemberAction(room, action) {
 		switch (action) {
 			case RoomMemberActions.BLOCK:
-				return false;
+				return true;
 			default:
 				return true;
 		}
