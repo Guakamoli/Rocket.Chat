@@ -993,6 +993,36 @@ export class Subscriptions extends Base {
 		return this.update(query, update, { multi: true });
 	}
 
+	// tip: 我 block 了 channel， 即"不看他"
+	setBlockerByRoomId(rid, blocker) {
+		const query2 = {
+			rid,
+			'u._id': blocker,
+		};
+
+		const update2 = {
+			$set: {
+				blocker: true,
+			},
+		};
+		return this.update(query2, update2);
+	}
+
+	// tip: 被 channel 给 blocked 了， 即"不让他看"
+	setNewBlockedByRoomId(rid, blocked) {
+		const query = {
+			rid,
+			'u._id': blocked,
+		};
+
+		const update = {
+			$set: {
+				blocked: true,
+			},
+		};
+		return this.update(query, update);
+	}
+
 	setBlockedByRoomId(rid, blocked, blocker) {
 		const query = {
 			rid,
@@ -1019,42 +1049,34 @@ export class Subscriptions extends Base {
 		return this.update(query, update) && this.update(query2, update2);
 	}
 
-	setNewBlockedByRoomId(rid, blocked, blocker, selfRid) {
-		let result = null;
+	unsetBlockerByRoomId(rid, blocker) {
+		const query2 = {
+			rid,
+			'u._id': blocker,
+		};
 
-		// tip: 我 block 了 channel， 即"不看他"
-		if (rid) {
-			const query2 = {
-				rid,
-				'u._id': blocker,
-			};
+		const update2 = {
+			$unset: {
+				blocker: 1,
+			},
+		};
 
-			const update2 = {
-				$set: {
-					blocker: true,
-				},
-			};
+		this.update(query2, update2);
+	}
 
-			result = this.update(query2, update2);
-		}
+	unsetNewBlockedByRoomId(rid, blocked) {
+		const query = {
+			rid,
+			'u._id': blocked,
+		};
 
-		// tip: 被 channel 给 blocked 了， 即"不让他看"
-		if (selfRid) {
-			const query = {
-				rid: selfRid,
-				'u._id': blocked,
-			};
+		const update = {
+			$unset: {
+				blocked: 1,
+			},
+		};
 
-			const update = {
-				$set: {
-					blocked: true,
-				},
-			};
-			if (!!result === true) {
-				result = this.update(query, update);
-			}
-		}
-		return result;
+		this.update(query, update);
 	}
 
 	unsetBlockedByRoomId(rid, blocked, blocker) {
@@ -1081,46 +1103,6 @@ export class Subscriptions extends Base {
 		};
 
 		return this.update(query, update) && this.update(query2, update2);
-	}
-
-	unsetNewBlockedByRoomId(rid, blocked, blocker, selfRid) {
-		let result = null;
-
-		// tip: 我 unBlock 了 channel， 即"我看他"
-		if (rid) {
-			const query2 = {
-				rid,
-				'u._id': blocker,
-			};
-
-			const update2 = {
-				$unset: {
-					blocker: 1,
-				},
-			};
-
-			result = this.update(query2, update2);
-		}
-
-		// tip: 被 channel 给 unBlocked 了， 即"让他看"
-		if (selfRid) {
-			const query = {
-				rid: selfRid,
-				'u._id': blocked,
-			};
-
-			const update = {
-				$unset: {
-					blocked: 1,
-				},
-			};
-
-			if (!!result === true) {
-				result = this.update(query, update);
-			}
-		}
-
-		return result;
 	}
 
 	updateCustomFieldsByRoomId(rid, cfields) {
