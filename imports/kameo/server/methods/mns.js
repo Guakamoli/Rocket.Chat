@@ -5,7 +5,7 @@ import { httpPost } from '../utils';
 
 const logger = new Logger('MNS', {});
 
-const MNS_SERVICE_URL = process.env.MNS_SERVICE_URL || 'http://mns-svc:18801';
+const MNS_SERVICE_URL = process.env.MNS_SERVICE_URL || 'http://mns-svc:8080';
 
 Meteor.methods({
 	kameoMNSSend: (data) => {
