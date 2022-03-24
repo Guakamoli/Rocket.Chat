@@ -1105,7 +1105,7 @@ export class Subscriptions extends Base {
 		// tip: 被 channel 给 unBlocked 了， 即"让他看"
 		if (selfRid) {
 			const query = {
-				selfRid,
+				rid: selfRid,
 				'u._id': blocked,
 			};
 
