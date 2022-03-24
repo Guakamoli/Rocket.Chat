@@ -19,8 +19,12 @@ Meteor.methods({
 		const subscription = Subscriptions.findOneByRoomIdAndUserId(rid, userId);
 
 		if (!subscription) {
-			throw new Meteor.Error('error-invalid-subscription', 'Invalid subscription', { method: 'ignoreUser' });
+			Meteor.call('kameoRocketmqSendBlocked', { userId, influencerId: ignoredUser, ignore, subscriptionId: subscription?._id, roomId: subscription?.rid });
+			return true;
 		}
+		// if (!subscription) {
+		// 	throw new Meteor.Error('error-invalid-subscription', 'Invalid subscription', { method: 'ignoreUser' });
+		// }
 
 		const subscriptionIgnoredUser = Subscriptions.findOneByRoomIdAndUserId(rid, ignoredUser);
 
