@@ -4,33 +4,48 @@ import { check } from 'meteor/check';
 import { Subscriptions, Users } from '../../../models';
 
 Meteor.methods({
-	unblockUser({ rid, blocked }) {
+	unblockUser({ rid, blocked, type = 'direct' }) {
 		check(rid, String);
 		check(blocked, String);
+		check(type, String);
 
 		const userId = Meteor.userId();
-		let subscription2 = null;
 
 		if (!userId) {
 			throw new Meteor.Error('error-invalid-user', 'Invalid user', { method: 'blockUser' });
 		}
 
-		const subscription = Subscriptions.findOneByRoomIdAndUserId(rid, userId);
+		if (type === 'channel') {
+			let subscription2 = null;
+			const subscription = Subscriptions.findOneByRoomIdAndUserId(rid, userId);
 
-		const user = Users.findOneById(userId);
-		if (user?.customFields?.defaultChannel) {
-			subscription2 = Subscriptions.findOneByRoomIdAndUserId(user.customFields.defaultChannel, blocked);
-		}
+			const user = Users.findOneById(userId);
+			if (user?.customFields?.defaultChannel) {
+				subscription2 = Subscriptions.findOneByRoomIdAndUserId(user.customFields.defaultChannel, blocked);
+			}
 
+			if (!subscription && !subscription2) {
+				Meteor.call('kameoRocketmqSendBlocked', { userId, influencerId: blocked, blocked: false, subscriptionId: subscription?._id, roomId: subscription?.rid });
+				return true;
+			}
 
-		if (!subscription && !subscription2) {
+			// Subscriptions.unsetNewBlockedByRoomId(rid, blocked, userId, user?.customFields?.defaultChannel);
+			Subscriptions.unsetBlockerByRoomId(subscription?.rid, userId);
+			Subscriptions.unsetNewBlockedByRoomId(subscription2?.rid, blocked);
+
 			Meteor.call('kameoRocketmqSendBlocked', { userId, influencerId: blocked, blocked: false, subscriptionId: subscription?._id, roomId: subscription?.rid });
+
 			return true;
 		}
 
-		Subscriptions.unsetNewBlockedByRoomId(rid, blocked, userId, user?.customFields?.defaultChannel);
+		const subscription = Subscriptions.findOneByRoomIdAndUserId(rid, Meteor.userId());
+		const subscription2 = Subscriptions.findOneByRoomIdAndUserId(rid, blocked);
 
-		Meteor.call('kameoRocketmqSendBlocked', { userId, influencerId: blocked, blocked: false, subscriptionId: subscription?._id, roomId: subscription?.rid });
+		if (!subscription || !subscription2) {
+			throw new Meteor.Error('error-invalid-room', 'Invalid room', { method: 'blockUser' });
+		}
+
+		Subscriptions.unsetBlockedByRoomId(rid, blocked, Meteor.userId());
 
 		return true;
 	},
