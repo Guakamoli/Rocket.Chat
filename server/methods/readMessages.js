@@ -6,9 +6,11 @@ import { canAccessRoom } from '../../app/authorization/server';
 import { Rooms } from '../../app/models/server';
 
 Meteor.methods({
-	readMessages(rid) {
+	readMessages(rid, t) {
 		check(rid, String);
-
+		if (t) {
+			check(t, String);
+		}
 		const userId = Meteor.userId();
 		if (!userId) {
 			throw new Meteor.Error('error-invalid-user', 'Invalid user', {
@@ -22,6 +24,6 @@ Meteor.methods({
 			throw new Meteor.Error('error-not-allowed', 'Not allowed', { method: 'readMessages' });
 		}
 
-		Promise.await(markRoomAsRead(rid, userId));
+		Promise.await(markRoomAsRead(rid, userId, t));
 	},
 });
