@@ -47,7 +47,13 @@ Meteor.methods({
 			};
 		}
 
-		const messages = Messages.findVisibleByRoomIdBeforeTimestamp(message.rid, message.ts, options).fetch();
+		const filters = {
+			'metadata.audit.state': {
+				$nin: ['audit', 'review'],
+			},
+		};
+
+		const messages = Messages.findVisibleByRoomIdBeforeTimestamp(message.rid, message.ts, options, filters).fetch();
 
 		const moreBefore = messages.length === options.limit;
 
@@ -59,7 +65,7 @@ Meteor.methods({
 
 		options.limit = Math.floor(limit / 2);
 
-		const afterMessages = Messages.findVisibleByRoomIdAfterTimestamp(message.rid, message.ts, options).fetch();
+		const afterMessages = Messages.findVisibleByRoomIdAfterTimestamp(message.rid, message.ts, options, filters).fetch();
 
 		const moreAfter = afterMessages.length === options.limit;
 

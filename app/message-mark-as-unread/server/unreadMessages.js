@@ -13,7 +13,12 @@ Meteor.methods({
 		}
 
 		if (room && typeof room === 'string') {
-			const lastMessage = Messages.findVisibleByRoomId(room, { limit: 1, sort: { ts: -1 } }).fetch()[0];
+			const filters = {
+				'metadata.audit.state': {
+					$nin: ['audit', 'review'],
+				},
+			};
+			const lastMessage = Messages.findVisibleByRoomId(room, { limit: 1, sort: { ts: -1 } }, filters).fetch()[0];
 
 			if (lastMessage == null) {
 				throw new Meteor.Error('error-no-message-for-unread', 'There are no messages to mark unread', {
