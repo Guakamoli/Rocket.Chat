@@ -229,13 +229,14 @@ export class Messages extends Base {
 		return this.find(query, options);
 	}
 
-	findVisibleByRoomId(rid, options) {
+	findVisibleByRoomId(rid, options, filters = {}) {
 		const query = {
 			_hidden: {
 				$ne: true,
 			},
 
 			rid,
+			...filters,
 		};
 
 		return this.find(query, options);
@@ -284,7 +285,7 @@ export class Messages extends Base {
 		return this.find(query, options);
 	}
 
-	findVisibleByRoomIdAfterTimestamp(roomId, timestamp, options) {
+	findVisibleByRoomIdAfterTimestamp(roomId, timestamp, options, filters = {}) {
 		const query = {
 			_hidden: {
 				$ne: true,
@@ -293,6 +294,7 @@ export class Messages extends Base {
 			ts: {
 				$gt: timestamp,
 			},
+			...filters,
 		};
 
 		return this.find(query, options);
@@ -312,7 +314,7 @@ export class Messages extends Base {
 		return this.find(query, options);
 	}
 
-	findVisibleByRoomIdBeforeTimestamp(roomId, timestamp, options) {
+	findVisibleByRoomIdBeforeTimestamp(roomId, timestamp, options, filters = {}) {
 		const query = {
 			_hidden: {
 				$ne: true,
@@ -321,6 +323,7 @@ export class Messages extends Base {
 			ts: {
 				$lt: timestamp,
 			},
+			...filters,
 		};
 
 		return this.find(query, options);

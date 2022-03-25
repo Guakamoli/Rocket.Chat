@@ -35,11 +35,17 @@ Meteor.methods({
 			};
 		}
 
+		const filters = {
+			'metadata.audit.state': {
+				$nin: ['audit', 'review'],
+			},
+		};
+
 		let records;
 		if (end) {
-			records = Messages.findVisibleByRoomIdAfterTimestamp(rid, end, options).fetch();
+			records = Messages.findVisibleByRoomIdAfterTimestamp(rid, end, options, filters).fetch();
 		} else {
-			records = Messages.findVisibleByRoomId(rid, options).fetch();
+			records = Messages.findVisibleByRoomId(rid, options, filters).fetch();
 		}
 
 		return {

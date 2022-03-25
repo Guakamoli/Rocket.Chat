@@ -44,6 +44,11 @@ export const loadMessageHistory = function loadMessageHistory({ userId, rid, end
 
 		if ((firstMessage != null ? firstMessage.ts : undefined) > ls) {
 			delete options.limit;
+			const filters = {
+				'metadata.audit.state': {
+					$nin: ['audit', 'review'],
+				},
+			};
 			const unreadMessages = Messages.findVisibleByRoomIdBetweenTimestampsNotContainingTypes(
 				rid,
 				ls,
@@ -56,6 +61,8 @@ export const loadMessageHistory = function loadMessageHistory({ userId, rid, end
 					},
 				},
 				showThreadMessages,
+				false,
+				filters,
 			);
 
 			firstUnread = unreadMessages.fetch()[0];

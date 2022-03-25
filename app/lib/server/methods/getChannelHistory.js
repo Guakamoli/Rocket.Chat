@@ -8,8 +8,14 @@ import { settings } from '../../../settings/server';
 import { normalizeMessagesForUser } from '../../../utils/server/lib/normalizeMessagesForUser';
 import { getHiddenSystemMessages } from '../lib/getHiddenSystemMessages';
 
+const defaultFilters = {
+	'metadata.audit.state': {
+		$nin: ['audit', 'review'],
+	},
+};
+
 Meteor.methods({
-	getChannelHistory({ rid, latest, oldest, inclusive, offset = 0, count = 20, unreads, showThreadMessages = true, filters = {} }) {
+	getChannelHistory({ rid, latest, oldest, inclusive, offset = 0, count = 20, unreads, showThreadMessages = true, filters = defaultFilters }) {
 		check(rid, String);
 
 		if (!Meteor.userId()) {

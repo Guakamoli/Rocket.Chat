@@ -3,8 +3,14 @@ import { check } from 'meteor/check';
 
 import { Messages } from '../../app/models';
 
+const defaultFilters = {
+	'metadata.audit.state': {
+		$nin: ['audit', 'review'],
+	},
+};
+
 Meteor.methods({
-	'messages/get'(rid, { lastUpdate, latestDate = new Date(), oldestDate, inclusive = false, count = 20, unreads = false, filters = {} }) {
+	'messages/get'(rid, { lastUpdate, latestDate = new Date(), oldestDate, inclusive = false, count = 20, unreads = false, filters = defaultFilters }) {
 		check(rid, String);
 
 		const fromId = Meteor.userId();

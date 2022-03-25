@@ -26,6 +26,12 @@ Meteor.methods({
 			};
 		}
 
-		return Messages.findVisibleByRoomIdAfterTimestamp(rid, start, options).fetch();
+		const filters = {
+			'metadata.audit.state': {
+				$nin: ['audit', 'review'],
+			},
+		};
+
+		return Messages.findVisibleByRoomIdAfterTimestamp(rid, start, options, filters).fetch();
 	},
 });

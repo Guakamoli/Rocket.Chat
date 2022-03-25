@@ -66,13 +66,7 @@ API.v1.addRoute('chat.syncMessages', { authRequired: true }, {
 
 		let result;
 		Meteor.runAsUser(this.userId, () => {
-			const filters = {
-				t: {
-					$in: ['post', 'story'],
-				},
-				'metadata.audit.state': 'pass',
-			};
-			result = Meteor.call('messages/get', roomId, { lastUpdate: new Date(lastUpdate), filters });
+			result = Meteor.call('messages/get', roomId, { lastUpdate: new Date(lastUpdate) });
 		});
 
 		if (!result) {
