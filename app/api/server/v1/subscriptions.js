@@ -63,7 +63,7 @@ API.v1.addRoute('subscriptions.read', { authRequired: true }, {
 		});
 
 		Meteor.runAsUser(this.userId, () =>
-			Meteor.call('readMessages', this.bodyParams),
+			Meteor.call('readMessages', this.bodyParams.rid, this.bodyParams.t),
 		);
 
 		return API.v1.success();

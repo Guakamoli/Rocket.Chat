@@ -1,17 +1,16 @@
 import { Meteor } from 'meteor/meteor';
-import { Match, check } from 'meteor/check';
+import { check } from 'meteor/check';
 
 import { markRoomAsRead } from '../lib/markRoomAsRead';
 import { canAccessRoom } from '../../app/authorization/server';
 import { Rooms } from '../../app/models/server';
 
 Meteor.methods({
-	readMessages(params) {
-		check(params, {
-			rid: String,
-			t: Match.Optional(String),
-		});
-		const { rid, t } = params;
+	readMessages(rid, t) {
+		check(rid, String);
+		if (t) {
+			check(t, String);
+		}
 		const userId = Meteor.userId();
 		if (!userId) {
 			throw new Meteor.Error('error-invalid-user', 'Invalid user', {
