@@ -25,20 +25,28 @@ Meteor.methods({
 
 		return Messages.find(query).count();
 	},
-	kameoBotForwardMessage(message, sender, receiverId) {
-		if (message.metadata.rid && message.metadata.category !== 'reaction') {
+	kameoBotForwardMessage(message, sender) {
+		if (message.metadata.rid && ['comment', 'reply'].includes(message.metadata.category)) {
 			if (message.metadata.tmid) {
 				const threadMessage = Messages.findOne({ _id: message.metadata.tmid });
-				// 在 thread 里自己评论自己
-				if (sender._id === threadMessage.u._id && message.metadata.category === 'comment') {
+
+				if (sender._id === threadMessage.u._id) {
+					message.mentions = message.mentions.filter((user) => user._id !== sender._id);
+				}
+
+				if (!message.mantions.some((mantion) => mantion._id === threadMessage.u._id)) {
+					message.mentions.push({ ...threadMessage.u });
+				}
+
+				// 没有接收人
+				if (message.mentions.length === 0) {
 					return;
 				}
-				receiverId = threadMessage.u._id;
 			}
 
-			const firstDiscussionMessage = Messages.findOne({ rid: message.metadata.rid }, { sort: { ts: 1 } });
+			const firstDiscussionMessage = Messages.findOne({ drid: message.metadata.rid }, { sort: { ts: 1 } });
 			message.metadata.messageId = firstDiscussionMessage._id;
-			message.metadata.prid = firstDiscussionMessage.prid;
+			message.metadata.rid = firstDiscussionMessage.rid;
 			message.metadata.drid = firstDiscussionMessage.drid;
 			message.attachments = firstDiscussionMessage.attachments || [];
 		}
@@ -50,7 +58,7 @@ Meteor.methods({
 				'metadata.category': message.metadata.category,
 				'metadata.messageId': message.metadata.messageId,
 				'metadata.reaction': message.metadata.reaction,
-				'metadata.receiverId': receiverId,
+				'metadata.receiverId': message.metadata.receiverId,
 			});
 			// 重复点赞
 			if (existMsg) {
@@ -58,17 +66,14 @@ Meteor.methods({
 			}
 		}
 
-		// 在 channel 里自己评论自己
-		if (sender._id === receiverId) {
-			return;
+		for (const mention of message.mentions) {
+			const room = Meteor.runAsUser(mention._id, function() {
+				const { rid } = Meteor.call('createDirectMessage', 'rocket.cat');
+				return Rooms.findOneById(rid);
+			});
+
+			Promise.await(sendMessage(sender, message, room, false));
 		}
-
-		const room = Meteor.runAsUser(receiverId, function() {
-			const { rid } = Meteor.call('createDirectMessage', 'rocket.cat');
-			return Rooms.findOneById(rid);
-		});
-
-		Promise.await(sendMessage(sender, message, room, false));
 	},
 	kameoBotForwardSystemMessage(message, receiverId) {
 		if (!message.msg) {

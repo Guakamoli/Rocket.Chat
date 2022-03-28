@@ -2,19 +2,28 @@ import { Meteor } from 'meteor/meteor';
 
 import { callbacks } from '../../../../app/callbacks';
 
-const allowMessageTypes = ['post', 'story', 'activity'];
-const allowMediaMessageTypes = ['post', 'story'];
+const messageTypePost = 'post';
+const messageTypeStory = 'story';
+const messageTypeActivity = 'activity';
+const messageTypeActivityReaction = 'reaction';
+const messageTypeActivityReply = 'reply';
+const messageTypeActivityComment = 'comment';
+const allowMediaMessageTypes = [messageTypePost, messageTypeStory];
 const allowPushReactions = [':heart:', ':+1:'];
 
 // 机器人转发点赞消息至收件人通知
 callbacks.add('afterSetReaction', (message, { user, reaction }) => {
-	if (allowPushReactions.includes(reaction) && message.u._id !== user._id) {
+	if (!allowPushReactions.includes(reaction)) {
+		return;
+	}
+
+	if (message.u._id !== user._id) {
 		const notificationMessage = {
-			t: 'activity',
+			t: messageTypeActivity,
 			ts: new Date(),
 			attachments: message.attachments || [],
 			metadata: {
-				category: 'reaction',
+				category: messageTypeActivityReaction,
 				reaction,
 				messageId: message._id,
 				rid: message.rid || '',
@@ -23,10 +32,11 @@ callbacks.add('afterSetReaction', (message, { user, reaction }) => {
 				tmid: message.tmid || '',
 				receiverId: message.u._id,
 			},
+			mentions: [{ ...message.u }],
 		};
-		Meteor.call('kameoBotForwardMessage', notificationMessage, user, message.u._id);
+		Meteor.call('kameoBotForwardMessage', notificationMessage, user);
 	}
-}, callbacks.priority.LOW, 'kameo_after_set_reaction_to_notification');
+}, callbacks.priority.MEDIUM, 'kameo_after_set_reaction_to_notification');
 
 // 标记推荐消息删除
 callbacks.add('afterDeleteMessage', function(message) {
@@ -36,20 +46,16 @@ callbacks.add('afterDeleteMessage', function(message) {
 	}
 
 	return message;
-}, callbacks.priority.MEDIUM, 'kameo_after_delete_message');
+}, callbacks.priority.HIGH, 'kameo_after_delete_message');
 
+// 保存消息时创建 discussion, 并转发消息至推荐系统
 callbacks.add('afterSaveMessage', function(message, room = {}) {
-	if (!allowMessageTypes.includes(message.t)) {
+	if (!allowMediaMessageTypes.includes(message.t)) {
 		return;
 	}
 
-	if (message?.metadata?.category === 'system') {
-		return;
-	}
-
-	// 保存消息时创建 discussion, 并转发消息至推荐系统
-	if (allowMediaMessageTypes.includes(message.t) && message?.metadata?.audit?.state === 'pass' && room._id) {
-		if (message.t === 'post') {
+	if (message?.metadata?.audit?.state === 'pass' && room._id) {
+		if (message.t === messageTypePost) {
 			Meteor.call('kameoRocketmqSendPostMessage', {
 				messageId: message._id,
 				ts: message.ts,
@@ -68,21 +74,32 @@ callbacks.add('afterSaveMessage', function(message, room = {}) {
 			encrypted: false,
 		}));
 	}
+}, callbacks.priority.HIGH, 'kameo_after_save_post_message');
 
-	// 评论作品及回复评论
-	if (!allowMediaMessageTypes.includes(message.t) && message.rid && message.msg) {
+// 评论作品及回复评论
+callbacks.add('afterSaveMessage', function(message) {
+	if (allowMediaMessageTypes.includes(message.t)) {
+		return;
+	}
+
+	if (message.t === messageTypeActivity && message.metadata.category === 'system') {
+		return;
+	}
+
+	if (message.rid && message.msg) {
 		const notificationMessage = {
-			t: 'activity',
+			t: messageTypeActivity,
 			ts: new Date(),
 			metadata: {
-				category: message.tmid ? 'reply' : 'comment',
+				category: message.tmid ? messageTypeActivityReply : messageTypeActivityComment,
 				content: message.msg,
-				rid: message.rid,
+				rid: message.rid || '',
+				prid: message.prid || '',
+				drid: message.drid || '',
+				tmid: message.tmid || '',
 			},
+			mentions: message.mentions || [],
 		};
-		if (message.tmid) {
-			notificationMessage.metadata.tmid = message.tmid;
-		}
-		Meteor.call('kameoBotForwardMessage', notificationMessage, message.u, room.u._id);
+		Meteor.call('kameoBotForwardMessage', notificationMessage, message.u);
 	}
-}, callbacks.priority.MEDIUM, 'kameo_after_save_post_message');
+}, callbacks.priority.HIGH, 'kameo_after_save_activity_message');
