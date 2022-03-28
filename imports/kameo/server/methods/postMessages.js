@@ -34,7 +34,7 @@ Meteor.methods({
 					message.mentions = message.mentions.filter((user) => user._id !== sender._id);
 				}
 
-				if (!message.mantions.some((mantion) => mantion._id === threadMessage.u._id)) {
+				if (!message.mentions.some((mantion) => mantion._id === threadMessage.u._id)) {
 					message.mentions.push({ ...threadMessage.u });
 				}
 
