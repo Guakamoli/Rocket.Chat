@@ -761,6 +761,10 @@ API.v1.addRoute('chat.audit', { authRequired: true }, {
 	post() {
 		const { messageId, mediaId, mediaType, pass } = this.bodyParams;
 
+		if (!messageId && !mediaId) {
+			return API.v1.success('The parameter "messageId" or "mediaId" is required');
+		}
+
 		let msg;
 		if (!messageId) {
 			msg = Messages.findOneByMediaId(mediaId);
