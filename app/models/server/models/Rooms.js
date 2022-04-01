@@ -968,11 +968,11 @@ export class Rooms extends Base {
 		return this.update(query, update);
 	}
 
-	resetLastMessageById(_id, messageId = undefined) {
+	resetLastMessageById(_id, messageId = undefined, messageT = null) {
 		const query = { _id };
 		const lastMessage = Messages.getLastVisibleMessageSentWithNoTypeByRoomId(_id, messageId);
 
-		const update = lastMessage ? {
+		let update = lastMessage ? {
 			$set: {
 				lastMessage,
 			},
@@ -982,6 +982,23 @@ export class Rooms extends Base {
 			},
 		};
 
+		if (messageT === 'story') {
+			const storyLastMessage = Messages.getLastVisibleMessageSentWithTypeByRoomId(_id, messageId, messageT);
+			const storyupdate = storyLastMessage ? {
+				$set: {
+					storyLastMessage,
+				},
+			} : {
+				$unset: {
+					storyLastMessage: 1,
+				},
+			};
+			const keys = ['$set', '$unset'];
+			keys.forEach((key) => {
+				Object.assign(update[key] || storyupdate[key] || {}, update[key], storyupdate[key]);
+			});
+			update = { ...update, ...storyupdate };
+		}
 		return this.update(query, update);
 	}
 
