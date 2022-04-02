@@ -54,7 +54,7 @@ export const deleteMessage = function(message: IMessage, user: IUser): void {
 	// update last message
 	if (settings.get('Store_Last_Message')) {
 		if (!room.lastMessage || room.lastMessage._id === message._id) {
-			Rooms.resetLastMessageById(message.rid, message._id);
+			Rooms.resetLastMessageById(message.rid, message._id, message.t);
 		}
 	}
 
