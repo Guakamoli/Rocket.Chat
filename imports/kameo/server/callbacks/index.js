@@ -93,6 +93,7 @@ callbacks.add('afterSaveMessage', function(message) {
 			metadata: {
 				category: message.tmid ? messageTypeActivityReply : messageTypeActivityComment,
 				content: message.msg,
+				messageId: message._id,
 				rid: message.rid || '',
 				prid: message.prid || '',
 				drid: message.drid || '',

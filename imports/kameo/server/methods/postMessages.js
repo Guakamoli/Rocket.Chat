@@ -44,11 +44,13 @@ Meteor.methods({
 				}
 			}
 
-			const firstDiscussionMessage = Messages.findOne({ drid: message.metadata.rid }, { sort: { ts: 1 } });
-			message.metadata.messageId = firstDiscussionMessage._id;
-			message.metadata.rid = firstDiscussionMessage.rid;
-			message.metadata.drid = firstDiscussionMessage.drid;
-			message.attachments = firstDiscussionMessage.attachments || [];
+			const firstDiscussionMessage = Messages.findOne({ drid: message.rid }, { sort: { ts: 1 } });
+			if (firstDiscussionMessage) {
+				message.metadata.messageId = firstDiscussionMessage._id;
+				message.metadata.rid = firstDiscussionMessage.rid;
+				message.metadata.drid = firstDiscussionMessage.drid;
+				message.attachments = firstDiscussionMessage.attachments || [];
+			}
 		}
 
 		if (message.metadata.category === 'reaction') {
