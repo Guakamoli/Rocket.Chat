@@ -18,8 +18,9 @@ import { logger } from '../../../push/server/logger';
 let TroubleshootDisableNotifications;
 
 const {
-	NOTIFICATION_TEMPLATE_REACTION = '有人为你点了赞，请点击查看》',
-	NOTIFICATION_TEMPLATE_COMMENT = '您收到一条评论消息，请点击查看》',
+	NOTIFICATION_TEMPLATE_REACTION = '有人为你点了赞，请点击查看>>',
+	NOTIFICATION_TEMPLATE_COMMENT = '您收到一条评论消息，请点击查看>>',
+	NOTIFICATION_TEMPLATE_POST = '你关注的创作者%s发布了一条新的内容快来看看吧～',
 } = process.env;
 
 export const sendNotification = async ({
@@ -88,9 +89,9 @@ export const sendNotification = async ({
 	}
 
 	if (['post', 'story'].includes(message.t)) {
-		if (!message.msg && message.attachments && message.attachments[0]) {
-			const description = message.attachments[0].description.replace(/(paiyapost|paiyastory):?\s?/, '');
-			notificationMessage = parseMessageTextPerUser(description, {}, receiver);
+		const hasPass = message?.metadata?.audit?.state === 'pass';
+		if (message.attachments && message.attachments[0] && hasPass) {
+			notificationMessage = NOTIFICATION_TEMPLATE_POST;
 		}
 	}
 
@@ -368,21 +369,23 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 }
 
 export async function sendAllNotifications(message, room) {
-	if (TroubleshootDisableNotifications === true) {
-		return message;
-	}
+	if (!['post', 'story'].includes(message.t)) {
+		if (TroubleshootDisableNotifications === true) {
+			return message;
+		}
 
-	// threads
-	if (message.tmid) {
-		return message;
-	}
-	// skips this callback if the message was edited
-	if (message.editedAt) {
-		return message;
-	}
+		// threads
+		if (message.tmid) {
+			return message;
+		}
+		// skips this callback if the message was edited
+		if (message.editedAt) {
+			return message;
+		}
 
-	if (message.ts && Math.abs(moment(message.ts).diff()) > 60000) {
-		return message;
+		if (message.ts && Math.abs(moment(message.ts).diff()) > 60000) {
+			return message;
+		}
 	}
 
 	if (!room || room.t == null) {
@@ -418,7 +421,6 @@ export async function sendAllNotifications(message, room) {
 		).then((users) => {
 			users.forEach((userId) => {
 				const subscription = Subscriptions.findOneByRoomIdAndUserId(room._id, userId);
-
 				sendNotification({
 					subscription,
 					sender,

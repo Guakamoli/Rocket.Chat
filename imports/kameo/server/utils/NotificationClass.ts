@@ -59,6 +59,8 @@ export default class NotificationClass {
 	async worker(counter = 0): Promise<void> {
 		const notification = await this.getNextNotification();
 
+		console.log('xxxx ----', notification);
+
 		if (!notification) {
 			return this.executeWorkerLater();
 		}
@@ -104,14 +106,15 @@ export default class NotificationClass {
 	}
 
 	push({ uid }: INotification, item: INotificationItemPush): void {
-		const { roomName, username, message, payload, badge = 1, category } = item.data;
+		const { roomName, username, message: originalMessage, payload, badge = 1, category } = item.data;
 
-		if (uid === 'rocket.cat' || payload.messageType !== 'activity') {
+		if (uid === 'rocket.cat' || !['activity', 'post', 'story'].includes(payload.messageType || '')) {
 			return;
 		}
 
 		const idOnly = settings.get('Push_request_content_from_server');
 		const title = idOnly ? '' : payload.sender.name || username || roomName;
+		const message = originalMessage.replace('%s', title);
 
 		const iOSAppKey = currentProduct({
 			PAIYA: Number(process.env.MPUSH_APPKEY_PAIYA_IOS),
