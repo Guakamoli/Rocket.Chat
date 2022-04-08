@@ -421,6 +421,7 @@ export async function sendAllNotifications(message, room) {
 		).then((users) => {
 			users.forEach((userId) => {
 				const subscription = Subscriptions.findOneByRoomIdAndUserId(room._id, userId);
+
 				sendNotification({
 					subscription,
 					sender,
