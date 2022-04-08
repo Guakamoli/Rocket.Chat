@@ -37,19 +37,19 @@ Meteor.methods({
 				if (!message.mentions.some((mantion) => mantion._id === threadMessage.u._id)) {
 					message.mentions.push({ ...threadMessage.u });
 				}
-
-				// 没有接收人
-				if (message.mentions.length === 0) {
-					return;
-				}
 			}
 
-			const firstDiscussionMessage = Messages.findOne({ drid: message.rid }, { sort: { ts: 1 } });
+			const firstDiscussionMessage = Messages.findOne({ drid: message.metadata.rid }, { sort: { ts: 1 } });
 			if (firstDiscussionMessage) {
 				message.metadata.messageId = firstDiscussionMessage._id;
 				message.metadata.rid = firstDiscussionMessage.rid;
 				message.metadata.drid = firstDiscussionMessage.drid;
 				message.attachments = firstDiscussionMessage.attachments || [];
+
+				// 没有接收人
+				if (message.mentions.length === 0) {
+					message.mentions.push({ ...firstDiscussionMessage.u });
+				}
 			}
 		}
 
