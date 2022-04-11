@@ -216,13 +216,13 @@ jobs:
         mv /tmp/dist/Rocket.Chat.tar.gz /tmp/build/Rocket.Chat.tar.gz
 
     # - name: Store build for tests
-    #   uses: actions/upload-artifact@v2
+    #   uses: actions/upload-artifact@v3
     #   with:
     #     name: build-test
     #     path: /tmp/Rocket.Chat.test.tar.gz
 
     - name: Store build
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: build
         path: /tmp/build
