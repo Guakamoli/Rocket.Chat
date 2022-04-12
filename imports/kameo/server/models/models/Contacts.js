@@ -1,77 +1,150 @@
 import { Base } from '../../../../../app/models/server';
+import Uploads from "/app/models/server/models/Uploads";
 
 export class Contacts extends Base {
 	constructor() {
 		super('contacts');
-		this.tryEnsureIndex({ uid: 1 });
-		this.tryEnsureIndex({ fuid: 1 });
+		this.tryEnsureIndex({ 'u._id': 1 });
+		this.tryEnsureIndex({ 'u.username': 1 });
+		this.tryEnsureIndex({ 'cu._id': 1 });
+		this.tryEnsureIndex({ 'cu.username': 1 });
+		this.tryEnsureIndex({ relation: 1 });
 		this.tryEnsureIndex({ ts: 1 }, { expireAfterSeconds: 2 * 60 * 60 });
-		this.tryEnsureIndex({ block: 1 }, { sparse: true });
-		this.tryEnsureIndex({ favorite: 1 }, { sparse: true });
+		this.tryEnsureIndex({ favorite: 1 });
 	}
 
-	create(uid, fuid) {
+	createAndUpdate(u, cu, options) {
+		const contact = this.findById(u._id, cu._id);
+
+		if (!contact) {
+			this.create(u, cu, options);
+		} else {
+			this.updateRelationById(u._id, cu._id, { relation: 'F', ts: new Date(), ...options });
+		}
+	}
+
+	blockedUser(u, cu, options) {
+		const contact = this.findById(u._id, cu._id);
+
+		if (!contact) {
+			this.create(u, cu, options);
+		} else {
+			this.updateRelationById(cu._id, u._id, { relation: 'N' });
+			this.updateRelationById(u._id, cu._id, { relation: 'D' });
+		}
+	}
+
+	create(u, cu, options) {
 		const contact = {
-			uid,
-			fuid,
+			u,
+			cu,
+			relation: 'F',
+			favorite: false,
 			ts: new Date(),
+			...options,
 		};
 		this.insert(contact);
 	}
 
-	removeById(uid, fuid) {
+	updateRelationById(uid, cuid, options) {
+		const { relation, ts } = options;
 		const query = {
-			uid,
-			fuid,
+			'u._id': uid,
+			'cu._id': cuid,
 		};
-		this.deleteOne(query);
+
+		const modify = {
+			$set: { relation, ts },
+		};
+		this.update(query, modify);
 	}
 
-	findById(uid, fuid) {
+	findById(uid, cuid) {
 		const query = {
-			uid,
-			fuid,
+			'u._id': uid,
+			'cu._id': cuid,
 		};
-		return this.find(query);
+		return this.findOne(query);
 	}
 
-	findByIdAndBoth(uid, fuid) {
+	findByIdAndFollow(uid, cuid) {
 		const query = {
 			$or: [
-				{ uid, fuid },
-				{ uid: fuid, fuid: uid },
+				{ 'u._id': uid, 'cu._id': cuid, relation: 'F' },
+				{ 'u._id': cuid, 'cu._id': uid, relation: 'F' },
 			],
 		};
 		const count = this.find(query).count();
 		return !!count && count === 2;
 	}
 
-	checkedBlocked(uid, fuid) {
+	checkedBlocked(uid, cuid) {
 		const query = {
-			uid,
-			fuid,
-			block: {
-				$in: ['both', 'from'],
+			'u._id': uid,
+			'cu._id': cuid,
+			relation: 'D',
+		};
+		return this.findOne(query);
+	}
+
+	allFollowById(uid, options) {
+		const query = {
+			'u._id': uid,
+			relation: {
+				$in: ['B', 'F'],
 			},
 		};
-		return this.findOne(query);
+		if (options.page.offset) {
+			query._id = { $gte: options.page.offset };
+		}
+		return this.find(query, options);
 	}
 
-	checkedTwowayBlocked(uid, fuid) {
+	allFansById(uid, options) {
 		const query = {
-			uid,
-			fuid,
-			block: 'both',
+			'cu._id': uid,
+			relation: {
+				$in: ['B', 'F'],
+			},
 		};
-		return this.findOne(query);
+		return this.find(query, options);
 	}
 
-	findContacts(uid) {
+	updateBothById(uid, cuid) {
+		const isFollow = this.findByIdAndFollow(uid, cuid);
+		if (isFollow) {
+			Promise.await(this.model.rawCollection().updateMany(
+				{
+					$or: [
+						{
+							'u._id': uid,
+							'cu._id': cuid,
+							relation: 'F',
+						},
+						{
+							'u._id': cuid,
+							'cu._id': uid,
+							relation: 'F',
+						},
+
+					],
+				},
+				{
+					$set: {
+						relation: 'B',
+					},
+				},
+			));
+		}
+	}
+
+	allBlockerById(uid, options) {
 		const query = {
-			uid,
-			block: 'none',
+			'u._id': uid,
+			relation: 'D',
 		};
-		return this.find(query);
+
+		return this.find(query, options);
 	}
 }
 
