@@ -1,5 +1,4 @@
 import { Base } from '../../../../../app/models/server';
-import Uploads from "/app/models/server/models/Uploads";
 
 export class Contacts extends Base {
 	constructor() {
@@ -9,7 +8,7 @@ export class Contacts extends Base {
 		this.tryEnsureIndex({ 'cu._id': 1 });
 		this.tryEnsureIndex({ 'cu.username': 1 });
 		this.tryEnsureIndex({ relation: 1 });
-		this.tryEnsureIndex({ ts: 1 }, { expireAfterSeconds: 2 * 60 * 60 });
+		this.tryEnsureIndex({ ts: 1 });
 		this.tryEnsureIndex({ favorite: 1 });
 	}
 
@@ -41,6 +40,7 @@ export class Contacts extends Base {
 			relation: 'F',
 			favorite: false,
 			ts: new Date(),
+			tags: [],
 			...options,
 		};
 		this.insert(contact);
@@ -59,12 +59,12 @@ export class Contacts extends Base {
 		this.update(query, modify);
 	}
 
-	findById(uid, cuid) {
+	findById(uid, cuid, options) {
 		const query = {
 			'u._id': uid,
 			'cu._id': cuid,
 		};
-		return this.findOne(query);
+		return this.findOne(query, options);
 	}
 
 	findByIdAndFollow(uid, cuid) {

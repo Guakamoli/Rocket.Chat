@@ -5,12 +5,15 @@ import './login';
 import {
 	NotificationClass,
 } from './utils';
-import {
+
+export {
 	IAliyun,
+	IContact,
+	IContactUser,
+	ContactRelation,
 } from './definition';
 
 export * from './models';
 export {
-	IAliyun,
 	NotificationClass,
 };

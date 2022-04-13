@@ -259,5 +259,12 @@ export class ListenersModule {
 		service.onEvent('banner.new', (bannerId): void => {
 			notifications.notifyLoggedInThisInstance('new-banner', { bannerId });
 		});
+
+		service.onEvent('watch.contacts', ({ clientAction, contact }): void => {
+			if (!contact?.u) {
+				return;
+			}
+			notifications.streamContacts.emitWithoutBroadcast(contact.u._id, { action: clientAction, contact });
+		});
 	}
 }
