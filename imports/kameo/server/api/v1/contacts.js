@@ -59,8 +59,16 @@ API.v1.addRoute('contacts.remove', { authRequired: true }, {
 API.v1.addRoute('contacts.list', { authRequired: true }, {
 	get() {
 		const params = this.requestParams();
-		const contacts = Contacts.allFollowById(this.userId, {
-			first: 5000,
+		let u = this.user;
+		if (params.userId) {
+			u = Meteor.users.findOne({ _id: String(params.userId) });
+			if (!u) {
+				throw new Meteor.Error('error-invalid-user', 'The required "userId" or "username" param provided does not match any users');
+			}
+		}
+
+		const contacts = Contacts.allFollowById(u._id, {
+			limit: 5000,
 			page: {
 				...params,
 			},
@@ -81,10 +89,18 @@ API.v1.addRoute('contacts.list', { authRequired: true }, {
 
 API.v1.addRoute('contacts.fans', { authRequired: true }, {
 	get() {
-		const { offset, count } = this.getPaginationItems();
+		const { offset, count = 10 } = this.getPaginationItems();
+		const params = this.requestParams();
+		let u = this.user;
+		if (params.userId) {
+			u = Meteor.users.findOne({ _id: String(params.userId) });
+			if (!u) {
+				throw new Meteor.Error('error-invalid-user', 'The required "userId" or "username" param provided does not match any users');
+			}
+		}
 
 		// TODO: CACHE: Add Breacking notice since we removed the query param
-		const cursor = Contacts.allFansById(this.userId, {
+		const cursor = Contacts.allFansById(u._id, {
 			sort: { ts: -1 },
 			skip: offset,
 			limit: count,
@@ -148,8 +164,8 @@ API.v1.addRoute('contacts.blockers', { authRequired: true }, {
 	get() {
 		const params = this.requestParams();
 		let u = this.user;
-		if (params.uid) {
-			u = Meteor.users.findOne({ _id: String(params.uid) });
+		if (params.userId) {
+			u = Meteor.users.findOne({ _id: String(params.userId) });
 			if (!u) {
 				throw new Meteor.Error('error-invalid-user', 'The required "userId" or "username" param provided does not match any users');
 			}
