@@ -104,17 +104,18 @@ API.v1.addRoute('contacts.fans', { authRequired: true }, {
 			sort: { ts: -1 },
 			skip: offset,
 			limit: count,
-			fields: { _id: 1, cu: 1, relation: 1, favorite: 1, ts: 1 },
+			fields: { _id: 1, u: 1, relation: 1, favorite: 1, ts: 1 },
 		});
 
 		const totalCount = cursor.count();
 		const contacts = cursor.fetch();
 		if (contacts) {
 			contacts.forEach((contact) => {
-				const cu = getContactUserCached(contact.cu._id, contact.cu.username);
+				const cu = getContactUserCached(contact.u._id, contact.u.username);
 				if (cu) {
 					contact.cu = cu;
 				}
+				delete contact.u;
 			});
 		}
 
