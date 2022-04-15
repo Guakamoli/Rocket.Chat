@@ -725,7 +725,7 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 		if (!messageId) {
 			throw new Meteor.Error('error-invalid-params', 'The required "messageId" query param is missing.');
 		}
-		const msg = Messages.findOne({ _id: messageId, t: 'post' });
+		const msg = Messages.findOne({ _id: messageId, t: {$in : ['post','story'] } });
 		if (!msg) {
 			throw new Meteor.Error('error-message-not-found', 'Message not exists');
 		}
@@ -735,6 +735,7 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 		const userName = msg?.u?.name || '';
 		let userAvatar = msg?.u?.username || '';
 		const attachment = msg?.attachments?.[0];
+		let videoUrl = ''
 		if (attachment) {
 			if (userAvatar) {
 				userAvatar = `${ serverUri }/avatar/${ userAvatar }`;
@@ -743,6 +744,8 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 			if (coverUri && !coverUri.startsWith('http')) {
 				coverUri = `${ serverUri }${ coverUri }`;
 			}
+			videoUrl = attachment?.video_url || ''
+			
 			t = attachment.image_type || attachment.video_type || null;
 		}
 		const data = {
@@ -750,6 +753,7 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 			userName,
 			coverUri,
 			t,
+			videoUrl
 		};
 		return API.v1.success({
 			data,
