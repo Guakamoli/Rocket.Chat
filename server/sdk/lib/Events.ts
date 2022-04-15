@@ -15,6 +15,7 @@ import { IIntegrationHistory } from '../../../definition/IIntegrationHistory';
 import { ILivechatDepartmentAgents } from '../../../definition/ILivechatDepartmentAgents';
 import { IIntegration } from '../../../definition/IIntegration';
 import { IEmailInbox } from '../../../definition/IEmailInbox';
+import { IContact } from '../../../imports/kameo/server';
 
 type ClientAction = 'inserted' | 'updated' | 'removed' | 'changed';
 
@@ -54,4 +55,5 @@ export type EventSignatures = {
 	'watch.integrations'(data: { clientAction: ClientAction; data: Partial<IIntegration>; id: string }): void;
 	'watch.emailInbox'(data: { clientAction: ClientAction; data: Partial<IEmailInbox>; id: string }): void;
 	'watch.livechatDepartmentAgents'(data: { clientAction: ClientAction; data: Partial<ILivechatDepartmentAgents>; diff?: undefined | Record<string, any>; id: string }): void;
+	'watch.contacts'(data: { clientAction: ClientAction; contact: Partial<IContact> }): void;
 }
