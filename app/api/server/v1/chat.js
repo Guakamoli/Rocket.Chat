@@ -725,7 +725,7 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 		if (!messageId) {
 			throw new Meteor.Error('error-invalid-params', 'The required "messageId" query param is missing.');
 		}
-		const msg = Messages.findOne({ _id: messageId, t: {$in : ['post','story'] } });
+		const msg = Messages.findOne({ _id: messageId, t: { $in: ['post', 'story'] } });
 		if (!msg) {
 			throw new Meteor.Error('error-message-not-found', 'Message not exists');
 		}
@@ -735,7 +735,7 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 		const userName = msg?.u?.name || '';
 		let userAvatar = msg?.u?.username || '';
 		const attachment = msg?.attachments?.[0];
-		let videoUrl = ''
+		let videoUrl = '';
 		if (attachment) {
 			if (userAvatar) {
 				userAvatar = `${ serverUri }/avatar/${ userAvatar }`;
@@ -744,8 +744,8 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 			if (coverUri && !coverUri.startsWith('http')) {
 				coverUri = `${ serverUri }${ coverUri }`;
 			}
-			videoUrl = attachment?.video_url || ''
-			
+			videoUrl = attachment?.video_url || '';
+
 			t = attachment.image_type || attachment.video_type || null;
 		}
 		const data = {
@@ -753,7 +753,7 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 			userName,
 			coverUri,
 			t,
-			videoUrl
+			videoUrl,
 		};
 		return API.v1.success({
 			data,
@@ -763,7 +763,7 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 
 API.v1.addRoute('chat.audit', { authRequired: true }, {
 	post() {
-		const { messageId, mediaId, mediaType, pass } = this.bodyParams;
+		const { messageId, mediaId, mediaType, pass, url, eventType } = this.bodyParams;
 
 		if (!messageId && !mediaId) {
 			return API.v1.success('The parameter "messageId" or "mediaId" is required');
@@ -780,14 +780,33 @@ API.v1.addRoute('chat.audit', { authRequired: true }, {
 			return API.v1.success({ message: 'Message not found' });
 		}
 
+		if ((msg?.metadata?.audit?.workflows || []).includes(eventType)) {
+			return API.v1.success({ message: 'workflows eventType existing' });
+		}
+
+		const audit = {
+			...msg?.metadata?.audit,
+			mediaId,
+			workflows: [...msg?.metadata?.audit?.workflows || [], eventType],
+			eventType,
+		};
+
+		const allowAuditEventType = ['AIMediaAuditComplete', 'CreateAuditComplete', 'KameoImageAudit', 'KameoImageAuditArtificially'];
+		if (allowAuditEventType.includes(eventType)) {
+			audit.state = pass ? 'pass' : 'review';
+		}
+
+		if (mediaType === 'video' && eventType === 'StreamTranscodeComplete') {
+			if (msg?.attachments?.length > 0 && msg.attachments[0].video_type.startsWith('video/')) {
+				msg.attachments[0].video_url = url;
+			}
+		}
+
 		const newMsg = {
 			...msg,
 			metadata: {
-				...msg?.metadata || {},
-				audit: {
-					state: pass ? 'pass' : 'review',
-					mediaId,
-				},
+				...msg?.metadata,
+				audit,
 			},
 		};
 

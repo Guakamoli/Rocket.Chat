@@ -196,6 +196,8 @@ Meteor.methods({
 				audit: {
 					state: 'pass',
 					tag: 'whitelist',
+					workflows: ['CreateAuditComplete'],
+					eventType: 'CreateAuditComplete',
 				},
 			};
 		}
