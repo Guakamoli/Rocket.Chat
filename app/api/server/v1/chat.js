@@ -740,7 +740,7 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 			if (userAvatar) {
 				userAvatar = `${ serverUri }/avatar/${ userAvatar }`;
 			}
-			coverUri = attachment.video_cover_url || attachment.image_url || '';
+			coverUri = attachment.video_cover_url || attachment.title_link || '';
 			if (coverUri && !coverUri.startsWith('http')) {
 				coverUri = `${ serverUri }${ coverUri }`;
 			}
