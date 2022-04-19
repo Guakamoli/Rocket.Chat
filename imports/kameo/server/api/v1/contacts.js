@@ -4,6 +4,17 @@ import mem from 'mem';
 import { API } from '../../../../../app/api/server/api';
 import { Contacts } from '../../models';
 
+const SECRET = process.env.INTERNAL_X_SECRET || '';
+
+const fields = {
+	_id: 1,
+	relation: 1,
+	favorite: 1,
+	ts: 1,
+	blocked: 1,
+	blocker: 1,
+};
+
 const getContactUserCached = mem((userId, username) => {
 	const user = Meteor.users.findOne({ _id: userId, username }, {
 		projection: { name: 1, 'customFields.note': 1 },
@@ -29,7 +40,10 @@ API.v1.addRoute('contacts.add', { authRequired: true }, {
 			});
 		}
 
-		Contacts.createAndUpdate({ _id: this.userId, username: this.user.username }, { _id: cu._id, username: cu.username });
+		Contacts.createAndUpdate({ _id: this.userId, username: this.user.username }, {
+			_id: cu._id,
+			username: cu.username,
+		});
 		Contacts.updateBothById(this.userId, cu._id);
 
 		return API.v1.success({ contact: Contacts.findById(this.userId, cu._id) });
@@ -43,7 +57,7 @@ API.v1.addRoute('contacts.remove', { authRequired: true }, {
 		if (!cu) {
 			throw new Meteor.Error('error-invalid-user', 'The required "userId" or "username" param provided does not match any users');
 		}
-		if (cu?.customFields?.defaultChannel) {
+		if (cu?.customFields?.defaultChannel && this.user.__rooms.includes(cu?.customFields?.defaultChannel)) {
 			Meteor.runAsUser(this.userId, () => {
 				Meteor.call('leaveRoom', cu.customFields.defaultChannel);
 			});
@@ -58,21 +72,10 @@ API.v1.addRoute('contacts.remove', { authRequired: true }, {
 
 API.v1.addRoute('contacts.list', { authRequired: true }, {
 	get() {
-		const params = this.requestParams();
-		let u = this.user;
-		if (params.userId) {
-			u = Meteor.users.findOne({ _id: String(params.userId) });
-			if (!u) {
-				throw new Meteor.Error('error-invalid-user', 'The required "userId" or "username" param provided does not match any users');
-			}
-		}
-
-		const contacts = Contacts.allFollowById(u._id, {
+		const u = this.user;
+		const contacts = Contacts.all(u._id, {
 			limit: 5000,
-			page: {
-				...params,
-			},
-			fields: { _id: 1, cu: 1, relation: 1, favorite: 1, ts: 1 },
+			fields: { ...fields, cu: 1 },
 		}).fetch();
 		if (contacts) {
 			contacts.forEach((contact) => {
@@ -104,7 +107,7 @@ API.v1.addRoute('contacts.fans', { authRequired: true }, {
 			sort: { ts: -1 },
 			skip: offset,
 			limit: count,
-			fields: { _id: 1, u: 1, relation: 1, favorite: 1, ts: 1 },
+			fields: { ...fields, u: 1 },
 		});
 
 		const totalCount = cursor.count();
@@ -131,14 +134,7 @@ API.v1.addRoute('contacts.fans', { authRequired: true }, {
 API.v1.addRoute('contacts.blocked', { authRequired: true }, {
 	post() {
 		const { cuid } = this.bodyParams;
-
-		const cu = Meteor.users.findOne({ _id: String(cuid) });
-		if (!cu) {
-			throw new Meteor.Error('error-invalid-user', 'The required "userId" or "username" param provided does not match any users');
-		}
-
-		Contacts.blockedUser(this.userId, cu._id, { relation: 'D' });
-
+		Meteor.call('kameoBlockContact', { cuid });
 		return API.v1.success();
 	},
 });
@@ -146,23 +142,18 @@ API.v1.addRoute('contacts.blocked', { authRequired: true }, {
 API.v1.addRoute('contacts.unblock', { authRequired: true }, {
 	post() {
 		const { cuid } = this.bodyParams;
-
-		const cu = Meteor.users.findOne({ _id: String(cuid) });
-		if (!cu) {
-			throw new Meteor.Error('error-invalid-user', 'The required "userId" or "username" param provided does not match any users');
-		}
-
-		const contact = Contacts.findById(this.userId, cu._id);
-		if (contact && contact.relation === 'D') {
-			Contacts.updateRelationById(this.userId, cu._id, { relation: 'N' });
-		}
-
+		Meteor.call('kameoUnblockContact', { cuid });
 		return API.v1.success();
 	},
 });
 
 API.v1.addRoute('contacts.blockers', { authRequired: true }, {
 	get() {
+		const xSecret = this.request.headers['x-secret'] ?? '';
+		if (SECRET !== xSecret) {
+			return API.v1.failure('User not found');
+		}
+
 		const params = this.requestParams();
 		let u = this.user;
 		if (params.userId) {
@@ -172,8 +163,103 @@ API.v1.addRoute('contacts.blockers', { authRequired: true }, {
 			}
 		}
 
-		const blockers = Contacts.allBlockerById(u._id, { fields: { _id: 1, cu: 1, relation: 1, favorite: 1, ts: 1 } }).fetch();
+		const blockeds = Contacts.allBlockById(u._id, { fields: { ...fields, cu: 1, u: 1 } }).fetch();
+		return API.v1.success(blockeds);
+	},
+});
 
-		return API.v1.success(blockers || []);
+API.v1.addRoute('contacts.blocker', { authRequired: true }, {
+	get() {
+		const xSecret = this.request.headers['x-secret'] ?? '';
+		if (SECRET !== xSecret) {
+			return API.v1.failure('User not found');
+		}
+
+		const params = this.requestParams();
+		let u;
+		if (params.userId) {
+			u = Meteor.users.findOne({ _id: String(params.userId) });
+			if (!u) {
+				throw new Meteor.Error('error-invalid-user', 'The required "userId" or "username" param provided does not match any users');
+			}
+		}
+
+		let cu;
+		if (params.influencerId) {
+			cu = Meteor.users.findOne({ _id: String(params.influencerId) });
+			if (!cu) {
+				throw new Meteor.Error('error-invalid-user', 'The required "userId" or "username" param provided does not match any users');
+			}
+		}
+
+		const blocker = Contacts.findOne(
+			{
+				'u._id': u._id,
+				'cu._id': cu._id,
+				blocked: true,
+			},
+			{
+				fields: { ...fields, u: 1, cu: 1 },
+			},
+		);
+
+		return API.v1.success(blocker);
+	},
+});
+
+API.v1.addRoute('contacts.followers', { authRequired: true }, {
+	get() {
+		const xSecret = this.request.headers['x-secret'] ?? '';
+		if (SECRET !== xSecret) {
+			return API.v1.failure('User not found');
+		}
+
+		const params = this.requestParams();
+		let u = this.user;
+		if (params.userId) {
+			u = Meteor.users.findOne({ _id: String(params.userId) });
+			if (!u) {
+				throw new Meteor.Error('error-invalid-user', 'The required "userId" or "username" param provided does not match any users');
+			}
+		}
+
+		const contacts = Contacts.allFollowById(u._id, {
+			limit: 5000,
+			page: {
+				...params,
+			},
+			fields: { ...fields, cu: 1 },
+		}).fetch();
+		if (contacts) {
+			contacts.forEach((contact) => {
+				const cu = getContactUserCached(contact.cu._id, contact.cu.username);
+				if (cu) {
+					contact.cu = cu;
+				}
+			});
+		}
+
+		return API.v1.success(contacts || []);
+	},
+});
+
+API.v1.addRoute('contacts.blockeds', { authRequired: true }, {
+	get() {
+		const xSecret = this.request.headers['x-secret'] ?? '';
+		if (SECRET !== xSecret) {
+			return API.v1.failure('User not found');
+		}
+
+		const params = this.requestParams();
+		let u = this.user;
+		if (params.userId) {
+			u = Meteor.users.findOne({ _id: String(params.userId) });
+			if (!u) {
+				throw new Meteor.Error('error-invalid-user', 'The required "userId" or "username" param provided does not match any users');
+			}
+		}
+
+		const blockeds = Contacts.allBlockedById(u._id, { fields: { ...fields, cu: 1, u: 1 } }).fetch();
+		return API.v1.success(blockeds);
 	},
 });

@@ -24,16 +24,12 @@ Meteor.methods({
 				subscription2 = Subscriptions.findOneByRoomIdAndUserId(user.customFields.defaultChannel, blocked);
 			}
 
-			if (!subscription && !subscription2) {
-				Meteor.call('kameoRocketmqSendBlocked', { userId, influencerId: blocked, blocked: false, subscriptionId: subscription?._id, roomId: subscription?.rid });
-				return true;
+			if (subscription || subscription2) {
+				Subscriptions.unsetBlockerByRoomId(subscription?.rid, userId);
+				Subscriptions.unsetNewBlockedByRoomId(subscription2?.rid, blocked);
 			}
 
-			// Subscriptions.unsetNewBlockedByRoomId(rid, blocked, userId, user?.customFields?.defaultChannel);
-			Subscriptions.unsetBlockerByRoomId(subscription?.rid, userId);
-			Subscriptions.unsetNewBlockedByRoomId(subscription2?.rid, blocked);
-
-			Meteor.call('kameoRocketmqSendBlocked', { userId, influencerId: blocked, blocked: false, subscriptionId: subscription?._id, roomId: subscription?.rid });
+			Meteor.call('kameoUnblockContact', { cuid: blocked });
 
 			return true;
 		}

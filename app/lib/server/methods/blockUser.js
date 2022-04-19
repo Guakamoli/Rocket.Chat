@@ -33,15 +33,12 @@ Meteor.methods({
 			}
 
 			// tip: 不存在相关的关系则直接改recommend
-			if (!subscription && !subscription2) {
-				Meteor.call('kameoRocketmqSendBlocked', { userId, influencerId: blocked, blocked: true, subscriptionId: subscription?._id, roomId: subscription?.rid });
-				return true;
+			if (subscription || subscription2) {
+				Subscriptions.setBlockerByRoomId(subscription?.rid, userId);
+				Subscriptions.setNewBlockedByRoomId(subscription2?.rid, blocked);
 			}
 
-			Subscriptions.setBlockerByRoomId(subscription?.rid, userId);
-			Subscriptions.setNewBlockedByRoomId(subscription2?.rid, blocked);
-
-			Meteor.call('kameoRocketmqSendBlocked', { userId, influencerId: blocked, blocked: true, subscriptionId: subscription?._id, roomId: subscription?.rid });
+			Meteor.call('kameoBlockContact', { cuid: blocked });
 
 			return true;
 		}
