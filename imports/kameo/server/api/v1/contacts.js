@@ -30,10 +30,21 @@ const getContactUserCached = mem((userId, username) => {
 API.v1.addRoute('contacts.add', { authRequired: true }, {
 	post() {
 		const { cuid } = this.bodyParams;
+		if (this.userId === cuid) {
+			throw new Meteor.Error('failed-follow', 'Can\'t to follow on yourself');
+		}
 		const cu = Meteor.users.findOne({ _id: String(cuid) });
 		if (!cu) {
 			throw new Meteor.Error('error-invalid-user', 'The required "userId" or "username" param provided does not match any users');
 		}
+		const contact = Contacts.findById(this.userId, cuid);
+		if (contact?.blocked) {
+			throw new Meteor.Error('failed-follow', 'You need to remove the user\'s attention after blocking it');
+		}
+		if (contact?.blocker) {
+			throw new Meteor.Error('failed-follow', 'Due to the other\'s privacy settings, it cannot be follow');
+		}
+
 		if (cu?.customFields?.defaultChannel) {
 			Meteor.runAsUser(this.userId, () => {
 				Meteor.call('joinRoom', cu.customFields.defaultChannel);
