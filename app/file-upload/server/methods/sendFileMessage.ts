@@ -191,12 +191,23 @@ Meteor.methods({
 		const hasPost = ['post', 'story'].includes(msgData.t as any);
 		const hasWhitelist = user.roles.includes('audit-whitelist');
 		if (hasPost && hasWhitelist) {
+			const audit = {
+				state: 'pass',
+				tag: 'whitelist',
+				workflows: ['CreateAuditComplete'],
+				eventType: 'CreateAuditComplete',
+			};
+
+			if (attachments.length > 0) {
+				if ('image_url' in attachments[0]) {
+					audit.workflows = ['KameoImageAudit'];
+					audit.eventType = 'KameoImageAudit';
+				}
+			}
+
 			msgData.metadata = {
 				...msgData.metadata,
-				audit: {
-					state: 'pass',
-					tag: 'whitelist',
-				},
+				audit,
 			};
 		}
 

@@ -76,22 +76,25 @@ export const sendNotification = async ({
 
 	const isThread = !!message.tmid && !message.tshow;
 
-	if (message.t !== 'activity') {
-		notificationMessage = parseMessageTextPerUser(notificationMessage, message, receiver);
-	} else {
-		if (message.metadata.category === 'reaction') {
-			notificationMessage = NOTIFICATION_TEMPLATE_REACTION;
-		}
+	notificationMessage = parseMessageTextPerUser(notificationMessage, message, receiver);
 
-		if (['comment', 'reply'].includes(message.metadata.category)) {
-			notificationMessage = NOTIFICATION_TEMPLATE_COMMENT;
-		}
-	}
-
-	if (['post', 'story'].includes(message.t)) {
-		const hasPass = message?.metadata?.audit?.state === 'pass';
-		if (message.attachments && message.attachments[0] && hasPass) {
+	switch (message.t) {
+		case 'story':
+		case 'post':
+		{
 			notificationMessage = NOTIFICATION_TEMPLATE_POST;
+			break;
+		}
+		case 'activity':
+		{
+			if (message.metadata.category === 'reaction') {
+				notificationMessage = NOTIFICATION_TEMPLATE_REACTION;
+			}
+
+			if (['comment', 'reply'].includes(message.metadata.category)) {
+				notificationMessage = NOTIFICATION_TEMPLATE_COMMENT;
+			}
+			break;
 		}
 	}
 
@@ -368,8 +371,11 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 	};
 }
 
+const allowMediaMessageTypes = ['post', 'story'];
+const allowAuditEventType = ['AIMediaAuditComplete', 'CreateAuditComplete', 'KameoImageAudit', 'KameoImageAuditArtificially'];
+
 export async function sendAllNotifications(message, room) {
-	if (!['post', 'story'].includes(message.t)) {
+	if (!allowMediaMessageTypes.includes(message.t)) {
 		if (TroubleshootDisableNotifications === true) {
 			return message;
 		}
@@ -390,6 +396,18 @@ export async function sendAllNotifications(message, room) {
 
 	if (!room || room.t == null) {
 		return message;
+	}
+
+	if (allowMediaMessageTypes.includes(message.t)) {
+		const hasPass = message?.metadata?.audit?.state === 'pass';
+		if (!(message.attachments && message.attachments[0] && hasPass)) {
+			return message;
+		}
+
+		const hasAuditComplete = allowAuditEventType.includes(message?.metadata?.audit?.eventType);
+		if (!hasAuditComplete) {
+			return message;
+		}
 	}
 
 	const {
