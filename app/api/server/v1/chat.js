@@ -798,7 +798,10 @@ API.v1.addRoute('chat.audit', { authRequired: true }, {
 
 		if (mediaType === 'video' && eventType === 'StreamTranscodeComplete') {
 			if (msg?.attachments?.length > 0 && msg.attachments[0].video_type.startsWith('video/')) {
-				msg.attachments[0].video_url = url;
+				const videoUrl = String(url);
+				if (videoUrl.startsWith('http://')) {
+					msg.attachments[0].video_url = videoUrl.replace('http://', 'https://');
+				}
 			}
 		}
 
