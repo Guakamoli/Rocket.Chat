@@ -968,7 +968,7 @@ export class Rooms extends Base {
 		return this.update(query, update);
 	}
 
-	resetLastMessageById(_id, messageId = undefined) {
+	resetLastMessageById(_id, messageId = undefined, messageT = null) {
 		const query = { _id };
 		const lastMessage = Messages.getLastVisibleMessageSentWithNoTypeByRoomId(_id, messageId);
 
@@ -982,6 +982,20 @@ export class Rooms extends Base {
 			},
 		};
 
+		if (messageT === 'story') {
+			const storyLastMessage = Messages.getLastVisibleMessageSentWithTypeByRoomId(_id, messageId, messageT);
+			if (storyLastMessage) {
+				update.$set = {
+					...update?.$set,
+					storyLastMessage,
+				};
+			} else {
+				update.$unset = {
+					...update?.$unset,
+					storyLastMessage: 1,
+				};
+			}
+		}
 		return this.update(query, update);
 	}
 

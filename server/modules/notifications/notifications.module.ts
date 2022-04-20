@@ -52,6 +52,8 @@ export class NotificationsModule {
 
 	public readonly streamLocal: IStreamer;
 
+	public readonly streamContacts: IStreamer;
+
 	constructor(
 		private Streamer: IStreamerConstructor,
 	) {
@@ -71,6 +73,7 @@ export class NotificationsModule {
 		this.streamRoomData = new this.Streamer('room-data');
 
 		this.streamRoomMessage = new this.Streamer('room-messages');
+		this.streamContacts = new this.Streamer('contacts');
 
 		this.streamRoomMessage.on('_afterPublish', async (streamer: IStreamer, publication: IPublication, eventName: string): Promise<void> => {
 			const { userId } = publication._session;
@@ -387,6 +390,9 @@ export class NotificationsModule {
 		this.streamLocal.allowRead('none');
 		this.streamLocal.allowEmit('all');
 		this.streamLocal.allowWrite('none');
+
+		this.streamContacts.allowWrite('none');
+		this.streamContacts.allowRead('logged');
 	}
 
 	notifyAll(eventName: string, ...args: any[]): void {

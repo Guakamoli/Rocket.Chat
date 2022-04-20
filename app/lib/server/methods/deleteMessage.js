@@ -25,6 +25,7 @@ Meteor.methods({
 				rid: 1,
 				file: 1,
 				ts: 1,
+				t: 1,
 			},
 		});
 

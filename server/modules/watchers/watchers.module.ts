@@ -35,6 +35,7 @@ import { EventSignatures } from '../../sdk/lib/Events';
 import { IEmailInbox } from '../../../definition/IEmailInbox';
 import { EmailInboxRaw } from '../../../app/models/server/raw/EmailInbox';
 import { isPresenceMonitorEnabled } from '../../lib/isPresenceMonitorEnabled';
+import { IContact, IContactUser, ContactsRaw } from '../../../imports/kameo/server';
 
 interface IModelsParam {
 	Subscriptions: SubscriptionsRaw;
@@ -52,6 +53,7 @@ interface IModelsParam {
 	IntegrationHistory: IntegrationHistoryRaw;
 	Integrations: IntegrationsRaw;
 	EmailInbox: EmailInboxRaw;
+	Contacts: ContactsRaw;
 }
 
 interface IChange<T> {
@@ -99,6 +101,7 @@ export function initWatchers(models: IModelsParam, broadcast: BroadcastCallback,
 		IntegrationHistory,
 		Integrations,
 		EmailInbox,
+		Contacts,
 	} = models;
 
 	const getSettingCached = mem(async (setting: string): Promise<SettingValue> => Settings.getValueById(setting), { maxAge: 10000 });
@@ -106,6 +109,18 @@ export function initWatchers(models: IModelsParam, broadcast: BroadcastCallback,
 	const getUserNameCached = mem(async (userId: string): Promise<string | undefined> => {
 		const user = await Users.findOne<Pick<IUser, 'name'>>(userId, { projection: { name: 1 } });
 		return user?.name;
+	}, { maxAge: 10000 });
+
+	const getContactUserCached = mem(async (userId: string, username: string): Promise<IContactUser> => {
+		const user = await Users.findOne<Pick<IContactUser, any>>({ _id: userId, username }, {
+			projection: { name: 1, 'customFields.note': 1 },
+		});
+		return {
+			_id: userId,
+			username,
+			name: user?.name,
+			note: user?.customFields?.note || '',
+		};
 	}, { maxAge: 10000 });
 
 	watch<IMessage>(Messages, async ({ clientAction, id, data }) => {
@@ -390,5 +405,27 @@ export function initWatchers(models: IModelsParam, broadcast: BroadcastCallback,
 		}
 
 		broadcast('watch.emailInbox', { clientAction, data, id });
+	});
+
+	watch<IContact>(Contacts, async ({ clientAction, id, data }) => {
+		switch (clientAction) {
+			case 'inserted':
+			case 'updated': {
+				const contact: IContact | undefined = data ?? await Contacts.findOneById(id);
+				if (!contact) {
+					return;
+				}
+				const cu: IContactUser = await getContactUserCached(contact.cu._id, contact.cu.username);
+				if (cu) {
+					contact.cu = cu;
+				}
+				broadcast('watch.contacts', { clientAction, contact });
+				break;
+			}
+			case 'removed': {
+				broadcast('watch.contacts', { clientAction, contact: { _id: id } });
+				break;
+			}
+		}
 	});
 }

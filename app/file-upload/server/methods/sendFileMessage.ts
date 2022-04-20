@@ -187,6 +187,30 @@ Meteor.methods({
 				attachments.push(attachment);
 			}
 		}
+
+		const hasPost = ['post', 'story'].includes(msgData.t as any);
+		const hasWhitelist = user.roles.includes('audit-whitelist');
+		if (hasPost && hasWhitelist) {
+			const audit = {
+				state: 'pass',
+				tag: 'whitelist',
+				workflows: ['CreateAuditComplete'],
+				eventType: 'CreateAuditComplete',
+			};
+
+			if (attachments.length > 0) {
+				if ('image_url' in attachments[0]) {
+					audit.workflows = ['KameoImageAudit'];
+					audit.eventType = 'KameoImageAudit';
+				}
+			}
+
+			msgData.metadata = {
+				...msgData.metadata,
+				audit,
+			};
+		}
+
 		const msg = Meteor.call('sendMessage', {
 			rid: roomId,
 			ts: new Date(),
@@ -199,7 +223,7 @@ Meteor.methods({
 		});
 
 		// 只处理存在图片的 message，视频交由阿里云视频点播服务回调处理
-		if (attachments.filter((a) => 'image_url' in a).length > 0) {
+		if (hasPost && !hasWhitelist && attachments.filter((a) => 'image_url' in a).length > 0) {
 			Meteor.call('kameoMNSSend', {
 				EventType: 'KameoImageAudit',
 				Extend: {

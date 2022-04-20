@@ -42,5 +42,6 @@ import './v1/instances';
 import './v1/banners';
 import './v1/email-inbox';
 import './v1/teams';
+import '../../../imports/kameo/server/api/v1';
 
 export { API, APIClass, defaultRateLimiterOptions } from './api';

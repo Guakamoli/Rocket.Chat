@@ -18,8 +18,9 @@ import { logger } from '../../../push/server/logger';
 let TroubleshootDisableNotifications;
 
 const {
-	NOTIFICATION_TEMPLATE_REACTION = '有人为你点了赞，请点击查看》',
-	NOTIFICATION_TEMPLATE_COMMENT = '您收到一条评论消息，请点击查看》',
+	NOTIFICATION_TEMPLATE_REACTION = '有人为你点了赞，请点击查看>>',
+	NOTIFICATION_TEMPLATE_COMMENT = '您收到一条评论消息，请点击查看>>',
+	NOTIFICATION_TEMPLATE_POST = '你关注的创作者%s发布了一条新的内容快来看看吧～',
 } = process.env;
 
 export const sendNotification = async ({
@@ -75,22 +76,25 @@ export const sendNotification = async ({
 
 	const isThread = !!message.tmid && !message.tshow;
 
-	if (message.t !== 'activity') {
-		notificationMessage = parseMessageTextPerUser(notificationMessage, message, receiver);
-	} else {
-		if (message.metadata.category === 'reaction') {
-			notificationMessage = NOTIFICATION_TEMPLATE_REACTION;
-		}
+	notificationMessage = parseMessageTextPerUser(notificationMessage, message, receiver);
 
-		if (['comment', 'reply'].includes(message.metadata.category)) {
-			notificationMessage = NOTIFICATION_TEMPLATE_COMMENT;
+	switch (message.t) {
+		case 'story':
+		case 'post':
+		{
+			notificationMessage = NOTIFICATION_TEMPLATE_POST;
+			break;
 		}
-	}
+		case 'activity':
+		{
+			if (message.metadata.category === 'reaction') {
+				notificationMessage = NOTIFICATION_TEMPLATE_REACTION;
+			}
 
-	if (['post', 'story'].includes(message.t)) {
-		if (!message.msg && message.attachments && message.attachments[0]) {
-			const description = message.attachments[0].description.replace(/(paiyapost|paiyastory):?\s?/, '');
-			notificationMessage = parseMessageTextPerUser(description, {}, receiver);
+			if (['comment', 'reply'].includes(message.metadata.category)) {
+				notificationMessage = NOTIFICATION_TEMPLATE_COMMENT;
+			}
+			break;
 		}
 	}
 
@@ -367,26 +371,43 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 	};
 }
 
+const allowMediaMessageTypes = ['post', 'story'];
+const allowAuditEventType = ['AIMediaAuditComplete', 'CreateAuditComplete', 'KameoImageAudit', 'KameoImageAuditArtificially'];
+
 export async function sendAllNotifications(message, room) {
-	if (TroubleshootDisableNotifications === true) {
-		return message;
-	}
+	if (!allowMediaMessageTypes.includes(message.t)) {
+		if (TroubleshootDisableNotifications === true) {
+			return message;
+		}
 
-	// threads
-	if (message.tmid) {
-		return message;
-	}
-	// skips this callback if the message was edited
-	if (message.editedAt) {
-		return message;
-	}
+		// threads
+		if (message.tmid) {
+			return message;
+		}
+		// skips this callback if the message was edited
+		if (message.editedAt) {
+			return message;
+		}
 
-	if (message.ts && Math.abs(moment(message.ts).diff()) > 60000) {
-		return message;
+		if (message.ts && Math.abs(moment(message.ts).diff()) > 60000) {
+			return message;
+		}
 	}
 
 	if (!room || room.t == null) {
 		return message;
+	}
+
+	if (allowMediaMessageTypes.includes(message.t)) {
+		const hasPass = message?.metadata?.audit?.state === 'pass';
+		if (!(message.attachments && message.attachments[0] && hasPass)) {
+			return message;
+		}
+
+		const hasAuditComplete = allowAuditEventType.includes(message?.metadata?.audit?.eventType);
+		if (!hasAuditComplete) {
+			return message;
+		}
 	}
 
 	const {
