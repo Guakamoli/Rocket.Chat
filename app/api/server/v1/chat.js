@@ -736,16 +736,24 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 		let userAvatar = msg?.u?.username || '';
 		const attachment = msg?.attachments?.[0];
 		let videoUrl = '';
-		if (attachment) {
+		let videoWidth = '';
+		let videoHeight = ''
+		let imageWidth = ''
+		let imageHeight = ''
+ 		if (attachment) {
 			if (userAvatar) {
 				userAvatar = `${ serverUri }/avatar/${ userAvatar }`;
 			}
-			coverUri = attachment.video_cover_url || attachment.title_link || '';
+			coverUri =  attachment.title_link || '';
 			if (coverUri && !coverUri.startsWith('http')) {
 				coverUri = `${ serverUri }${ coverUri }`;
 			}
 			videoUrl = attachment?.video_url || '';
-
+			videoWidth = attachment?.video_width || 0;
+			videoHeight = attachment?.video_height || 0;
+			imageWidth = attachment?.image_width || 0;
+			imageHeight = attachment?.image_height || 0;
+			
 			t = attachment.image_type || attachment.video_type || null;
 		}
 		const data = {
@@ -754,6 +762,10 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 			coverUri,
 			t,
 			videoUrl,
+			videoWidth,
+			videoHeight,
+			imageWidth,
+			imageHeight,
 		};
 		return API.v1.success({
 			data,
