@@ -32,6 +32,13 @@ export const createDirectRoom = function(members, roomExtraData = {}, options = 
 		throw new Error('error-direct-message-max-user-exceeded');
 	}
 
+	if (members.length === 2) {
+		const hasBlocked = Meteor.call('kameoSomeoneBlockedContacts', ...members);
+		if (hasBlocked) {
+			throw new Meteor.Error('error-blocked-contacts', 'You can\'t create a direct message with a blocked contact.', { method: 'createDirectRoom' });
+		}
+	}
+
 	const sortedMembers = members.sort((u1, u2) => (u1.name || u1.username).localeCompare(u2.name || u2.username));
 
 	const usernames = sortedMembers.map(({ username }) => username);
