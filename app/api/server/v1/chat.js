@@ -735,7 +735,14 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 		const userName = msg?.u?.name || '';
 		let userAvatar = msg?.u?.username || '';
 		const attachment = msg?.attachments?.[0];
-		let videoUrl = '';
+		const mediaAttach = {
+			video_url: '',
+			video_width: 0,
+			video_height: 0,
+			image_width: 0,
+			image_height: 0,
+		};
+
 		if (attachment) {
 			if (userAvatar) {
 				userAvatar = `${ serverUri }/avatar/${ userAvatar }`;
@@ -744,8 +751,11 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 			if (coverUri && !coverUri.startsWith('http')) {
 				coverUri = `${ serverUri }${ coverUri }`;
 			}
-			videoUrl = attachment?.video_url || '';
-
+			['video_url', 'video_width', 'video_height', 'image_width', 'image_height'].forEach((key) => {
+				if (key in attachment) {
+					mediaAttach[key] = attachment[key];
+				}
+			});
 			t = attachment.image_type || attachment.video_type || null;
 		}
 		const data = {
@@ -753,7 +763,7 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 			userName,
 			coverUri,
 			t,
-			videoUrl,
+			...mediaAttach,
 		};
 		return API.v1.success({
 			data,
