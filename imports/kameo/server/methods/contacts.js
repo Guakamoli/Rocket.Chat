@@ -94,6 +94,6 @@ Meteor.methods({
 			],
 		};
 		const contacts = Contacts.find(query).fetch();
-		return !!contacts && contacts.length > 0;
+		return contacts.length > 0;
 	},
 });
