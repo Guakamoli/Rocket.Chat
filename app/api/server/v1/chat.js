@@ -735,27 +735,27 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 		const userName = msg?.u?.name || '';
 		let userAvatar = msg?.u?.username || '';
 		const attachment = msg?.attachments?.[0];
-		let videoUrl = '';
-		const fileInfo = {
-			videoWidth: 0,
-			videoHeight: 0,
-			imageWidth: 0,
-			imageHeight: 0,
+		const mediaAttach = {
+			video_url: '',
+			video_width: 0,
+			video_height: 0,
+			image_width: 0,
+			image_height: 0,
 		};
 
 		if (attachment) {
 			if (userAvatar) {
 				userAvatar = `${ serverUri }/avatar/${ userAvatar }`;
 			}
-			coverUri = attachment.title_link || '';
+			coverUri = attachment.video_cover_url || attachment.image_url || '';
 			if (coverUri && !coverUri.startsWith('http')) {
 				coverUri = `${ serverUri }${ coverUri }`;
 			}
-			videoUrl = attachment?.video_url || '';
-			fileInfo.videoWidth = attachment?.video_width || 0;
-			fileInfo.videoHeight = attachment?.video_height || 0;
-			fileInfo.imageWidth = attachment?.image_width || 0;
-			fileInfo.imageHeight = attachment?.image_height || 0;
+			['video_url', 'video_width', 'video_height', 'image_width', 'image_height'].forEach((key) => {
+				if (key in attachment) {
+					mediaAttach[key] = attachment[key];
+				}
+			});
 			t = attachment.image_type || attachment.video_type || null;
 		}
 		const data = {
@@ -763,8 +763,7 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 			userName,
 			coverUri,
 			t,
-			videoUrl,
-			fileInfo,
+			...mediaAttach,
 		};
 		return API.v1.success({
 			data,
