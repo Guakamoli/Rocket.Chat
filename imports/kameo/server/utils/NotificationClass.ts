@@ -106,7 +106,7 @@ export default class NotificationClass {
 	push({ uid }: INotification, item: INotificationItemPush): void {
 		const { roomName, username, message: originalMessage, payload, badge = 1, category } = item.data;
 
-		if (uid === 'rocket.cat' || !['activity', 'post'].includes(payload.messageType || '')) {
+		if (uid === 'rocket.cat') {
 			return;
 		}
 
