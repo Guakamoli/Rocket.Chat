@@ -15,6 +15,7 @@ Meteor.methods({
 	kameoPostMessages(messages) {
 		check(messages, [String]);
 
+		const hasInternal = process.env.ROCKETCHAT_INTERNAL_API_ENABLE === 'true';
 		return messages.map((msgId) => {
 			const msg = Messages.findOneById(msgId);
 
@@ -24,7 +25,7 @@ Meteor.methods({
 
 			msg.u = {
 				...msg.u,
-				relation: getContactRelationCached(Meteor.userId(), msg.u._id),
+				relation: !hasInternal ? getContactRelationCached(Meteor.userId(), msg.u._id) : 'N',
 			};
 
 			return msg;

@@ -10,6 +10,8 @@ export class Contacts extends Base {
 		this.tryEnsureIndex({ relation: 1 });
 		this.tryEnsureIndex({ ts: 1 });
 		this.tryEnsureIndex({ favorite: 1 });
+		this.tryEnsureIndex({ blocked: 1 });
+		this.tryEnsureIndex({ blocker: 1 });
 	}
 
 	createAndUpdate(u, cu, options) {
@@ -19,17 +21,6 @@ export class Contacts extends Base {
 			this.create(u, cu, options);
 		} else {
 			this.updateRelationById(u._id, cu._id, { relation: 'F', ts: new Date(), ...options });
-		}
-	}
-
-	blockedUser(u, cu, options) {
-		const contact = this.findById(u._id, cu._id);
-
-		if (!contact) {
-			this.create(u, cu, options);
-		} else {
-			this.updateRelationById(cu._id, u._id, { relation: 'N' });
-			this.updateRelationById(u._id, cu._id, { relation: 'D' });
 		}
 	}
 
@@ -138,12 +129,61 @@ export class Contacts extends Base {
 		}
 	}
 
-	allBlockerById(uid, options) {
-		const query = {
-			'u._id': uid,
-			relation: 'D',
+	blockedUser(u, cu, options) {
+		const contact = this.findById(u._id, cu._id);
+
+		if (contact) {
+			const modify = {
+				$set: {
+					...options,
+				},
+			};
+
+			const query = { 'u._id': u._id, 'cu._id': cu._id };
+
+			this.update(query, modify);
+		} else {
+			this.create(u, cu, options);
+		}
+	}
+
+	unblockedUser(uid, cuid, options) {
+		const modify = {
+			$set: {
+				...options,
+			},
 		};
 
+		const query = { 'u._id': uid, 'cu._id': cuid };
+
+		this.update(query, modify);
+	}
+
+	allBlockById(uid, options) {
+		const query = {
+			'u._id': uid,
+			$or: [
+				{ blocked: true },
+				{ blocker: true },
+			],
+		};
+
+		return this.find(query, options);
+	}
+
+	allBlockedById(uid, options) {
+		const query = {
+			'u._id': uid,
+			blocked: true,
+		};
+
+		return this.find(query, options);
+	}
+
+	all(uid, options) {
+		const query = {
+			'u._id': uid,
+		};
 		return this.find(query, options);
 	}
 }

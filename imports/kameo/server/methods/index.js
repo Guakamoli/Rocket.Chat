@@ -6,3 +6,4 @@ import './getInfluencers';
 import './filterBadWords';
 import './checkedMessage';
 import './mns';
+import './contacts';
