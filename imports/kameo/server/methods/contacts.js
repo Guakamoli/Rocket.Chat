@@ -65,4 +65,35 @@ Meteor.methods({
 			Contacts.unblockedUser(cu._id, Meteor.userId(), { blocker: false, ...options });
 		}
 	},
+	kameoSomeoneBlockedContacts(...members) {
+		check(members, Array);
+
+		if (members.length !== 2) {
+			throw new Meteor.Error('invalid-params', 'The required "Member" parameter provided by must be 2 length.');
+		}
+
+		const [uid, cuid] = members;
+
+		const queryOrBlockedAndBlocker = [
+			{ blocked: true },
+			{ blocker: true },
+		];
+
+		const query = {
+			$or: [
+				{
+					'u._id': uid,
+					'cu._id': cuid,
+					$or: queryOrBlockedAndBlocker,
+				},
+				{
+					'u._id': cuid,
+					'cu._id': uid,
+					$or: queryOrBlockedAndBlocker,
+				},
+			],
+		};
+		const contacts = Contacts.find(query).fetch();
+		return contacts.length > 0;
+	},
 });
