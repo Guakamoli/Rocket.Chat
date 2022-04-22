@@ -14,6 +14,7 @@ export {
 } from './definition';
 
 export * from './models';
+export * from './functions';
 export {
 	NotificationClass,
 };

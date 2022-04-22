@@ -1304,6 +1304,12 @@ settings.addGroup('Message', function() {
 			},
 		],
 	});
+
+	this.add('Message_AllowSend_Quantity', 3, {
+		type: 'int',
+		group: 'Message',
+		public: true,
+	});
 });
 
 settings.addGroup('Meta', function() {

@@ -38,7 +38,7 @@ Meteor.methods({
 				Subscriptions.setNewBlockedByRoomId(subscription2?.rid, blocked);
 			}
 
-			Meteor.call('kameoBlockContact', { cuid: blocked });
+			Meteor.call('kameoBlockContacts', { cuid: blocked });
 
 			return true;
 		}

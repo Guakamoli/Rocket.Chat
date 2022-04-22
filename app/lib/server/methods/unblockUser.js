@@ -29,7 +29,7 @@ Meteor.methods({
 				Subscriptions.unsetNewBlockedByRoomId(subscription2?.rid, blocked);
 			}
 
-			Meteor.call('kameoUnblockContact', { cuid: blocked });
+			Meteor.call('kameoUnblockContacts', { cuid: blocked });
 
 			return true;
 		}
