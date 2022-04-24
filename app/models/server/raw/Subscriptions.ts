@@ -80,4 +80,34 @@ export class SubscriptionsRaw extends BaseRaw<T> {
 
 		return this.update(query, update, options);
 	}
+
+	incInitialSentByUserId(rid: string, uid: string, options: FindOneOptions<T> = {}): ReturnType<BaseRaw<T>['update']> {
+		const query: FilterQuery<T> = {
+			rid,
+			'u._id': uid,
+		};
+
+		const update: UpdateQuery<T> = {
+			$inc: {
+				initialSent: 1,
+			},
+		};
+
+		return this.update(query, update, options);
+	}
+
+	unsetInitialSentByUserId(rid: string, uid: string, options: FindOneOptions<T> = {}): ReturnType<BaseRaw<T>['update']> {
+		const query: FilterQuery<T> = {
+			rid,
+			'u._id': uid,
+		};
+
+		const update: UpdateQuery<T> = {
+			$unset: {
+				initialSent: 1,
+			},
+		};
+
+		return this.update(query, update, options);
+	}
 }
