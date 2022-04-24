@@ -42,7 +42,7 @@ export const validateRoomMessagePermissionsAsync = async (room, { uid, username,
 	if (room.t === 'd' && room?.uids?.length === 2) {
 		const cuid = room.uids.filter((u) => u !== uid).join('');
 		const hasContacts = await Contacts.findOneByUserId(uid, cuid);
-		const hasBlocked = hasContacts?.relation === 'D';
+		const hasBlocked = hasContacts?.blocked || hasContacts?.blocker;
 		if (hasBlocked) {
 			throw new Error('room_is_blocked');
 		}
