@@ -399,4 +399,18 @@ export class RoomsRaw extends BaseRaw {
 	findOneByNameOrFname(name, options = {}) {
 		return this.col.findOne({ $or: [{ name }, { fname: name }] }, options);
 	}
+
+	shutStrangerById(rid) {
+		const query = {
+			_id: rid,
+		};
+
+		const update = {
+			$set: {
+				stranger: false,
+			},
+		};
+
+		return this.update(query, update);
+	}
 }

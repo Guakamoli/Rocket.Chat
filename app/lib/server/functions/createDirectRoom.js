@@ -37,6 +37,7 @@ export const createDirectRoom = function(members, roomExtraData = {}, options = 
 		if (hasBlocked) {
 			throw new Meteor.Error('error-blocked-contacts', 'You can\'t create a direct message with a blocked contact.', { method: 'createDirectRoom' });
 		}
+		roomExtraData.stranger = true;
 	}
 
 	const sortedMembers = members.sort((u1, u2) => (u1.name || u1.username).localeCompare(u2.name || u2.username));

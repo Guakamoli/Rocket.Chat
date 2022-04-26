@@ -1439,6 +1439,21 @@ export class Subscriptions extends Base {
 			{ multi: true },
 		);
 	}
+
+	removeStrangerByUserId(rid, uid, options = {}) {
+		const query = {
+			rid,
+			'u._id': uid,
+		};
+
+		const update = {
+			$unset: {
+				stranger: 1,
+			},
+		};
+
+		return this.update(query, update, options);
+	}
 }
 
 export default new Subscriptions('subscription', true);
