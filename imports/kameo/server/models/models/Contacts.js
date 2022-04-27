@@ -69,6 +69,17 @@ export class Contacts extends Base {
 		return !!count && count === 2;
 	}
 
+	findByIdAndFollowBoth(uid, cuid) {
+		const query = {
+			$or: [
+				{ 'u._id': uid, 'cu._id': cuid, relation: 'B' },
+				{ 'u._id': cuid, 'cu._id': uid, relation: 'B' },
+			],
+		};
+		const count = this.find(query).count();
+		return !!count && count === 2;
+	}
+
 	checkedBlocked(uid, cuid) {
 		const query = {
 			'u._id': uid,
@@ -117,7 +128,6 @@ export class Contacts extends Base {
 							'cu._id': uid,
 							relation: 'F',
 						},
-
 					],
 				},
 				{

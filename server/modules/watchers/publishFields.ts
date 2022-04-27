@@ -42,6 +42,9 @@ export const subscriptionFields = {
 	department: 1,
 	v: 1,
 	onHold: 1,
+
+	// fields used by DMs
+	stranger: 1,
 } as const;
 
 export const roomFields = {
@@ -107,4 +110,5 @@ export const roomFields = {
 	// fields used by DMs
 	usernames: 1,
 	uids: 1,
+	stranger: 1,
 };

@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 
 import { Contacts } from '../models';
-import { Rooms } from '../../../../app/models';
+import { Rooms, Subscriptions } from '../../../../app/models';
 
 export function addContacts(userId, cuid) {
 	if (userId === cuid) {
@@ -38,6 +38,13 @@ export function addContacts(userId, cuid) {
 	);
 	Contacts.updateBothById(u._id, cu._id);
 
+	if (Contacts.findByIdAndFollowBoth(u._id, cu._id)) {
+		const rid = [u._id, cu._id].sort().join('');
+		Subscriptions.removeStrangerByUserId(rid, u._id);
+		Subscriptions.removeStrangerByUserId(rid, cu._id);
+		Rooms.shutStrangerById(rid);
+	}
+
 	return Contacts.findById(u._id, cu._id);
 }
 
@@ -68,7 +75,8 @@ export function blockContacts(userId, cuid) {
 	}
 
 	// 在私聊中blocked对方
-	const room = Rooms.findByDirectRoomId(u._id, cu._id);
+	const rid = [u._id, cu._id].sort().join('');
+	const room = Rooms.findByDirectRoomId(rid);
 	if (room) {
 		Meteor.call('blockUser', { rid: room._id, blocked: cu._id, type: 'direct' });
 	}
@@ -92,7 +100,8 @@ export function unblockContacts(userId, cuid) {
 			options.relation = 'N';
 
 			// 在私聊中unblock对方
-			const room = Rooms.findByDirectRoomId(u._id, cu._id);
+			const rid = [u._id, cu._id].sort().join('');
+			const room = Rooms.findByDirectRoomId(rid);
 			if (room) {
 				Meteor.call('unblockUser', { rid: room._id, blocked: cu._id, type: 'direct' });
 			}

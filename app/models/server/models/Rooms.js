@@ -1410,10 +1410,26 @@ export class Rooms extends Base {
 		return this.findOne(query, options);
 	}
 
-	findByDirectRoomId(uid, cuid, options) {
-		const rid = [uid, cuid].sort().join('');
-		const query = { _id: rid, t: 'd' };
+	findByDirectRoomId(rid, options) {
+		const query = {
+			_id: rid,
+			t: 'd',
+		};
 		return this.findOne(query, options);
+	}
+
+	shutStrangerById(rid) {
+		const query = {
+			_id: rid,
+		};
+
+		const update = {
+			$set: {
+				stranger: false,
+			},
+		};
+
+		return this.update(query, update);
 	}
 }
 

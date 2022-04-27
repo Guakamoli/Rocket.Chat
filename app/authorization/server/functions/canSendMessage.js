@@ -3,7 +3,6 @@ import { hasPermissionAsync } from './hasPermission';
 import { Subscriptions, Rooms, Contacts } from '../../../models/server/raw';
 import { roomTypes, RoomMemberActions } from '../../../utils/server';
 import { settings } from '../../../settings';
-import { addContacts } from '../../../../imports/kameo/server';
 
 const subscriptionOptions = {
 	projection: {
@@ -39,31 +38,35 @@ export const validateRoomMessagePermissionsAsync = async (room, { uid, username,
 		throw new Error('You_have_been_muted');
 	}
 
-	if (room.t === 'd' && room?.uids?.length === 2) {
-		const cuid = room.uids.filter((u) => u !== uid).join('');
-		const hasContacts = await Contacts.findOneByUserId(uid, cuid);
-		const hasBlocked = hasContacts?.blocked || hasContacts?.blocker;
+	if (room.t === 'd' && room?.uids?.length === 2 && Boolean(room?.stranger)) {
+		const receiverId = room.uids.filter((u) => u !== uid).join('');
+		const contacts = await Contacts.findOneByUserId(uid, receiverId);
+		const hasBlocked = contacts?.blocked || contacts?.blocker;
 		if (hasBlocked) {
 			throw new Error('room_is_blocked');
 		}
 
-		const hasFollow = ['F', 'B'].includes(hasContacts?.relation);
-		const hasFollowByContact = await Contacts.findOneByIdAndFollow(cuid, uid);
+		const subscription = await Subscriptions.findOneByRoomIdAndUserId(room._id, uid);
+		if (subscription) {
+			const receiverSubscription = await Subscriptions.findOneByRoomIdAndUserId(room._id, receiverId);
+			if (receiverSubscription && !receiverSubscription?.stranger) {
+				Subscriptions.initStrangerByUserId(room._id, receiverId);
+			}
 
-		if (!hasFollow && hasFollowByContact) {
-			const contact = addContacts(uid, cuid);
-			Subscriptions.unsetInitialSentByUserId(room._id, contact.cu._id);
-		}
-
-		if (hasFollow && !hasFollowByContact) {
-			const subscription = await Subscriptions.findOneByRoomIdAndUserId(room._id, uid);
-			if (subscription) {
-				const initialSent = Number(subscription?.initialSent ?? 0);
-				if (initialSent >= settings.get('Message_AllowSend_Quantity')) {
+			const stranger = subscription?.stranger;
+			const receiverStranger = receiverSubscription?.stranger || { initiator: false, c: 0 };
+			if (!receiverStranger?.initiator) {
+				if (Number(stranger?.c || 0) >= settings.get('Message_AllowSend_Quantity')) {
 					throw new Error('Message_sent_limit_exceeded');
 				}
 
-				Subscriptions.incInitialSentByUserId(room._id, uid);
+				Subscriptions.incStrangerSenderCountByUserId(room._id, uid);
+			}
+
+			if (receiverStranger?.initiator) {
+				Subscriptions.removeStrangerByUserId(room._id, uid);
+				Subscriptions.removeStrangerByUserId(room._id, receiverId);
+				Rooms.shutStrangerById(room._id);
 			}
 		}
 	}
