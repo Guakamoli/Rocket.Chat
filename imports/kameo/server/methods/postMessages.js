@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor';
-import { check } from 'meteor/check';
+import { Match, check } from 'meteor/check';
 import mem from 'mem';
 
 import { Messages, Rooms, Users } from '../../../../app/models';
@@ -12,8 +12,9 @@ const getContactRelationCached = mem((uid, cuid) => {
 }, { maxAge: 5000 });
 
 Meteor.methods({
-	kameoPostMessages(messages) {
+	kameoPostMessages(messages, type) {
 		check(messages, [String]);
+		check(type, Match.Optional(Match.OneOf('homepage')));
 
 		const hasInternal = process.env.ROCKETCHAT_INTERNAL_API_ENABLE === 'true';
 		return messages.map((msgId) => {
@@ -21,6 +22,10 @@ Meteor.methods({
 
 			if (!msg) {
 				return undefined;
+			}
+
+			if (type === 'homepage') {
+				msg.latestComment = Messages.findOneLatestById(msg.drid, msg.u._id);
 			}
 
 			msg.u = {
