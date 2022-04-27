@@ -1294,6 +1294,10 @@ export class Messages extends Base {
 
 		return this.find(query, options);
 	}
+
+	findLatestByRid(query, options) {
+		return this.findOne(query, options);
+	}
 }
 
 export default new Messages();

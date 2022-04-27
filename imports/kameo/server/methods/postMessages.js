@@ -12,15 +12,22 @@ const getContactRelationCached = mem((uid, cuid) => {
 }, { maxAge: 5000 });
 
 Meteor.methods({
-	kameoPostMessages(messages) {
+	kameoPostMessages(messages, type = '') {
 		check(messages, [String]);
+		check(type, String);
 
 		const hasInternal = process.env.ROCKETCHAT_INTERNAL_API_ENABLE === 'true';
 		return messages.map((msgId) => {
 			const msg = Messages.findOneById(msgId);
+			let latestComment = null;
 
 			if (!msg) {
 				return undefined;
+			}
+
+			if (type === 'homepage') {
+				latestComment = Messages.findLatestByRid({ rid: msg.drid, 'u._id': { $ne: msg.u._id } }, { sort: { ts: -1 } });
+				msg.latestComment = latestComment;
 			}
 
 			msg.u = {
