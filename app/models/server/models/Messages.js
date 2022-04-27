@@ -1295,8 +1295,13 @@ export class Messages extends Base {
 		return this.find(query, options);
 	}
 
-	findLatestByRid(query, options) {
-		return this.findOne(query, options);
+	findOneLatestById(rid, uid, options) {
+		const query = {
+			rid,
+			'u._id': uid,
+		};
+
+		return this.findOne(query, { sort: { ts: -1 }, ...options });
 	}
 }
 
