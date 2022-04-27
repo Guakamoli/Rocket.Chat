@@ -35,6 +35,13 @@ callbacks.add('afterSetReaction', (message, { user, reaction }) => {
 			mentions: [{ ...message.u }],
 		};
 		Meteor.call('kameoBotForwardMessage', notificationMessage, user);
+
+		if ('usernames' in message.reactions[reaction]) {
+			const { usernames } = message.reactions[reaction];
+			const users = Meteor.users.find({ username: { $in: usernames } }, { fields: { _id: 1 } }).fetch();
+			const updateMessage = { messageId: message._id, reactions: (users || []).map((u) => u._id) };
+			Meteor.call('kameoRocketmqSendPostMessage', updateMessage);
+		}
 	}
 }, callbacks.priority.MEDIUM, 'kameo_after_set_reaction_to_notification');
 
