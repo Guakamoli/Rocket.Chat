@@ -15,7 +15,7 @@ const fields = {
 	blocker: 1,
 };
 
-const getContactUserCached = mem((userId, username) => {
+const getContactUserCached = mem(({ userId, username }) => {
 	const user = Meteor.users.findOne({ _id: userId, username }, {
 		projection: { name: 1, 'customFields.note': 1 },
 	});
@@ -25,7 +25,7 @@ const getContactUserCached = mem((userId, username) => {
 		name: user?.name,
 		note: user?.customFields?.note || '',
 	};
-}, { maxAge: 10000 });
+}, { maxAge: 1000 });
 
 API.v1.addRoute('contacts.add', { authRequired: true }, {
 	post() {
@@ -74,7 +74,7 @@ API.v1.addRoute('contacts.list', { authRequired: true }, {
 		}).fetch();
 		if (contacts) {
 			contacts.forEach((contact) => {
-				const cu = getContactUserCached(contact.cu._id, contact.cu.username);
+				const cu = getContactUserCached({ userId: contact.cu._id, username: contact.cu.username });
 				if (cu) {
 					contact.cu = cu;
 				}
@@ -109,7 +109,7 @@ API.v1.addRoute('contacts.fans', { authRequired: true }, {
 		const contacts = cursor.fetch();
 		if (contacts) {
 			contacts.forEach((contact) => {
-				const cu = getContactUserCached(contact.u._id, contact.u.username);
+				const cu = getContactUserCached({ userId: contact.u._id, username: contact.u.username });
 				if (cu) {
 					contact.cu = cu;
 				}
@@ -231,7 +231,7 @@ API.v1.addRoute('contacts.followers', { authRequired: true }, {
 		}).fetch();
 		if (contacts) {
 			contacts.forEach((contact) => {
-				const cu = getContactUserCached(contact.cu._id, contact.cu.username);
+				const cu = getContactUserCached({ userId: contact.cu._id, username: contact.cu.username });
 				if (cu) {
 					contact.cu = cu;
 				}

@@ -6,10 +6,10 @@ import { Messages, Rooms, Users } from '../../../../app/models';
 import { Contacts } from '../models';
 import { sendMessage } from '../../../../app/lib/server/functions';
 
-const getContactRelationCached = mem((uid, cuid) => {
+const getContactRelationCached = mem(({ uid, cuid }) => {
 	const contact = Contacts.findById(uid, cuid, { projection: { relation: 1 } });
 	return contact?.relation || 'N';
-}, { maxAge: 5000 });
+}, { maxAge: 1000 });
 
 Meteor.methods({
 	kameoPostMessages(messages, type) {
@@ -25,12 +25,12 @@ Meteor.methods({
 			}
 
 			if (type === 'homepage') {
-				msg.latestComment = Messages.findOneLatestById(msg.drid, msg.u._id);
+				msg.latestComment = Messages.findOneLatestById(msg.drid);
 			}
 
 			msg.u = {
 				...msg.u,
-				relation: !hasInternal ? getContactRelationCached(Meteor.userId(), msg.u._id) : 'N',
+				relation: !hasInternal ? getContactRelationCached({ uid: Meteor.userId(), cuid: msg.u._id }) : 'N',
 			};
 
 			return msg;

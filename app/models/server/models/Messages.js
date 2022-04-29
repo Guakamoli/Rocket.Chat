@@ -1295,11 +1295,14 @@ export class Messages extends Base {
 		return this.find(query, options);
 	}
 
-	findOneLatestById(rid, uid, options) {
+	findOneLatestById(rid, options) {
 		const query = {
 			rid,
-			'u._id': {
-				$ne: uid,
+			t: {
+				$exists: false,
+			},
+			msg: {
+				$exists: true,
 			},
 		};
 
