@@ -11,6 +11,11 @@ const getContactRelationCached = mem(({ uid, cuid }) => {
 	return contact?.relation || 'N';
 }, { maxAge: 1000 });
 
+const getUserNameCached = mem((userId) => {
+	const user = Users.findOne(userId, { projection: { name: 1 } });
+	return user?.name || '';
+}, { maxAge: 1000 });
+
 Meteor.methods({
 	kameoPostMessages(messages, type) {
 		check(messages, [String]);
@@ -25,7 +30,15 @@ Meteor.methods({
 			}
 
 			if (type === 'homepage') {
-				msg.latestComment = Messages.findOneLatestById(msg.drid);
+				const comment = Messages.findOneLatestById(msg.drid);
+				if (comment) {
+					comment.u = {
+						...comment.u,
+						name: getUserNameCached(comment.u._id),
+					};
+				}
+
+				msg.latestComment = comment;
 			}
 
 			msg.u = {
