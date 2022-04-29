@@ -78,6 +78,10 @@ export const sendNotification = async ({
 
 	notificationMessage = parseMessageTextPerUser(notificationMessage, message, receiver);
 
+	if (notificationMessage === room.fname) {
+		return;
+	}
+
 	switch (message.t) {
 		case 'story':
 		case 'post':
