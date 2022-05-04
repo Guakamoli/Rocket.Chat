@@ -725,7 +725,18 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 		if (!messageId) {
 			throw new Meteor.Error('error-invalid-params', 'The required "messageId" query param is missing.');
 		}
-		const msg = Messages.findOne({ _id: messageId, t: { $in: ['post', 'story'] } });
+		const msg = Messages.findOne({
+			_id: messageId,
+			t: {
+				$in: ['post', 'story'],
+			},
+			attachments: {
+				$exists: true,
+			},
+			_hidden: {
+				$ne: true,
+			},
+		});
 		if (!msg) {
 			throw new Meteor.Error('error-message-not-found', 'Message not exists');
 		}
@@ -773,7 +784,7 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 
 API.v1.addRoute('chat.audit', { authRequired: true }, {
 	post() {
-		const { messageId, mediaId, mediaType, pass, url, eventType } = this.bodyParams;
+		const { messageId, mediaId, mediaType, pass, url, eventType, source } = this.bodyParams;
 
 		if (!messageId && !mediaId) {
 			return API.v1.success('The parameter "messageId" or "mediaId" is required');
@@ -790,7 +801,8 @@ API.v1.addRoute('chat.audit', { authRequired: true }, {
 			return API.v1.success({ message: 'Message not found' });
 		}
 
-		if ((msg?.metadata?.audit?.workflows || []).includes(eventType)) {
+		const allowWorkflows = (msg?.metadata?.audit?.workflows || []).filter((w) => w !== 'CustomMediaAudit');
+		if (allowWorkflows.includes(eventType)) {
 			return API.v1.success({ message: 'workflows eventType existing' });
 		}
 
@@ -801,9 +813,10 @@ API.v1.addRoute('chat.audit', { authRequired: true }, {
 			eventType,
 		};
 
-		const allowAuditEventType = ['AIMediaAuditComplete', 'CreateAuditComplete', 'KameoImageAudit', 'KameoImageAuditArtificially'];
+		const allowAuditEventType = ['AIMediaAuditComplete', 'CreateAuditComplete', 'KameoImageAudit', 'CustomMediaAudit'];
 		if (allowAuditEventType.includes(eventType)) {
 			audit.state = pass ? 'pass' : 'review';
+			audit.source = source;
 		}
 
 		if (mediaType === 'video' && eventType === 'StreamTranscodeComplete') {
@@ -827,5 +840,51 @@ API.v1.addRoute('chat.audit', { authRequired: true }, {
 		updateMessage(newMsg, user, msg);
 
 		return API.v1.success({ messageId, mediaType, pass });
+	},
+});
+
+API.v1.addRoute('chat.getPostMessages', { authRequired: false }, {
+	get() {
+		const secret = process.env.INTERNAL_X_SECRET || '';
+		const xSecret = this.request.headers['x-secret'] ?? '';
+		if (secret !== xSecret) {
+			throw new Meteor.Error('error-not-allowed', 'Not Allowed');
+		}
+
+		const { query, fields, sort } = this.parseJsonQuery();
+		const { offset, count } = this.getPaginationItems();
+
+		const extraQuery = {
+			t: {
+				$in: ['post', 'story'],
+			},
+			attachments: {
+				$exists: true,
+			},
+			'metadata.audit': {
+				$exists: true,
+			},
+			_hidden: {
+				$ne: true,
+			},
+		};
+
+		const cursor = Messages.find({ ...query, ...extraQuery }, {
+			sort: sort || { ts: -1 },
+			skip: offset,
+			limit: count,
+			fields,
+		});
+
+		const total = cursor.count();
+
+		const messages = cursor.fetch();
+
+		return API.v1.success({
+			messages,
+			count: messages.length,
+			offset,
+			total,
+		});
 	},
 });
