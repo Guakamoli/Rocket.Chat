@@ -63,25 +63,27 @@ callbacks.add('afterSaveMessage', function(message, room = {}) {
 		return message;
 	}
 
-	if (message?.metadata?.audit?.state === 'pass' && room._id) {
-		if (message.t === messageTypePost) {
+	if (room._id && message.t === messageTypePost) {
+		const plainText = !('attachments' in message);
+		if (message?.metadata?.audit?.state === 'pass' || plainText) {
 			Meteor.call('kameoRocketmqSendPostMessage', {
 				messageId: message._id,
 				ts: message.ts,
 				influencerId: message.u._id,
 				public: message.public || false, // 兼容没有免费作品的情况
 				msg: message.msg || '',
+				plainText,
 			});
-		}
 
-		Meteor.runAsUser(message.u._id, () => Meteor.call('createDiscussion', {
-			prid: room._id,
-			pmid: message._id,
-			t_name: `discussion-${ message._id }`,
-			reply: '',
-			users: [],
-			encrypted: false,
-		}));
+			Meteor.runAsUser(message.u._id, () => Meteor.call('createDiscussion', {
+				prid: room._id,
+				pmid: message._id,
+				t_name: `discussion-${ message._id }`,
+				reply: '',
+				users: [],
+				encrypted: false,
+			}));
+		}
 	}
 
 	return message;
