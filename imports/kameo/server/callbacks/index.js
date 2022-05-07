@@ -14,7 +14,7 @@ const allowPushReactions = [':heart:', ':+1:'];
 // 机器人转发点赞消息至收件人通知
 callbacks.add('afterSetReaction', (message, { user, reaction }) => {
 	if (!allowPushReactions.includes(reaction)) {
-		return;
+		return message;
 	}
 
 	if (message.u._id !== user._id) {
@@ -43,6 +43,8 @@ callbacks.add('afterSetReaction', (message, { user, reaction }) => {
 			Meteor.call('kameoRocketmqSendPostMessage', updateMessage);
 		}
 	}
+
+	return message;
 }, callbacks.priority.MEDIUM, 'kameo_after_set_reaction_to_notification');
 
 // 标记推荐消息删除
@@ -58,11 +60,11 @@ callbacks.add('afterDeleteMessage', function(message) {
 // 保存消息时创建 discussion, 并转发消息至推荐系统
 callbacks.add('afterSaveMessage', function(message, room = {}) {
 	if (!allowMediaMessageTypes.includes(message.t)) {
-		return;
+		return message;
 	}
 
 	if (message.editedAt) {
-		return;
+		return message;
 	}
 
 	if (message?.metadata?.audit?.state === 'pass' && room._id) {
@@ -85,16 +87,18 @@ callbacks.add('afterSaveMessage', function(message, room = {}) {
 			encrypted: false,
 		}));
 	}
+
+	return message;
 }, callbacks.priority.HIGH, 'kameo_after_save_post_message');
 
 // 评论作品及回复评论
 callbacks.add('afterSaveMessage', function(message) {
 	if (allowMediaMessageTypes.includes(message.t)) {
-		return;
+		return message;
 	}
 
 	if (message.t === messageTypeActivity && message.metadata.category === 'system') {
-		return;
+		return message;
 	}
 
 	if (message.rid && message.msg) {
@@ -114,4 +118,6 @@ callbacks.add('afterSaveMessage', function(message) {
 		};
 		Meteor.call('kameoBotForwardMessage', notificationMessage, message.u);
 	}
+
+	return message;
 }, callbacks.priority.HIGH, 'kameo_after_save_activity_message');
