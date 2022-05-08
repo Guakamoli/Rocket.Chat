@@ -63,10 +63,6 @@ callbacks.add('afterSaveMessage', function(message, room = {}) {
 		return message;
 	}
 
-	if (message.editedAt) {
-		return message;
-	}
-
 	if (message?.metadata?.audit?.state === 'pass' && room._id) {
 		if (message.t === messageTypePost) {
 			Meteor.call('kameoRocketmqSendPostMessage', {
