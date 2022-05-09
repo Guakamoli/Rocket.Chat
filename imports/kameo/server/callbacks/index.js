@@ -63,9 +63,9 @@ callbacks.add('afterSaveMessage', function(message, room = {}) {
 		return message;
 	}
 
-	if (room._id && message.t === messageTypePost) {
-		const plainText = !('attachments' in message);
-		if (message?.metadata?.audit?.state === 'pass' || plainText) {
+	const plainText = !('attachments' in message);
+	if (room._id && (message?.metadata?.audit?.state === 'pass' || plainText)) {
+		if (message.t === messageTypePost) {
 			Meteor.call('kameoRocketmqSendPostMessage', {
 				messageId: message._id,
 				ts: message.ts,
@@ -74,16 +74,16 @@ callbacks.add('afterSaveMessage', function(message, room = {}) {
 				msg: message.msg || '',
 				plainText,
 			});
-
-			Meteor.runAsUser(message.u._id, () => Meteor.call('createDiscussion', {
-				prid: room._id,
-				pmid: message._id,
-				t_name: `discussion-${ message._id }`,
-				reply: '',
-				users: [],
-				encrypted: false,
-			}));
 		}
+
+		Meteor.runAsUser(message.u._id, () => Meteor.call('createDiscussion', {
+			prid: room._id,
+			pmid: message._id,
+			t_name: `discussion-${ message._id }`,
+			reply: '',
+			users: [],
+			encrypted: false,
+		}));
 	}
 
 	return message;
