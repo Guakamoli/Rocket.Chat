@@ -174,7 +174,7 @@
 		"@rocket.chat/fuselage-hooks": "^0.29.0",
 		"@rocket.chat/fuselage-polyfills": "^0.29.0",
 		"@rocket.chat/fuselage-tokens": "^0.29.0",
-		"@rocket.chat/fuselage-ui-kit": "^0.29.0",
+		"@rocket.chat/fuselage-ui-kit": "^0.31.11",
 		"@rocket.chat/icons": "^0.29.0",
 		"@rocket.chat/memo": "^0.29.0",
 		"@rocket.chat/message-parser": "^0.29.0",
