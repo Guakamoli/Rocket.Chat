@@ -733,11 +733,16 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 			attachments: {
 				$exists: true,
 			},
+			'metadata.audit': {
+				$exists: true,
+			},
 			_hidden: {
 				$ne: true,
 			},
 		});
-		if (!msg) {
+		const auditState = msg?.metadata?.audit?.state ?? 'review';
+
+		if (!msg || auditState === 'review') {
 			throw new Meteor.Error('error-message-not-found', 'Message not exists');
 		}
 		const serverUri = settings.get('Site_Url');
@@ -754,7 +759,7 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 			image_height: 0,
 		};
 
-		if (attachment) {
+		if (attachment && auditState === 'pass') {
 			if (userAvatar) {
 				userAvatar = `${ serverUri }/avatar/${ userAvatar }`;
 			}
@@ -775,6 +780,7 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 			coverUri,
 			t,
 			...mediaAttach,
+			auditState,
 		};
 		return API.v1.success({
 			data,
