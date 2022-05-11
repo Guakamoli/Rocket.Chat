@@ -68,7 +68,6 @@ API.v1.addRoute('rooms.get', { authRequired: true }, {
 API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 	post() {
 		const room = Meteor.call('canAccessRoom', this.urlParams.rid, this.userId);
-
 		if (!room) {
 			return API.v1.unauthorized();
 		}
@@ -76,6 +75,7 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 		const { file, ...fields } = Promise.await(getUploadFormData({
 			request: this.request,
 		}));
+
 		let fileList = fields['file[]'];
 		if (fileList) {
 			fileList = fileList.map((i) => JSON.parse(i));
@@ -83,34 +83,33 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 		Reflect.deleteProperty(fields, 'file[]');
 
 		if (!fileList) {
-			if (!file) {
-				throw new Meteor.Error('invalid-field');
-			}
-			const details = {
-				name: file.filename,
-				size: file.fileBuffer.length,
-				type: file.mimetype,
-				rid: this.urlParams.rid,
-				userId: this.userId,
-			};
+			if (file) {
+				const details = {
+					name: file.filename,
+					size: file.fileBuffer.length,
+					type: file.mimetype,
+					rid: this.urlParams.rid,
+					userId: this.userId,
+				};
 
-			const stripExif = settings.get('Message_Attachments_Strip_Exif');
-			const fileStore = FileUpload.getStore('Uploads');
-			if (stripExif) {
-				// No need to check mime. Library will ignore any files without exif/xmp tags (like BMP, ico, PDF, etc)
-				file.fileBuffer = Promise.await(Media.stripExifFromBuffer(file.fileBuffer));
-			}
-			const uploadedFile = fileStore.insertSync(details, file.fileBuffer);
+				const stripExif = settings.get('Message_Attachments_Strip_Exif');
+				const fileStore = FileUpload.getStore('Uploads');
+				if (stripExif) {
+					// No need to check mime. Library will ignore any files without exif/xmp tags (like BMP, ico, PDF, etc)
+					file.fileBuffer = Promise.await(Media.stripExifFromBuffer(file.fileBuffer));
+				}
+				const uploadedFile = fileStore.insertSync(details, file.fileBuffer);
 
-			uploadedFile.description = fields.description;
-			uploadedFile.uri = uploadedFile.url;
-			fileList = [uploadedFile];
-			delete fields.description;
-			if (fields.width && fields.height) {
-				uploadedFile.width = Number(fields.width);
-				uploadedFile.height = Number(fields.height);
-				delete fields.width;
-				delete fields.height;
+				uploadedFile.description = fields.description;
+				uploadedFile.uri = uploadedFile.url;
+				fileList = [uploadedFile];
+				delete fields.description;
+				if (fields.width && fields.height) {
+					uploadedFile.width = Number(fields.width);
+					uploadedFile.height = Number(fields.height);
+					delete fields.width;
+					delete fields.height;
+				}
 			}
 		}
 
@@ -119,12 +118,22 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 		const messageType = this.request.headers['x-upload-type'] || null;
 		if (messageType && ['post', 'story'].includes(messageType)) {
 			fields.t = messageType;
-			fields.metadata = {
-				audit: { state: 'audit' },
-			};
+			if (fileList || file) {
+				fields.metadata = {
+					audit: { state: 'audit' },
+				};
+			}
 		}
 		SystemLogger.debug('rooms.upload/:rid', this.request.headers, messageType, fields);
-		Meteor.call('sendFileMessage', this.urlParams.rid, null, fileList, fields);
+		if (!fileList && !file) {
+			Meteor.call('sendMessage', {
+				ts: new Date(),
+				rid: room._id,
+				...fields,
+			});
+		} else {
+			Meteor.call('sendFileMessage', this.urlParams.rid, null, fileList, fields);
+		}
 		return API.v1.success({ message: Messages.findOneByRoomIdAndMessageId(this.urlParams.rid, fields._id) });
 	},
 });
