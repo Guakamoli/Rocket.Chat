@@ -78,7 +78,7 @@ export function blockContacts(userId, cuid) {
 	const rid = [u._id, cu._id].sort().join('');
 	const room = Rooms.findByDirectRoomId(rid);
 	if (room) {
-		Meteor.call('blockUser', { rid: room._id, blocked: cu._id, type: 'direct' });
+		Meteor.runAsUser(u._id, () => Meteor.call('blockUser', { rid: room._id, blocked: cu._id, type: 'direct' }));
 	}
 }
 
@@ -106,7 +106,7 @@ export function unblockContacts(userId, cuid) {
 		const rid = [u._id, cu._id].sort().join('');
 		const room = Rooms.findByDirectRoomId(rid);
 		if (room) {
-			Meteor.call('unblockUser', { rid: room._id, blocked: cu._id, type: 'direct' });
+			Meteor.runAsUser(u._id, () => Meteor.call('unblockUser', { rid: room._id, blocked: cu._id, type: 'direct' }));
 		}
 	}
 }
