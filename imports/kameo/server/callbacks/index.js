@@ -63,7 +63,8 @@ callbacks.add('afterSaveMessage', function(message, room = {}) {
 		return message;
 	}
 
-	if (message?.metadata?.audit?.state === 'pass' && room._id) {
+	const plainText = !('attachments' in message);
+	if (room._id && (message?.metadata?.audit?.state === 'pass' || plainText)) {
 		if (message.t === messageTypePost) {
 			Meteor.call('kameoRocketmqSendPostMessage', {
 				messageId: message._id,
@@ -71,6 +72,7 @@ callbacks.add('afterSaveMessage', function(message, room = {}) {
 				influencerId: message.u._id,
 				public: message.public || false, // 兼容没有免费作品的情况
 				msg: message.msg || '',
+				plainText,
 			});
 		}
 
