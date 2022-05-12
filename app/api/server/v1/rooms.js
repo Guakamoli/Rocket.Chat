@@ -118,10 +118,11 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 		const messageType = this.request.headers['x-upload-type'] || null;
 		if (messageType && ['post', 'story'].includes(messageType)) {
 			fields.t = messageType;
-			if (fileList || file) {
-				fields.metadata = {
-					audit: { state: 'audit' },
-				};
+			fields.metadata = {
+				audit: { state: 'audit' },
+			};
+			if (!fileList && !file) {
+				fields.metadata.audit.state = 'pass';
 			}
 		}
 		SystemLogger.debug('rooms.upload/:rid', this.request.headers, messageType, fields);
