@@ -68,6 +68,7 @@ API.v1.addRoute('rooms.get', { authRequired: true }, {
 API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 	post() {
 		const room = Meteor.call('canAccessRoom', this.urlParams.rid, this.userId);
+
 		if (!room) {
 			return API.v1.unauthorized();
 		}
@@ -75,7 +76,6 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 		const { file, ...fields } = Promise.await(getUploadFormData({
 			request: this.request,
 		}));
-
 		let fileList = fields['file[]'];
 		if (fileList) {
 			fileList = fileList.map((i) => JSON.parse(i));
