@@ -78,7 +78,7 @@ export function blockContacts(userId, cuid) {
 	const rid = [u._id, cu._id].sort().join('');
 	const room = Rooms.findByDirectRoomId(rid);
 	if (room) {
-		Meteor.call('blockUser', { rid: room._id, blocked: cu._id, type: 'direct' });
+		Meteor.runAsUser(u._id, () => Meteor.call('blockUser', { rid: room._id, blocked: cu._id, type: 'direct' }));
 	}
 }
 
@@ -98,16 +98,16 @@ export function unblockContacts(userId, cuid) {
 		const options = {};
 		if (!contact.blocker) {
 			options.relation = 'N';
-
-			// 在私聊中unblock对方
-			const rid = [u._id, cu._id].sort().join('');
-			const room = Rooms.findByDirectRoomId(rid);
-			if (room) {
-				Meteor.call('unblockUser', { rid: room._id, blocked: cu._id, type: 'direct' });
-			}
 		}
 		Contacts.unblockedUser(u._id, cu._id, { blocked: false, ...options });
 		Contacts.unblockedUser(cu._id, u._id, { blocker: false, ...options });
+
+		// 在私聊中unblock对方
+		const rid = [u._id, cu._id].sort().join('');
+		const room = Rooms.findByDirectRoomId(rid);
+		if (room) {
+			Meteor.runAsUser(u._id, () => Meteor.call('unblockUser', { rid: room._id, blocked: cu._id, type: 'direct' }));
+		}
 	}
 }
 
