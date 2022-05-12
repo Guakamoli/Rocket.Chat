@@ -63,15 +63,23 @@ export function blockContacts(userId, cuid) {
 	Contacts.blockedUser({ _id: cu._id, username: cu.username }, { _id: u._id, username: u.username }, { relation: 'D', blocker: true });
 
 	// 退出各自的房间
-	if (cu?.customFields?.defaultChannel && u.__rooms.includes(cu?.customFields?.defaultChannel)) {
-		Meteor.runAsUser(u._id, () => {
-			Meteor.call('leaveRoom', cu?.customFields?.defaultChannel);
-		});
+	if (cu?.customFields?.defaultChannel && u?.__rooms?.includes?.(cu?.customFields?.defaultChannel)) {
+		try {
+			Meteor.runAsUser(u._id, () => {
+				Meteor.call('leaveRoom', cu?.customFields?.defaultChannel);
+			});
+		} catch (err) {
+			console.error('Function blockContacts() error,', err);
+		}
 	}
-	if (u?.customFields?.defaultChannel && cu.__rooms.includes(u?.customFields?.defaultChannel)) {
-		Meteor.runAsUser(cu._id, () => {
-			Meteor.call('leaveRoom', u?.customFields?.defaultChannel);
-		});
+	if (u?.customFields?.defaultChannel && cu?.__rooms?.includes?.(u?.customFields?.defaultChannel)) {
+		try {
+			Meteor.runAsUser(cu._id, () => {
+				Meteor.call('leaveRoom', u?.customFields?.defaultChannel);
+			});
+		} catch (err) {
+			console.error('Function blockContacts() error,', err);
+		}
 	}
 
 	// 在私聊中blocked对方
