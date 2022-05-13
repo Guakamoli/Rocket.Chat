@@ -731,7 +731,7 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 				$in: ['post', 'story'],
 			},
 			attachments: {
-				$exists: true,
+				$gt: { $size: 0 },
 			},
 			'metadata.audit': {
 				$exists: true,
@@ -865,7 +865,7 @@ API.v1.addRoute('chat.getPostMessages', { authRequired: false }, {
 				$in: ['post', 'story'],
 			},
 			attachments: {
-				$exists: true,
+				$gt: { $size: 0 },
 			},
 			'metadata.audit': {
 				$exists: true,
