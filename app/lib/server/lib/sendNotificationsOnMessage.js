@@ -403,6 +403,10 @@ export async function sendAllNotifications(message, room) {
 	}
 
 	if (allowMediaMessageTypes.includes(message.t)) {
+		if (message.t === 'story') {
+			return message;
+		}
+
 		const hasPass = message?.metadata?.audit?.state === 'pass';
 		if (!(message.attachments && message.attachments[0] && hasPass)) {
 			return message;
