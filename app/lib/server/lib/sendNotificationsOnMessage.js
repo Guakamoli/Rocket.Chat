@@ -379,6 +379,10 @@ const allowMediaMessageTypes = ['post', 'story'];
 const allowAuditEventType = ['AIMediaAuditComplete', 'CreateAuditComplete', 'KameoImageAudit', 'KameoImageAuditArtificially'];
 
 export async function sendAllNotifications(message, room) {
+	if (!room || room.t == null) {
+		return message;
+	}
+
 	if (!allowMediaMessageTypes.includes(message.t)) {
 		if (TroubleshootDisableNotifications === true) {
 			return message;
@@ -403,10 +407,6 @@ export async function sendAllNotifications(message, room) {
 		if (message.ts && Math.abs(moment(message.ts).diff()) > 60000) {
 			return message;
 		}
-	}
-
-	if (!room || room.t == null) {
-		return message;
 	}
 
 	if (allowMediaMessageTypes.includes(message.t)) {
