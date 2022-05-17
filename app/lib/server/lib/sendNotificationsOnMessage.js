@@ -4,7 +4,7 @@ import moment from 'moment';
 import { hasPermission } from '../../../authorization';
 import { settings } from '../../../settings';
 import { callbacks } from '../../../callbacks/server';
-import { Subscriptions, Users } from '../../../models/server';
+import { Subscriptions, Users, Rooms } from '../../../models/server';
 import { roomTypes } from '../../../utils';
 import { callJoinRoom, messageContainsHighlight, parseMessageTextPerUser, replaceMentionedUsernamesWithFullNames } from '../functions/notifications';
 import { getEmailData, shouldNotifyEmail } from '../functions/notifications/email';
@@ -379,9 +379,20 @@ const allowMediaMessageTypes = ['post', 'story'];
 const allowAuditEventType = ['AIMediaAuditComplete', 'CreateAuditComplete', 'KameoImageAudit', 'KameoImageAuditArtificially'];
 
 export async function sendAllNotifications(message, room) {
+	if (!room || room.t == null) {
+		return message;
+	}
+
 	if (!allowMediaMessageTypes.includes(message.t)) {
 		if (TroubleshootDisableNotifications === true) {
 			return message;
+		}
+
+		if (room.prid) {
+			const proom = Rooms.findOneById(room.prid);
+			if (proom.t === 'c' && 'individualMain' in proom && proom.individualMain) {
+				return message;
+			}
 		}
 
 		// threads
@@ -396,10 +407,6 @@ export async function sendAllNotifications(message, room) {
 		if (message.ts && Math.abs(moment(message.ts).diff()) > 60000) {
 			return message;
 		}
-	}
-
-	if (!room || room.t == null) {
-		return message;
 	}
 
 	if (allowMediaMessageTypes.includes(message.t)) {
