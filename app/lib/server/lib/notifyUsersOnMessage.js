@@ -97,18 +97,36 @@ export function updateUsersSubscriptions(message, room) {
 		getUserIdsFromHighlights(room._id, message)
 			.forEach((uid) => userIds.add(uid));
 
+		console.info(unreadCount, room, '=====unreadCount====');
 		// give priority to user mentions over group mentions
 		if (userIds.size > 0) {
+			console.info(1);
 			incUserMentions(room._id, room.t, [...userIds], unreadCount);
 		} else if (toAll || toHere) {
+			console.info(2);
 			incGroupMentions(room._id, room.t, message.u._id, unreadCount);
 		}
 
 		// this shouldn't run only if has group mentions because it will already exclude mentioned users from the query
 		if (!toAll && !toHere && unreadCount === 'all_messages') {
+			console.info(message);
 			// Subscriptions.incUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
-			if (message.t === 'story') {
-				Subscriptions.incStoryUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
+			// if (message.t === 'story') {
+			// 	console.info(3);
+			// 	Subscriptions.incStoryUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
+			// } else {
+			// 	if ((room.individualMain && message.t === 'post') || !room.individualMain) {
+			// 		console.info(4);
+			// 		Subscriptions.incUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
+			// 	}
+			// }
+			if (room.individualMain) {
+				if (message.t === 'story') {
+					Subscriptions.incStoryUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
+				}
+				if (message.t === 'post') {
+					Subscriptions.incUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
+				}
 			} else {
 				Subscriptions.incUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
 			}
