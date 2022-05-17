@@ -64,9 +64,8 @@ Meteor.methods({
 
 				if (sender._id === threadMessage.u._id) {
 					message.mentions = message.mentions.filter((user) => user._id !== sender._id);
-				}
-
-				if (!message.mentions.some((mantion) => mantion._id === threadMessage.u._id)) {
+				} else {
+					// 如果一级评论不是发送人则追加提醒
 					message.mentions.push({ ...threadMessage.u });
 				}
 			}
