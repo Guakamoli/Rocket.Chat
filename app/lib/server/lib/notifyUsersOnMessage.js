@@ -106,7 +106,12 @@ export function updateUsersSubscriptions(message, room) {
 
 		// this shouldn't run only if has group mentions because it will already exclude mentioned users from the query
 		if (!toAll && !toHere && unreadCount === 'all_messages') {
-			Subscriptions.incUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
+			// Subscriptions.incUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
+			if (message.t === 'story') {
+				Subscriptions.incStoryUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
+			} else {
+				Subscriptions.incUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
+			}
 		}
 	}
 

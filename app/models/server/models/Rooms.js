@@ -901,8 +901,10 @@ export class Rooms extends Base {
 			update.$set.lastMessage = lastMessage;
 		}
 		if (lastMessage.t === 'story') {
-			update.$set.storyLastMessage = lastMessage;
-			update.$set.slm = lastMessageTimestamp;
+			update.$set.story = {
+				lastMessage,
+				lm: lastMessageTimestamp,
+			};
 		}
 		return this.update(query, update);
 	}
@@ -987,12 +989,15 @@ export class Rooms extends Base {
 			if (storyLastMessage) {
 				update.$set = {
 					...update?.$set,
-					storyLastMessage,
+					story: {
+						lm: storyLastMessage.ts,
+						lastMessage: storyLastMessage,
+					},
 				};
 			} else {
 				update.$unset = {
 					...update?.$unset,
-					storyLastMessage: 1,
+					'story.lastMessage': 1,
 				};
 			}
 		}

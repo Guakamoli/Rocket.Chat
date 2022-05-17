@@ -49,11 +49,11 @@ export const deleteMessage = function(message: IMessage, user: IUser): void {
 		});
 	}
 
-	const room = Rooms.findOneById(message.rid, { fields: { lastMessage: 1, prid: 1, mid: 1, storyLastMessage: 1 } });
+	const room = Rooms.findOneById(message.rid, { fields: { lastMessage: 1, prid: 1, mid: 1, story: 1 } });
 
 	// update last message
 	if (settings.get('Store_Last_Message')) {
-		if (!room.lastMessage || room.lastMessage._id === message._id || room.storyLastMessage?._id === message._id) {
+		if (!room.lastMessage || room.lastMessage._id === message._id || room?.story?.lastMessage?._id === message._id) {
 			Rooms.resetLastMessageById(message.rid, message._id, message.t);
 		}
 	}

@@ -59,6 +59,11 @@ export interface ISubscription extends IRocketChatRecord {
 
 	department?: unknown;
 	v?: unknown;
+
+	story?: {
+		unread: number;
+		ls?: Date;
+	};
 }
 
 export interface IOmnichannelSubscription extends ISubscription {
@@ -67,9 +72,4 @@ export interface IOmnichannelSubscription extends ISubscription {
 
 export interface ISubscriptionDirectMessage extends Omit<ISubscription, 'name'> {
 	t: 'd';
-}
-
-export interface IReadLs {
-	ls?: Date;
-	storyLs?: Date;
 }

@@ -10,6 +10,7 @@ import { RoomMemberActions, roomTypes } from '../../../utils/server';
 export const addUserToRoom = function(rid, user, inviter, silenced) {
 	const now = new Date();
 	const room = Rooms.findOneById(rid);
+	const extraData = {};
 
 	const roomConfig = roomTypes.getConfig(room.t);
 	if (!roomConfig.allowMemberAction(room, RoomMemberActions.JOIN) && !roomConfig.allowMemberAction(room, RoomMemberActions.INVITE)) {
@@ -48,6 +49,14 @@ export const addUserToRoom = function(rid, user, inviter, silenced) {
 		throw error;
 	}));
 
+	if (room.individualMain) {
+		extraData.unread = 0;
+		extraData.userMentions = 0;
+		extraData.story = {
+			ls: now,
+			unread: 0,
+		};
+	}
 	Subscriptions.createWithRoomAndUser(room, user, {
 		ts: now,
 		open: true,
@@ -55,6 +64,7 @@ export const addUserToRoom = function(rid, user, inviter, silenced) {
 		unread: 1,
 		userMentions: 1,
 		groupMentions: 0,
+		...extraData,
 	});
 
 	if (!silenced) {
