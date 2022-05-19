@@ -97,34 +97,20 @@ export function updateUsersSubscriptions(message, room) {
 		getUserIdsFromHighlights(room._id, message)
 			.forEach((uid) => userIds.add(uid));
 
-		console.info(unreadCount, room, '=====unreadCount====');
 		// give priority to user mentions over group mentions
 		if (userIds.size > 0) {
-			console.info(1);
 			incUserMentions(room._id, room.t, [...userIds], unreadCount);
 		} else if (toAll || toHere) {
-			console.info(2);
 			incGroupMentions(room._id, room.t, message.u._id, unreadCount);
 		}
 
 		// this shouldn't run only if has group mentions because it will already exclude mentioned users from the query
 		if (!toAll && !toHere && unreadCount === 'all_messages') {
-			console.info(message);
-			// Subscriptions.incUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
-			// if (message.t === 'story') {
-			// 	console.info(3);
-			// 	Subscriptions.incStoryUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
-			// } else {
-			// 	if ((room.individualMain && message.t === 'post') || !room.individualMain) {
-			// 		console.info(4);
-			// 		Subscriptions.incUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
-			// 	}
-			// }
 			if (room.individualMain) {
-				if (message.t === 'story') {
+				if (message.t === 'story' && message?.metadata?.audit?.state === 'pass') {
 					Subscriptions.incStoryUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
 				}
-				if (message.t === 'post') {
+				if (message.t === 'post' && message?.metadata?.audit?.state === 'pass') {
 					Subscriptions.incUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
 				}
 			} else {
@@ -154,32 +140,49 @@ export function updateThreadUsersSubscriptions(message, room, replies) {
 	Subscriptions.setLastReplyForRoomIdAndUserIds(message.rid, repliesPlusSender, new Date());
 }
 
+const allowMediaMessageTypes = ['post', 'story'];
+const allowAuditEventType = ['AIMediaAuditComplete', 'CreateAuditComplete', 'KameoImageAudit'];
+
 export function notifyUsersOnMessage(message, room) {
-	// skips this callback if the message was edited and increments it if the edit was way in the past (aka imported)
-	if (message.editedAt) {
-		if (Math.abs(moment(message.editedAt).diff()) > 60000) {
-			// TODO: Review as I am not sure how else to get around this as the incrementing of the msgs count shouldn't be in this callback
+	if (!allowMediaMessageTypes.includes(message.t)) {
+		// skips this callback if the message was edited and increments it if the edit was way in the past (aka imported)
+		if (message.editedAt) {
+			if (Math.abs(moment(message.editedAt).diff()) > 60000) {
+				// TODO: Review as I am not sure how else to get around this as the incrementing of the msgs count shouldn't be in this callback
+				Rooms.incMsgCountById(message.rid, 1);
+				return message;
+			}
+
+			// only updates last message if it was edited (skip rest of callback)
+			if (settings.get('Store_Last_Message') && (!message.tmid || message.tshow) && (!room.lastMessage || room.lastMessage._id === message._id)) {
+				Rooms.setLastMessageById(message.rid, message);
+			}
+
+			return message;
+		}
+
+		if (message.ts && Math.abs(moment(message.ts).diff()) > 60000) {
 			Rooms.incMsgCountById(message.rid, 1);
 			return message;
 		}
 
-		// only updates last message if it was edited (skip rest of callback)
-		if (settings.get('Store_Last_Message') && (!message.tmid || message.tshow) && (!room.lastMessage || room.lastMessage._id === message._id)) {
-			Rooms.setLastMessageById(message.rid, message);
+		// if message sent ONLY on a thread, skips the rest as it is done on a callback specific to threads
+		if (message.tmid && !message.tshow) {
+			Rooms.incMsgCountById(message.rid, 1);
+			return message;
+		}
+	}
+
+	if (allowMediaMessageTypes.includes(message.t)) {
+		const hasPass = message?.metadata?.audit?.state === 'pass';
+		if (!(message.attachments && message.attachments[0] && hasPass)) {
+			return message;
 		}
 
-		return message;
-	}
-
-	if (message.ts && Math.abs(moment(message.ts).diff()) > 60000) {
-		Rooms.incMsgCountById(message.rid, 1);
-		return message;
-	}
-
-	// if message sent ONLY on a thread, skips the rest as it is done on a callback specific to threads
-	if (message.tmid && !message.tshow) {
-		Rooms.incMsgCountById(message.rid, 1);
-		return message;
+		const hasAuditComplete = allowAuditEventType.includes(message?.metadata?.audit?.eventType);
+		if (!hasAuditComplete) {
+			return message;
+		}
 	}
 
 	// Update all the room activity tracker fields

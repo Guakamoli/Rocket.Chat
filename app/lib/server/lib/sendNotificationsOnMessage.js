@@ -376,7 +376,7 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 }
 
 const allowMediaMessageTypes = ['post', 'story'];
-const allowAuditEventType = ['AIMediaAuditComplete', 'CreateAuditComplete', 'KameoImageAudit', 'KameoImageAuditArtificially'];
+const allowAuditEventType = ['AIMediaAuditComplete', 'KameoImageAudit'];
 
 export async function sendAllNotifications(message, room) {
 	if (!allowMediaMessageTypes.includes(message.t)) {

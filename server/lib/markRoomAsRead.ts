@@ -17,8 +17,10 @@ export async function markRoomAsRead(rid: string, uid: string, t?: string): Prom
 		// updateFiled.storyLs = new Date();
 		updateFiled.story = {
 			...sub.story,
+			unread: 0,
 			ls: new Date(),
 		};
+		updateFiled.unread = undefined;
 	} else {
 		updateFiled.ls = new Date();
 	}
