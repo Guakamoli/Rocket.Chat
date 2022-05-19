@@ -14,7 +14,6 @@ export async function markRoomAsRead(rid: string, uid: string, t?: string): Prom
 	const alert = sub.alert && sub.tunread && sub.tunread.length > 0;
 	const updateFiled: any = {};
 	if (t === 'story') {
-		// updateFiled.storyLs = new Date();
 		updateFiled.story = {
 			...sub.story,
 			unread: 0,
