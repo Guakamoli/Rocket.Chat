@@ -106,7 +106,16 @@ export function updateUsersSubscriptions(message, room) {
 
 		// this shouldn't run only if has group mentions because it will already exclude mentioned users from the query
 		if (!toAll && !toHere && unreadCount === 'all_messages') {
-			Subscriptions.incUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
+			if (room.individualMain) {
+				if (message.t === 'story' && message?.metadata?.audit?.state === 'pass') {
+					Subscriptions.incStoryUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
+				}
+				if (message.t === 'post' && message?.metadata?.audit?.state === 'pass') {
+					Subscriptions.incUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
+				}
+			} else {
+				Subscriptions.incUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
+			}
 		}
 	}
 
@@ -131,32 +140,49 @@ export function updateThreadUsersSubscriptions(message, room, replies) {
 	Subscriptions.setLastReplyForRoomIdAndUserIds(message.rid, repliesPlusSender, new Date());
 }
 
+const allowMediaMessageTypes = ['post', 'story'];
+const allowAuditEventType = ['AIMediaAuditComplete', 'KameoImageAudit', 'CustomMediaAudit'];
+
 export function notifyUsersOnMessage(message, room) {
-	// skips this callback if the message was edited and increments it if the edit was way in the past (aka imported)
-	if (message.editedAt) {
-		if (Math.abs(moment(message.editedAt).diff()) > 60000) {
-			// TODO: Review as I am not sure how else to get around this as the incrementing of the msgs count shouldn't be in this callback
+	if (!allowMediaMessageTypes.includes(message.t)) {
+		// skips this callback if the message was edited and increments it if the edit was way in the past (aka imported)
+		if (message.editedAt) {
+			if (Math.abs(moment(message.editedAt).diff()) > 60000) {
+				// TODO: Review as I am not sure how else to get around this as the incrementing of the msgs count shouldn't be in this callback
+				Rooms.incMsgCountById(message.rid, 1);
+				return message;
+			}
+
+			// only updates last message if it was edited (skip rest of callback)
+			if (settings.get('Store_Last_Message') && (!message.tmid || message.tshow) && (!room.lastMessage || room.lastMessage._id === message._id)) {
+				Rooms.setLastMessageById(message.rid, message);
+			}
+
+			return message;
+		}
+
+		if (message.ts && Math.abs(moment(message.ts).diff()) > 60000) {
 			Rooms.incMsgCountById(message.rid, 1);
 			return message;
 		}
 
-		// only updates last message if it was edited (skip rest of callback)
-		if (settings.get('Store_Last_Message') && (!message.tmid || message.tshow) && (!room.lastMessage || room.lastMessage._id === message._id)) {
-			Rooms.setLastMessageById(message.rid, message);
+		// if message sent ONLY on a thread, skips the rest as it is done on a callback specific to threads
+		if (message.tmid && !message.tshow) {
+			Rooms.incMsgCountById(message.rid, 1);
+			return message;
+		}
+	}
+
+	if (allowMediaMessageTypes.includes(message.t)) {
+		const hasPass = message?.metadata?.audit?.state === 'pass';
+		if (!(message.attachments && message.attachments[0] && hasPass)) {
+			return message;
 		}
 
-		return message;
-	}
-
-	if (message.ts && Math.abs(moment(message.ts).diff()) > 60000) {
-		Rooms.incMsgCountById(message.rid, 1);
-		return message;
-	}
-
-	// if message sent ONLY on a thread, skips the rest as it is done on a callback specific to threads
-	if (message.tmid && !message.tshow) {
-		Rooms.incMsgCountById(message.rid, 1);
-		return message;
+		const hasAuditComplete = allowAuditEventType.includes(message?.metadata?.audit?.eventType);
+		if (!hasAuditComplete) {
+			return message;
+		}
 	}
 
 	// Update all the room activity tracker fields

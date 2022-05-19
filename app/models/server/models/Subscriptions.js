@@ -1454,6 +1454,30 @@ export class Subscriptions extends Base {
 
 		return this.update(query, update, options);
 	}
+
+	incStoryUnreadForRoomIdExcludingUserIds(roomId, userIds, inc) {
+		if (inc == null) {
+			inc = 1;
+		}
+		const query = {
+			rid: roomId,
+			'u._id': {
+				$nin: userIds,
+			},
+		};
+
+		const update = {
+			$set: {
+				alert: true,
+				open: true,
+			},
+			$inc: {
+				'story.unread': inc,
+			},
+		};
+
+		return this.update(query, update, { multi: true });
+	}
 }
 
 export default new Subscriptions('subscription', true);

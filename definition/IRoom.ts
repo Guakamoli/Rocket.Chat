@@ -61,6 +61,10 @@ export interface IRoom extends IRocketChatRecord {
 
 	sysMes?: string[];
 	muted?: string[];
+	story?: {
+		lastMessage?: IMessage;
+		lm?: Date;
+	};
 }
 
 export interface IDirectMessageRoom extends Omit<IRoom, 'default' | 'featured' | 'u' | 'name'> {

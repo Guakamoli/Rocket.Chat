@@ -1,7 +1,7 @@
 import { FindOneOptions, Cursor, UpdateQuery, FilterQuery } from 'mongodb';
 
 import { BaseRaw } from './BaseRaw';
-import { ISubscription, IReadLs } from '../../../../definition/ISubscription';
+import { ISubscription } from '../../../../definition/ISubscription';
 
 type T = ISubscription;
 export class SubscriptionsRaw extends BaseRaw<T> {
@@ -61,7 +61,7 @@ export class SubscriptionsRaw extends BaseRaw<T> {
 		return this.findOne(query, { projection: { roles: 1 } });
 	}
 
-	setAsReadByRoomIdAndUserId(rid: string, uid: string, alert = false, updateFiled: IReadLs, options: FindOneOptions<T> = {}): ReturnType<BaseRaw<T>['update']> {
+	setAsReadByRoomIdAndUserId(rid: string, uid: string, alert = false, updateFiled: any, options: FindOneOptions<T> = {}): ReturnType<BaseRaw<T>['update']> {
 		const query: FilterQuery<T> = {
 			rid,
 			'u._id': uid,

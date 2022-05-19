@@ -819,7 +819,7 @@ API.v1.addRoute('chat.audit', { authRequired: true }, {
 			eventType,
 		};
 
-		const allowAuditEventType = ['AIMediaAuditComplete', 'CreateAuditComplete', 'KameoImageAudit', 'CustomMediaAudit'];
+		const allowAuditEventType = ['AIMediaAuditComplete', 'KameoImageAudit', 'CustomMediaAudit'];
 		if (allowAuditEventType.includes(eventType)) {
 			audit.state = pass ? 'pass' : 'review';
 			audit.source = source;

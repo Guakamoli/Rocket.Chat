@@ -2,7 +2,6 @@ export const subscriptionFields = {
 	t: 1,
 	ts: 1,
 	ls: 1,
-	storyLs: 1,
 	lr: 1,
 	name: 1,
 	fname: 1,
@@ -45,6 +44,8 @@ export const subscriptionFields = {
 
 	// fields used by DMs
 	stranger: 1,
+
+	story: 1,
 } as const;
 
 export const roomFields = {
@@ -55,7 +56,6 @@ export const roomFields = {
 	cl: 1,
 	u: 1,
 	lm: 1,
-	slm: 1,
 	// usernames: 1,
 	teamId: 1,
 	teamMain: 1,
@@ -71,7 +71,6 @@ export const roomFields = {
 	default: 1,
 	customFields: 1,
 	lastMessage: 1,
-	storyLastMessage: 1,
 	retention: 1,
 	prid: 1,
 	avatarETag: 1,
@@ -111,4 +110,5 @@ export const roomFields = {
 	usernames: 1,
 	uids: 1,
 	stranger: 1,
+	story: 1,
 };
