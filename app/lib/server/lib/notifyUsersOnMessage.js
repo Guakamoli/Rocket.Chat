@@ -141,7 +141,7 @@ export function updateThreadUsersSubscriptions(message, room, replies) {
 }
 
 const allowMediaMessageTypes = ['post', 'story'];
-const allowAuditEventType = ['AIMediaAuditComplete', 'CreateAuditComplete', 'KameoImageAudit'];
+const allowAuditEventType = ['AIMediaAuditComplete', 'KameoImageAudit', 'CustomMediaAudit'];
 
 export function notifyUsersOnMessage(message, room) {
 	if (!allowMediaMessageTypes.includes(message.t)) {
