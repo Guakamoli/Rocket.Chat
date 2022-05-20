@@ -414,8 +414,12 @@ export async function sendAllNotifications(message, room) {
 			return message;
 		}
 
+		if (!message.attachments) {
+			return message;
+		}
+
 		const hasPass = message?.metadata?.audit?.state === 'pass';
-		if (!(message.attachments && message.attachments[0] && hasPass)) {
+		if (!hasPass) {
 			return message;
 		}
 

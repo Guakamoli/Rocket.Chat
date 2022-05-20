@@ -174,8 +174,12 @@ export function notifyUsersOnMessage(message, room) {
 	}
 
 	if (allowMediaMessageTypes.includes(message.t)) {
+		if (!message.attachments) {
+			return message;
+		}
+
 		const hasPass = message?.metadata?.audit?.state === 'pass';
-		if (!(message.attachments && message.attachments[0] && hasPass)) {
+		if (!hasPass) {
 			return message;
 		}
 
