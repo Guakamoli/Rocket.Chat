@@ -900,6 +900,11 @@ export class Rooms extends Base {
 		if (lastMessage) {
 			update.$set.lastMessage = lastMessage;
 		}
+		if (lastMessage.t === 'post') {
+			if (lastMessage.metadata.audit.state !== 'pass') {
+				delete update.$inc;
+			}
+		}
 		if (lastMessage.t === 'story') {
 			update.$set.story = {
 				lastMessage,
