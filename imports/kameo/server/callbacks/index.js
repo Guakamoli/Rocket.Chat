@@ -63,7 +63,7 @@ callbacks.add('afterSaveMessage', function(message, room = {}) {
 		return message;
 	}
 
-	const plainText = !(message.attachments && message.attachments[0]);
+	const plainText = !!(message.attachments && message.attachments.length === 0);
 	if (room._id && (message?.metadata?.audit?.state === 'pass' || plainText)) {
 		if (message.t === messageTypePost) {
 			Meteor.call('kameoRocketmqSendPostMessage', {
