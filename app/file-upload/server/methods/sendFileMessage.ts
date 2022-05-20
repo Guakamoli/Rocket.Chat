@@ -194,8 +194,8 @@ Meteor.methods({
 			const audit = {
 				state: 'pass',
 				tag: 'whitelist',
-				workflows: ['CreateAuditComplete'],
-				eventType: 'CreateAuditComplete',
+				workflows: ['AIMediaAuditComplete'],
+				eventType: 'AIMediaAuditComplete',
 			};
 
 			if (attachments.length > 0) {

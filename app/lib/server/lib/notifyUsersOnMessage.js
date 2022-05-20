@@ -107,6 +107,7 @@ export function updateUsersSubscriptions(message, room) {
 		// this shouldn't run only if has group mentions because it will already exclude mentioned users from the query
 		if (!toAll && !toHere && unreadCount === 'all_messages') {
 			if (room.individualMain) {
+				// TODO: 会有多次增加 unread 的情况，需要改进
 				if (message.t === 'story' && message?.metadata?.audit?.state === 'pass') {
 					Subscriptions.incStoryUnreadForRoomIdExcludingUserIds(room._id, [...userIds, message.u._id]);
 				}
@@ -141,7 +142,6 @@ export function updateThreadUsersSubscriptions(message, room, replies) {
 }
 
 const allowMediaMessageTypes = ['post', 'story'];
-const allowAuditEventType = ['AIMediaAuditComplete', 'KameoImageAudit', 'CustomMediaAudit'];
 
 export function notifyUsersOnMessage(message, room) {
 	if (!allowMediaMessageTypes.includes(message.t)) {
@@ -175,16 +175,6 @@ export function notifyUsersOnMessage(message, room) {
 
 	if (allowMediaMessageTypes.includes(message.t)) {
 		if (!message.attachments) {
-			return message;
-		}
-
-		const hasPass = message?.metadata?.audit?.state === 'pass';
-		if (!hasPass) {
-			return message;
-		}
-
-		const hasAuditComplete = allowAuditEventType.includes(message?.metadata?.audit?.eventType);
-		if (!hasAuditComplete) {
 			return message;
 		}
 	}
