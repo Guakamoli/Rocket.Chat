@@ -97,6 +97,10 @@ API.v1.addRoute('chat.getMessage', { authRequired: true }, {
 			return API.v1.failure();
 		}
 
+		if (['post', 'story'].includes(msg.t) && msg?.u?._id !== this.userId && msg?.metadata?.audit?.state !== 'pass') {
+			return API.v1.failure({ auditState: msg?.metadata?.audit?.state });
+		}
+
 		const [message] = normalizeMessagesForUser([msg], this.userId);
 
 		return API.v1.success({
