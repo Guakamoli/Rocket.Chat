@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable @typescript-eslint/camelcase */
 import { Meteor } from 'meteor/meteor';
@@ -14,6 +15,7 @@ import { FileAttachmentProps } from '../../../../definition/IMessage/MessageAtta
 import { UploadFileProp } from '../../../../definition/IMessage/MessageAttachment/Files/FileProp';
 import { IUser } from '../../../../definition/IUser';
 import { settings } from '../../../settings/server';
+import { sendPassPostCard } from '../../../../imports/kameo/server/functions/sendPassPostCard';
 
 Meteor.methods({
 	async sendFileMessage(roomId, _store, file, msgData = {}) {
@@ -230,6 +232,13 @@ Meteor.methods({
 					messageId: msg._id,
 				},
 			});
+		}
+
+		// 处理白名单创作者发送的Post
+		if (hasPost && hasWhitelist && attachments.filter((a) => 'video_url' in a).length > 0) {
+			if (msg.t === 'post') {
+				sendPassPostCard(msg);
+			}
 		}
 
 		callbacks.runAsync('afterFileUpload', { user, room, message: msg });
