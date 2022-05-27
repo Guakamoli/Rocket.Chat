@@ -9,5 +9,7 @@ export const sendPassPostCard = (data) => {
 		'x-secret': secret,
 	};
 	const url = new URL('/recommend/card', OOPS_SERVICE_URL);
-	Promise.resolve(httpPost(url, { headers, data }));
+	Promise.resolve().then(() => {
+		httpPost(url.toString(), { headers, data });
+	});
 };
