@@ -34,11 +34,11 @@ export const httpGet = (url, options) => {
 };
 
 export const httpPost = (url, options) => {
-	if (!options.headers) {
-		options.headers = {
-			'Content-Type': 'application/json',
-		};
-	}
+	options.headers = {
+		'content-type': 'application/json',
+		...options.headers,
+	};
+
 	const response = HTTP.post(url, { ...options });
 
 	if (response.statusCode !== 200 || !response.content) {
