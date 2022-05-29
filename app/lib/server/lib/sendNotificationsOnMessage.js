@@ -377,9 +377,14 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 
 const allowMediaMessageTypes = ['post', 'story'];
 const allowAuditEventType = ['AIMediaAuditComplete', 'KameoImageAudit', 'CustomMediaAudit'];
+const unallowMessageType = ['discussion-created'];
 
 export async function sendAllNotifications(message, room) {
 	if (!room || room.t == null) {
+		return message;
+	}
+
+	if (unallowMessageType.includes(message.t)) {
 		return message;
 	}
 
