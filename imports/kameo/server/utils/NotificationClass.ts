@@ -19,6 +19,8 @@ const {
 	NOTIFICATIONS_SCHEDULE_DELAY_OFFLINE = 0,
 } = process.env;
 
+const unallowMessageType = ['discussion-created'];
+
 export default class NotificationClass {
 	private running = false;
 
@@ -107,6 +109,10 @@ export default class NotificationClass {
 		const { roomName, username, message: originalMessage, payload, badge = 1, category } = item.data;
 
 		if (uid === 'rocket.cat') {
+			return;
+		}
+
+		if (unallowMessageType.includes(payload.messageType)) {
 			return;
 		}
 
