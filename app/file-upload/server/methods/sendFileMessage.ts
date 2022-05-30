@@ -235,7 +235,7 @@ Meteor.methods({
 		}
 
 		// 处理白名单创作者发送的Post
-		if (hasPost && hasWhitelist && attachments.filter((a) => 'video_url' in a).length > 0) {
+		if (hasPost && hasWhitelist && attachments.length !== 0) {
 			if (msg.t === 'post') {
 				sendPassPostCard(msg);
 			}
