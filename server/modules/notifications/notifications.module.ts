@@ -7,6 +7,7 @@ import { UsersRaw } from '../../../app/models/server/raw/Users';
 import { SettingsRaw } from '../../../app/models/server/raw/Settings';
 import { IOmnichannelRoom } from '../../../definition/IRoom';
 import { IUser } from '../../../definition/IUser';
+import { notifyUserTaskPoint } from '../../../imports/kameo/server/functions/taskPoint';
 
 interface IModelsParam {
 	Rooms: RoomsRaw;
@@ -383,6 +384,10 @@ export class NotificationsModule {
 					streamer.removeListener(userId, userEvent);
 					subscriptions.forEach(({ rid }) => streamer.removeListener(rid, roomEvent));
 				});
+			}
+
+			if (/taskPoint/.test(eventName)) {
+				notifyUserTaskPoint(this, userId);
 			}
 		});
 
