@@ -6,7 +6,7 @@ import { notifyUserTaskPoint } from '../../functions/taskPoint';
 
 const SECRET = process.env.INTERNAL_X_SECRET || '';
 
-API.v1.addRoute('user.notifyUserTaskPoint', { authRequired: true }, {
+API.v1.addRoute('user.notifyUserTaskPoint', { authRequired: false }, {
 	post() {
 		const xSecret = this.request.headers['x-secret'] ?? '';
 		if (SECRET !== xSecret) {
