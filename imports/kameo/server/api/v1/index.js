@@ -1,2 +1,2 @@
 import './contacts';
-import './task-point';
+import './revo';

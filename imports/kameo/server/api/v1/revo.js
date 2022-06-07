@@ -1,12 +1,11 @@
-import { check } from 'meteor/check';
+import { Match, check } from 'meteor/check';
 
 import { API } from '../../../../../app/api/server/api';
-import notifications from '../../../../../app/notifications/server/lib/Notifications';
-import { notifyUserTaskPoint } from '../../functions/taskPoint';
+import { notifyPoint } from '../../functions/revo';
 
 const SECRET = process.env.INTERNAL_X_SECRET || '';
 
-API.v1.addRoute('user.notifyUserTaskPoint', { authRequired: false }, {
+API.v1.addRoute('revo.notifyPoint', { authRequired: false }, {
 	post() {
 		const xSecret = this.request.headers['x-secret'] ?? '';
 		if (SECRET !== xSecret) {
@@ -15,9 +14,10 @@ API.v1.addRoute('user.notifyUserTaskPoint', { authRequired: false }, {
 
 		check(this.bodyParams, {
 			userId: String,
+			point: Match.Optional(Number),
 		});
 
-		notifyUserTaskPoint(notifications, this.bodyParams.userId);
+		notifyPoint(this.bodyParams.userId, this.bodyParams?.point);
 
 		return API.v1.success();
 	},
