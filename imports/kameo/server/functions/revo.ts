@@ -13,5 +13,5 @@ type Event = {
 
 export function notify(event: Event): void {
 	const { userId, eventName, eventData } = event;
-	notifications.notifyUserInThisInstance(userId, `${ userId }/${ eventName }`, eventData);
+	notifications.notifyUserInThisInstance(userId, eventName, eventData);
 }
