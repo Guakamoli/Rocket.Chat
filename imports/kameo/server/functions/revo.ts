@@ -1,17 +1,17 @@
 import notifications from '../../../../app/notifications/server/lib/Notifications';
 
-type EventBase = {
-	t: 'point';
+type EventPoint = {
+	dailyTotal: number;
+	dailyPoint?: number;
 };
 
-type EventPoint = EventBase & {
-	point?: number;
-};
-
-export function notify(userId: string, eventData: EventPoint): void {
-	notifications.notifyUserInThisInstance(userId, 'userCustom', eventData);
+type Event = {
+	userId: string;
+	eventName: 'wallet';
+	eventData: EventPoint;
 }
 
-export function notifyPoint(userId: string, point?: number): void {
-	notify(userId, { t: 'point', point });
+export function notify(event: Event): void {
+	const { userId, eventName, eventData } = event;
+	notifications.notifyUserInThisInstance(userId, `${ userId }/${ eventName }`, eventData);
 }

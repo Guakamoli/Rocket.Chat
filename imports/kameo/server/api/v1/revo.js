@@ -1,11 +1,11 @@
-import { Match, check } from 'meteor/check';
+import { check } from 'meteor/check';
 
 import { API } from '../../../../../app/api/server/api';
-import { notifyPoint } from '../../functions/revo';
+import { notify } from '../../functions/revo';
 
 const SECRET = process.env.INTERNAL_X_SECRET || '';
 
-API.v1.addRoute('revo.notifyPoint', { authRequired: false }, {
+API.v1.addRoute('revo.notify', { authRequired: false }, {
 	post() {
 		const xSecret = this.request.headers['x-secret'] ?? '';
 		if (SECRET !== xSecret) {
@@ -14,10 +14,11 @@ API.v1.addRoute('revo.notifyPoint', { authRequired: false }, {
 
 		check(this.bodyParams, {
 			userId: String,
-			point: Match.Optional(Number),
+			eventName: String,
+			eventData: Object,
 		});
 
-		notifyPoint(this.bodyParams.userId, this.bodyParams?.point);
+		notify(this.bodyParams);
 
 		return API.v1.success();
 	},
