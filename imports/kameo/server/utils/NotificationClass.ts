@@ -167,10 +167,7 @@ export default class NotificationClass {
 		if (title) {
 			androidRequest.title = title;
 		} else {
-			androidRequest.title = currentProduct({
-				PAIYA: '拍鸭',
-				GODUCK: 'Torimi',
-			});
+			androidRequest.title = 'Revo';
 		}
 		androidRequest.androidPopupTitle = title;
 		androidRequest.androidExtParameters = JSON.stringify({ ejson: EJSON.stringify(payload) });
