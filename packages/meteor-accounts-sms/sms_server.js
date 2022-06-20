@@ -162,6 +162,9 @@ function insertUser(data) {
 
 	const user = Meteor.users.findOne({ 'services.sms.realPhoneNumber': `${ countryCode }${ phoneNumber }` });
 	if (user) {
+		if (user.active === false) {
+			throw new Meteor.Error('Problematic user', 'Problematic user');
+		}
 		return user._id;
 	}
 
@@ -218,6 +221,9 @@ Accounts.kameoSms.sendCode = async function(phone) {
 	if (!user) {
 		userId = insertUser({ phoneNumber, countryCode });
 	}
+	if (user && user.active === false) {
+		throw new Meteor.Error('Problematic user', 'Problematic user');
+	}
 	if (!MATCH_PHONE_NUMBER.test(`${ countryCode }${ phoneNumber }`)) {
 		throw new Meteor.Error('Incorrect number format');
 	}
@@ -252,7 +258,7 @@ Accounts.kameoSms.verifyCode = function(phone, code) {
 		throw new Meteor.Error('Expired verification code');
 	}
 
-	if (!user.active) {
+	if (!('active' in user)) {
 		modifier.active = true;
 	}
 
