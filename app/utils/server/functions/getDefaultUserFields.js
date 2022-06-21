@@ -34,4 +34,5 @@ export const getDefaultUserFields = () => ({
 	avatarETag: 1,
 	note: 1,
 	withSetUsername: 1,
+	region: 1,
 });

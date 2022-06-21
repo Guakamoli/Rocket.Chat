@@ -47,6 +47,7 @@ export class Users extends Base {
 		this.tryEnsureIndex({ openBusinessHours: 1 }, { sparse: true });
 		this.tryEnsureIndex({ statusLivechat: 1 }, { sparse: true });
 		this.tryEnsureIndex({ language: 1 }, { sparse: true });
+		this.tryEnsureIndex({ region: 1 }, { sparse: true });
 	}
 
 	getLoginTokensByUserId(userId) {
@@ -1263,6 +1264,16 @@ export class Users extends Base {
 		const update = {
 			$set: {
 				language,
+			},
+		};
+
+		return this.update(_id, update);
+	}
+
+	setRegion(_id, region) {
+		const update = {
+			$set: {
+				region,
 			},
 		};
 

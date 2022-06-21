@@ -37,6 +37,7 @@ Meteor.methods({
 			sidebarDisplayAvatar: Match.Optional(Boolean),
 			sidebarGroupByType: Match.Optional(Boolean),
 			muteFocusedConversations: Match.Optional(Boolean),
+			region: Match.Optional(String),
 		};
 		check(settings, Match.ObjectIncluding(keys));
 		const user = Meteor.user();
@@ -58,6 +59,10 @@ Meteor.methods({
 
 		if (settings.language != null) {
 			Users.setLanguage(user._id, settings.language);
+		}
+
+		if (settings.region != null) {
+			Users.setRegion(user._id, settings.region);
 		}
 
 		// Keep compatibility with old values
