@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 import { Meteor } from 'meteor/meteor';
 import { Match, check } from 'meteor/check';
 import { Accounts } from 'meteor/accounts-base';
@@ -9,6 +10,7 @@ import { twoFactorRequired } from '../../app/2fa/server/twoFactorRequired';
 import { saveUserIdentity } from '../../app/lib/server/functions/saveUserIdentity';
 import { compareUserPassword } from '../lib/compareUserPassword';
 import { compareUserPasswordHistory } from '../lib/compareUserPasswordHistory';
+import { checkInviteCodeAvailability } from '../../imports/kameo/server/utils';
 
 function saveUserProfile(settings, customFields) {
 	if (!rcSettings.get('Accounts_AllowUserProfileChange')) {
@@ -32,6 +34,10 @@ function saveUserProfile(settings, customFields) {
 	}
 
 	if (settings.username) {
+		if (user.withSetUsername && settings.inviteCode && !checkInviteCodeAvailability(settings.inviteCode)) {
+			throw new Meteor.Error('error-invalid-invite-code', 'Invalid invite code', { method: 'saveUserProfile' });
+		}
+
 		if (!saveUserIdentity({
 			_id: this.userId,
 			username: settings.username,
@@ -42,6 +48,9 @@ function saveUserProfile(settings, customFields) {
 		mqProfile.username = settings.username;
 
 		if (user.withSetUsername) {
+			if (settings.inviteCode) {
+				Meteor.call('kameoRocketmqSendInvite', { userId: this.userId, inviteCode: settings.inviteCode }, 'register');
+			}
 			Users.removeWithSetUsername(this.userId);
 		}
 	}

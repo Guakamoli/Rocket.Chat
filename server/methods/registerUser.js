@@ -30,10 +30,14 @@ Meteor.methods({
 		check(formData, Match.ObjectIncluding({
 			email: String,
 			pass: String,
-			name: String,
+			// name: String,
 			secretURL: Match.Optional(String),
 			reason: Match.Optional(String),
 		}));
+
+		if (!formData.name) {
+			formData.name = defaultUsernameSuggestion();
+		}
 
 		if (formData.pass.length < 6) {
 			throw new Meteor.Error('error-user-password-limit-6', 'Password must be at least 6 characters', { method: 'registerUser' });
@@ -90,7 +94,7 @@ Meteor.methods({
 			Users.setUsername(userId, formData.username);
 		} else {
 			// 设置建议的用户名
-			Users.setUsername(userId, defaultUsernameSuggestion());
+			Users.setUsername(userId, formData.name);
 			Users.setWithSetUsername(userId);
 		}
 

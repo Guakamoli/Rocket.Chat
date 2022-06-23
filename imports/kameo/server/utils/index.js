@@ -48,6 +48,18 @@ export const httpPost = (url, options) => {
 	return JSON.parse(response.content);
 };
 
+export function checkInviteCodeAvailability(code) {
+	const baseURL = process.env.DATA_SERVICE_URL || 'http://data-backend-svc:8080';
+	const url = new URL(`/api/v1/invite/code/${ code }`, baseURL);
+	const xSecret = process.env.INTERNAL_X_SECRET || '';
+	const result = httpGet(url.toString(), { headers: { 'x-secret': xSecret } });
+	const { data, error } = result;
+	if (!result || error || !data?.code) {
+		return false;
+	}
+	return true;
+}
+
 export {
 	PRODUCT_CODE,
 	currentProduct,
