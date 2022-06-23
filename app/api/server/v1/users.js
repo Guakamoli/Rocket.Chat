@@ -291,18 +291,20 @@ API.v1.addRoute('users.register', { authRequired: false }, {
 
 		// We set their username here, so require it
 		// The `registerUser` checks for the other requirements
-		check(this.bodyParams, Match.ObjectIncluding({
-			username: String,
-		}));
+		// check(this.bodyParams, Match.ObjectIncluding({
+		// 	username: String,
+		// }));
 
-		if (!checkUsernameAvailability(this.bodyParams.username)) {
-			return API.v1.failure('Username is already in use');
+		if (this.bodyParams.username) {
+			if (!checkUsernameAvailability(this.bodyParams.username)) {
+				return API.v1.failure('Username is already in use');
+			}
 		}
 
 		// Register the user
 		const userId = Meteor.call('registerUser', this.bodyParams);
 
-		if (settings.get('Accounts_AllowUsernameChange')) {
+		if (settings.get('Accounts_AllowUsernameChange') && this.bodyParams.username) {
 			// Now set their username
 			Meteor.runAsUser(userId, () => Meteor.call('setUsername', this.bodyParams.username));
 		}
@@ -546,6 +548,7 @@ API.v1.addRoute('users.updateOwnBasicInfo', { authRequired: true }, {
 				newPassword: Match.Maybe(String),
 				bio: Match.Maybe(String),
 				note: Match.Maybe(String),
+				inviteCode: Match.Maybe(String),
 			}),
 			customFields: Match.Maybe(Object),
 		});
@@ -560,6 +563,7 @@ API.v1.addRoute('users.updateOwnBasicInfo', { authRequired: true }, {
 			typedPassword: this.bodyParams.data.currentPassword,
 			bio: this.bodyParams.data.bio,
 			note: this.bodyParams.data.note,
+			inviteCode: this.bodyParams.data.inviteCode,
 		};
 
 		// saveUserProfile now uses the default two factor authentication procedures, so we need to provide that
