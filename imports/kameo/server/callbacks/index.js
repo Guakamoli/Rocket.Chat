@@ -73,6 +73,7 @@ callbacks.add('afterSaveMessage', function(message, room = {}) {
 				public: message.public || false, // 兼容没有免费作品的情况
 				msg: message.msg || '',
 				plainText,
+				region: message?.metadata?.region || null,
 			});
 		}
 
