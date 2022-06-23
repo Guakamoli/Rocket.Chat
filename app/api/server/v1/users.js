@@ -642,6 +642,7 @@ API.v1.addRoute('users.setPreferences', { authRequired: true }, {
 				sidebarDisplayAvatar: Match.Optional(Boolean),
 				sidebarGroupByType: Match.Optional(Boolean),
 				muteFocusedConversations: Match.Optional(Boolean),
+				region: Match.Optional(String),
 			}),
 		});
 		if (this.bodyParams.userId && this.bodyParams.userId !== this.userId && !hasPermission(this.userId, 'edit-other-user-info')) {
