@@ -1602,6 +1602,19 @@ settings.addGroup('Layout', function() {
 	});
 });
 
+settings.addGroup('Kameo_Config', function() {
+	return this.section('Point', function() {
+		this.add('Point_Vote_Consume', '0.1', {
+			type: 'string',
+			public: true,
+		});
+		this.add('Point_Invite_Reward', 100, {
+			type: 'int',
+			public: true,
+		});
+	});
+});
+
 settings.addGroup('Logs', function() {
 	this.add('Log_Level', '0', {
 		type: 'select',
