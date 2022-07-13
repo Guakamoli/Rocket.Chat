@@ -4695,6 +4695,9 @@
   "Register_passwordLengLimit6": "Password must be at least 6 characters",
   "Register_passwordLengMax18": "Password must be at most 18 characters",
   "Comfirm_password_error": "Two inconsistent passwords",
-  "Rigister_login_verification": "Rigister and login verification"
-
+  "Rigister_login_verification": "Rigister and login verification",
+  "Email_Register_login_title": "Verify login",
+  "Email_Register_login_des1": "以下是您的验证码：",
+  "Email_Register_login_expire": "验证码将于15分钟后过期",
+  "Email_Register_login_bottom": "如您未申请此验证码，请忽略此信息"
 }

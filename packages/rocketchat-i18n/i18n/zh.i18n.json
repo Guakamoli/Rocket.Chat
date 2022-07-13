@@ -4323,6 +4323,11 @@
   "Register_passwordLengLimit6": "密码长度最小为6",
   "Register_passwordLengMax18": "密码长度最大为18",
   "Comfirm_password_error": "两次密码不一致",
-  "Rigister_login_verification": "登录及注册验证"
+  "Rigister_login_verification": "登录及注册验证",
+  "Email_Register_login_title": "验证登录",
+  "Email_Register_login_des1": "以下是您的验证码：",
+  "Email_Register_login_expire": "验证码将于15分钟后过期",
+  "Email_Register_login_bottom": "如您未申请此验证码，请忽略此信息"
+
 
 }

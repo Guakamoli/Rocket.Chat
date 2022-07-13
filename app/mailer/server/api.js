@@ -31,7 +31,7 @@ export const replacekey = (str, key, value = '') => str.replace(
 	value,
 );
 
-export const translate = (str) => replaceVariables(str, (match, key) => TAPi18n.__(key, { lng }));
+export const translate = (str, customLng) => replaceVariables(str, (match, key) => TAPi18n.__(key, { lng: customLng || lng }));
 export const replace = function replace(str, data = {}) {
 	if (!str) {
 		return '';

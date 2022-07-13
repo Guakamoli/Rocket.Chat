@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
 import { check, Match } from 'meteor/check';
 import s from 'underscore.string';
+import { TAPi18n } from 'meteor/rocketchat:tap-i18n';
 
 import { Users } from '../../../../app/models';
 import * as Mailer from '../../../../app/mailer';
@@ -13,7 +14,6 @@ Meteor.startup(() => {
 		html = value;
 	});
 });
-
 const getCode = () => {
 	if (process.env.NODE_ENV) {
 		return '111111';
@@ -34,7 +34,7 @@ const updateUserEmailCode = (userId, code) => {
 };
 
 
-export const operateVertificationCode = ({ email, code }) => {
+export const operateVertificationCode = ({ email, code, language }) => {
 	const userData = {
 		email: s.trim(email.toLowerCase()),
 		password: '',
@@ -44,13 +44,17 @@ export const operateVertificationCode = ({ email, code }) => {
 	}
 
 	let userId;
+	let lng = 'zh';
+	if (language && !language.includes('zh-')) {
+		lng = 'en';
+	}
 	const emailData = {
 		to: email,
 		from: settings.get('From_Email'),
-		subject: 'Revo验证码',
-		html,
+		subject: TAPi18n.__('Email_Register_login_title', { lng }),
+		html: Mailer.translate(html, lng),
 		data: {
-			code: null,
+			Email_Register_login_code: null,
 		},
 	};
 	const user = Users.findOneByEmailAddress(email);
@@ -86,21 +90,21 @@ export const operateVertificationCode = ({ email, code }) => {
 					});
 				}
 			}
-			emailData.data.code = getCode();
-			emailData.subject = 'Revo登录验证码';
-			updateUserEmailCode(userId, emailData.data.code);
+			const newCode = getCode();
+			emailData.data.Email_Register_login_code = newCode;
+			updateUserEmailCode(userId, newCode);
 		}
 	} else {
 		if (code) {
 			throw new Meteor.Error('Invalid user');
 		}
-		emailData.data.code = getCode();
-		emailData.subject = 'Revo注册验证码';
-
+		const newCode = getCode();
+		emailData.data.Email_Register_login_code = newCode;
 		userId = Accounts.createUser(userData);
-		updateUserEmailCode(userId, emailData.data.code);
-	}
+		Users.setLanguage(userId, language);
 
+		updateUserEmailCode(userId, newCode);
+	}
 	if (!code) {
 		try {
 			Mailer.send(emailData);
@@ -124,7 +128,13 @@ Accounts.registerLoginHandler('kameoEmail', function(options) {
 	check(options, {
 		kameoEmail: true,
 		email: String,
+		language: Match.Optional(String),
 		code: Match.Optional(String),
 	});
+	const emailRegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]+$/i;
+	if (!emailRegExp.test(options.email)) {
+		throw new Meteor.Error('Invalid email');
+	}
+
 	return operateVertificationCode(options);
 });
