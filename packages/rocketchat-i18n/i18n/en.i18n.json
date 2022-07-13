@@ -4694,5 +4694,7 @@
   "Login_go_register": "Register",
   "Register_passwordLengLimit6": "Password must be at least 6 characters",
   "Register_passwordLengMax18": "Password must be at most 18 characters",
-  "Comfirm_password_error": "Two inconsistent passwords"
+  "Comfirm_password_error": "Two inconsistent passwords",
+  "Rigister_login_verification": "Rigister and login verification"
+
 }

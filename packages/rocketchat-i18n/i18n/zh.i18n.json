@@ -4322,5 +4322,7 @@
   "Login_go_register": "去注册",
   "Register_passwordLengLimit6": "密码长度最小为6",
   "Register_passwordLengMax18": "密码长度最大为18",
-  "Comfirm_password_error": "两次密码不一致"
+  "Comfirm_password_error": "两次密码不一致",
+  "Rigister_login_verification": "登录及注册验证"
+
 }

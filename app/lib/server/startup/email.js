@@ -406,6 +406,22 @@ settings.addGroup('Email', function() {
 		});
 	});
 
+	this.section('Rigister_login_verification', function() {
+		this.add('Rigister_Login_Verification_Subject', '{Rigister_Login_Verification_Subject}', {
+			type: 'string',
+			i18nLabel: 'Subject',
+		});
+
+		this.add('Rigister_Login_Verification_Email', '<h2>{Hi_username}</h2><p>{Verification_email_body}</p><a class="btn" target="_blank" href="[Verification_Url]">{Verify_your_email}</a>', {
+			type: 'code',
+			code: 'text/html',
+			multiline: true,
+			i18nLabel: 'Body',
+			i18nDescription: 'Verification_Description',
+		});
+	});
+
+
 	this.section('Offline_Message', function() {
 		this.add('Offline_Message_Use_DeepLink', true, {
 			type: 'boolean',

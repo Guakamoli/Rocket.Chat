@@ -1,1 +1,2 @@
 import './wechat';
+import './email';

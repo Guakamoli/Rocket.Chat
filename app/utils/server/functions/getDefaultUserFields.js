@@ -35,4 +35,6 @@ export const getDefaultUserFields = () => ({
 	note: 1,
 	withSetUsername: 1,
 	region: 1,
+	gender: 1,
+	labels: 1,
 });

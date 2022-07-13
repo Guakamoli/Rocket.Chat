@@ -549,6 +549,8 @@ API.v1.addRoute('users.updateOwnBasicInfo', { authRequired: true }, {
 				bio: Match.Maybe(String),
 				note: Match.Maybe(String),
 				inviteCode: Match.Maybe(String),
+				gender: Match.Maybe(Number),
+				labels: Match.Maybe(Array),
 			}),
 			customFields: Match.Maybe(Object),
 		});
@@ -564,6 +566,8 @@ API.v1.addRoute('users.updateOwnBasicInfo', { authRequired: true }, {
 			bio: this.bodyParams.data.bio,
 			note: this.bodyParams.data.note,
 			inviteCode: this.bodyParams.data.inviteCode,
+			gender: this.bodyParams.data.gender,
+			labels: this.bodyParams.data.labels,
 		};
 
 		// saveUserProfile now uses the default two factor authentication procedures, so we need to provide that
