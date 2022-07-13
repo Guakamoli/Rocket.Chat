@@ -14,12 +14,16 @@ Meteor.startup(() => {
 		html = value;
 	});
 });
+
+const emailRegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]+$/i;
+
 const getCode = () => {
-	if (process.env.NODE_ENV) {
+	if (process.env.NODE_ENV === 'development') {
 		return '111111';
 	}
 	return Math.random().toString().slice(2, 8);
 };
+
 
 const updateUserEmailCode = (userId, code) => {
 	const modifier = {
@@ -34,15 +38,50 @@ const updateUserEmailCode = (userId, code) => {
 };
 
 
-export const operateVertificationCode = ({ email, code, language }) => {
+export const operateVertificationCode = ({ email, code }) => {
+	if (!emailRegExp.test(email)) {
+		throw new Meteor.Error('Invalid email');
+	}
+	let userId;
+	const user = Users.findOneByEmailAddress(email);
+	if (!user) {
+		throw new Meteor.Error('User not exist');
+	}
+	if (user) {
+		userId = user._id;
+		if (user.active === false) {
+			throw new Meteor.Error('Problematic user', 'Problematic user');
+		}
+		if (code) {
+			if (!user.services?.email?.verificationCodes?.length) {
+				throw new Meteor.Error('Invalid error');
+			}
+			const verificationCode = user.services.email.verificationCodes.pop();
+			if (verificationCode.code !== code) {
+				throw new Meteor.Error('Invalid verification code');
+			}
+			if (verificationCode.when.getTime() + 15 * 60 * 1000 < new Date()) {
+				throw new Meteor.Error('Expired verification code');
+			}
+			const modifier = {
+				$set: {
+					'services.email.verificationCodes': [],
+				},
+			};
+			if (!('active' in user)) {
+				modifier.$set.active = true;
+			}
+			Meteor.users.update({ _id: userId }, modifier);
+		}
+	}
+	return { userId };
+};
+
+const sendCode = ({ email, language }) => {
 	const userData = {
 		email: s.trim(email.toLowerCase()),
 		password: '',
 	};
-	if (code && code.length !== 6) {
-		throw new Meteor.Error('Invalid verification code');
-	}
-
 	let userId;
 	let lng = 'zh';
 	if (language && !language.includes('zh-')) {
@@ -61,51 +100,30 @@ export const operateVertificationCode = ({ email, code, language }) => {
 
 	if (user) {
 		userId = user._id;
-		if (code) {
-			if (!user.services?.email?.verificationCodes?.length) {
-				throw new Meteor.Error('Invalid error');
-			}
-			const verificationCode = user.services.email.verificationCodes.pop();
-			if (verificationCode.code !== code) {
-				throw new Meteor.Error('Invalid verification code');
-			}
-			if (verificationCode.when.getTime() + 15 * 60 * 1000 < new Date()) {
-				throw new Meteor.Error('Expired verification code');
-			}
-			const modifier = {
-				$set: {
-					'services.email.verificationCodes': [],
-					active: true,
-				},
-			};
-			Meteor.users.update({ _id: userId }, modifier);
-		} else {
-			const verificationCodes = user?.services?.email?.verificationCodes || [];
-			const verificationCode = verificationCodes[verificationCodes.length - 1];
-			if (verificationCode) {
-				const lastSendTimeDelta = Date.now() - verificationCode.when.getTime();
-				if (lastSendTimeDelta < 60 * 1000) {
-					throw new Meteor.Error('error-email-send-failed', 'Error trying to send email in limited time', {
-						milsecond: lastSendTimeDelta,
-					});
-				}
-			}
-			const newCode = getCode();
-			emailData.data.Email_Register_login_code = newCode;
-			updateUserEmailCode(userId, newCode);
+		if (user.active === false) {
+			throw new Meteor.Error('Problematic user', 'Problematic user');
 		}
+		const verificationCodes = user?.services?.email?.verificationCodes || [];
+		const verificationCode = verificationCodes[verificationCodes.length - 1];
+		if (verificationCode) {
+			const lastSendTimeDelta = Date.now() - verificationCode.when.getTime();
+			if (lastSendTimeDelta < 60 * 1000) {
+				throw new Meteor.Error('error-email-send-failed', 'Error trying to send email in limited time', {
+					milsecond: lastSendTimeDelta,
+				});
+			}
+		}
+		const newCode = getCode();
+		emailData.data.Email_Register_login_code = newCode;
+		updateUserEmailCode(userId, newCode);
 	} else {
-		if (code) {
-			throw new Meteor.Error('Invalid user');
-		}
 		const newCode = getCode();
 		emailData.data.Email_Register_login_code = newCode;
 		userId = Accounts.createUser(userData);
 		Users.setLanguage(userId, language);
-
 		updateUserEmailCode(userId, newCode);
 	}
-	if (!code) {
+	if (process.env.NODE_ENV === 'production') {
 		try {
 			Mailer.send(emailData);
 		} catch ({ message }) {
@@ -119,7 +137,6 @@ export const operateVertificationCode = ({ email, code, language }) => {
 	return { userId };
 };
 
-
 Accounts.registerLoginHandler('kameoEmail', function(options) {
 	if (!options.kameoEmail) {
 		return;
@@ -128,13 +145,20 @@ Accounts.registerLoginHandler('kameoEmail', function(options) {
 	check(options, {
 		kameoEmail: true,
 		email: String,
-		language: Match.Optional(String),
-		code: Match.Optional(String),
+		code: String,
 	});
-	const emailRegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]+$/i;
-	if (!emailRegExp.test(options.email)) {
-		throw new Meteor.Error('Invalid email');
-	}
-
 	return operateVertificationCode(options);
+});
+
+Meteor.methods({
+	kameoSendEmailCode: (options) => {
+		check(options, {
+			email: String,
+			language: Match.Optional(String),
+		});
+		if (!emailRegExp.test(options.email)) {
+			throw new Meteor.Error('Invalid email');
+		}
+		return sendCode(options);
+	},
 });
