@@ -7,3 +7,4 @@ import './filterBadWords';
 import './checkedMessage';
 import './mns';
 import './contacts';
+import './getUserAggregation';
