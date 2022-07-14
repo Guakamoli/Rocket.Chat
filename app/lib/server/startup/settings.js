@@ -1604,7 +1604,7 @@ settings.addGroup('Layout', function() {
 
 settings.addGroup('Kameo_Config', function() {
 	return this.section('Point', function() {
-		this.add('Point_Vote_Consume', '0.1', {
+		this.add('Point_Vote_Consume', '0.5', {
 			type: 'string',
 			public: true,
 		});
