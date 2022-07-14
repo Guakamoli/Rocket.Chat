@@ -83,6 +83,24 @@ function saveUserProfile(settings, customFields) {
 		Users.setNote(user._id, settings.note.trim());
 	}
 
+	if (settings.gender != null && settings.gender !== undefined) {
+		if (typeof settings.gender !== 'number') {
+			throw new Meteor.Error('error-invalid-field', 'gender', {
+				method: 'saveUserProfile',
+			});
+		}
+		Users.setGender(user._id, settings.gender);
+	}
+
+	if (settings.labels != null && settings.labels !== undefined) {
+		if (!Array.isArray(settings.labels)) {
+			throw new Meteor.Error('error-invalid-field', 'labels', {
+				method: 'saveUserProfile',
+			});
+		}
+		Users.setLabels(user._id, settings.labels);
+	}
+
 	if (settings.nickname != null) {
 		if (typeof settings.nickname !== 'string' || settings.nickname.length > 120) {
 			throw new Meteor.Error('error-invalid-field', 'nickname', {

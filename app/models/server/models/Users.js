@@ -48,6 +48,8 @@ export class Users extends Base {
 		this.tryEnsureIndex({ statusLivechat: 1 }, { sparse: true });
 		this.tryEnsureIndex({ language: 1 }, { sparse: true });
 		this.tryEnsureIndex({ region: 1 }, { sparse: true });
+		this.tryEnsureIndex({ gender: 1 }, { sparse: true });
+		this.tryEnsureIndex({ labels: 1 }, { sparse: true });
 	}
 
 	getLoginTokensByUserId(userId) {
@@ -1300,6 +1302,24 @@ export class Users extends Base {
 				$unset: {
 					bio: 1,
 				},
+			},
+		};
+		return this.update(_id, update);
+	}
+
+	setGender(_id, gender) {
+		const update = {
+			$set: {
+				gender,
+			},
+		};
+		return this.update(_id, update);
+	}
+
+	setLabels(_id, labels) {
+		const update = {
+			$set: {
+				labels,
 			},
 		};
 		return this.update(_id, update);

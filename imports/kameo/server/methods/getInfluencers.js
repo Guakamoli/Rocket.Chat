@@ -30,6 +30,8 @@ Meteor.methods({
 				federation: 1,
 				avatarETag: 1,
 				customFields: 1,
+				gender: 1,
+				labels: 1,
 			},
 		};
 
