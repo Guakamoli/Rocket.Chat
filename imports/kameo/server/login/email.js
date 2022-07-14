@@ -15,7 +15,6 @@ Meteor.startup(() => {
 	});
 });
 
-const emailRegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]+$/i;
 
 const getCode = () => {
 	if (process.env.NODE_ENV === 'development') {
@@ -39,6 +38,8 @@ const updateUserEmailCode = (userId, code) => {
 
 
 export const operateVertificationCode = ({ email, code }) => {
+	const emailRegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]+$/i;
+
 	if (!emailRegExp.test(email)) {
 		throw new Meteor.Error('Invalid email');
 	}
@@ -123,15 +124,14 @@ const sendCode = ({ email, language }) => {
 		Users.setLanguage(userId, language);
 		updateUserEmailCode(userId, newCode);
 	}
-	if (process.env.NODE_ENV === 'production') {
-		try {
-			Mailer.send(emailData);
-		} catch ({ message }) {
-			throw new Meteor.Error('error-email-send-failed', `Error trying to send email: ${ message }`, {
-				method: 'sendSMTPTestEmail',
-				message,
-			});
-		}
+
+	try {
+		Mailer.send(emailData);
+	} catch ({ message }) {
+		throw new Meteor.Error('error-email-send-failed', `Error trying to send email: ${ message }`, {
+			method: 'sendSMTPTestEmail',
+			message,
+		});
 	}
 
 	return { userId };
@@ -156,6 +156,8 @@ Meteor.methods({
 			email: String,
 			language: Match.Optional(String),
 		});
+		const emailRegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]+$/i;
+
 		if (!emailRegExp.test(options.email)) {
 			throw new Meteor.Error('Invalid email');
 		}
