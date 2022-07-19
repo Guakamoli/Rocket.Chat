@@ -271,6 +271,7 @@ API.v1.addRoute('internal.contacts.add', { authRequired: true }, {
 			return API.v1.failure('User not found');
 		}
 		const { cuid, userId: selfId } = this.bodyParams;
-		Meteor.call('kameoAddContacts', { cuid, selfId });
+		const contact = Meteor.call('kameoAddContacts', { cuid, selfId });
+		return API.v1.success(contact);
 	},
 });

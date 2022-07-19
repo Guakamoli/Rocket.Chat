@@ -8,9 +8,9 @@ Meteor.methods({
 		check(cuid, String);
 		check(selfId, Match.Maybe(String));
 
-		let userId = Meteor.userId();
-		if (selfId) {
-			userId = selfId;
+		let userId = selfId;
+		if (!userId) {
+			userId = Meteor.userId();
 		}
 
 		if (!userId) {
