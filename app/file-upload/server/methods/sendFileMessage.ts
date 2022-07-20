@@ -87,6 +87,7 @@ Meteor.methods({
 					image_width: file.width,
 					image_height: file.height,
 					crop_params: file.cropParams,
+					is_cover: file.isCover,
 				};
 
 				if (file.identify && file.identify.size) {

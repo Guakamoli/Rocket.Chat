@@ -14,6 +14,7 @@ export type ImageAttachmentProps = {
 	image_height: number;
 	file?: FileProp;
 	crop_params?: any;
+	is_cover: boolean;
 } & MessageAttachmentBase;
 
 export const isFileImageAttachment = (
