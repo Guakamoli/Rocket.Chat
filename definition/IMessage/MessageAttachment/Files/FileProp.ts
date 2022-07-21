@@ -34,4 +34,5 @@ export type UploadFileProp = {
 	description?: string;
 	fileBuffer?: Buffer;
 	cropParams?: any;
+	isCover?: boolean;
 } & (VideoUploadFileProp & ImageUploadFileProp)
