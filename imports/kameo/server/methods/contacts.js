@@ -1,13 +1,18 @@
 import { Meteor } from 'meteor/meteor';
-import { check } from 'meteor/check';
+import { check, Match } from 'meteor/check';
 
 import { addContacts, blockContacts, unblockContacts, someoneBlockedContacts } from '../functions/contacts';
 
 Meteor.methods({
-	kameoAddContacts({ cuid }) {
+	kameoAddContacts({ cuid, selfId }) {
 		check(cuid, String);
+		check(selfId, Match.Maybe(String));
 
-		const userId = Meteor.userId();
+		let userId = selfId;
+		if (!userId) {
+			userId = Meteor.userId();
+		}
+
 		if (!userId) {
 			throw new Meteor.Error('error-invalid-user', 'The required "userId" or "username" param provided does not match any users');
 		}

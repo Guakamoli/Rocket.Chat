@@ -579,6 +579,7 @@ API.v1.addRoute('users.updateOwnBasicInfo', { authRequired: true }, {
 			};
 
 		Meteor.runAsUser(this.userId, () => Meteor.call('saveUserProfile', userData, this.bodyParams.customFields, twoFactorOptions));
+		Meteor.call('kameoRocketmqSendLoginUser', this.userId);
 
 		return API.v1.success({ user: Users.findOneById(this.userId, { fields: API.v1.defaultFieldsToExclude }) });
 	},

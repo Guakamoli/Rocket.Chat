@@ -262,3 +262,16 @@ API.v1.addRoute('contacts.blockeds', { authRequired: true }, {
 		return API.v1.success(blockeds);
 	},
 });
+
+// 内网调用自动关注
+API.v1.addRoute('internal.contacts.add', { authRequired: true }, {
+	post() {
+		const xSecret = this.request.headers['x-secret'] ?? '';
+		if (SECRET !== xSecret) {
+			return API.v1.failure('User not found');
+		}
+		const { cuid, userId: selfId } = this.bodyParams;
+		const contact = Meteor.call('kameoAddContacts', { cuid, selfId });
+		return API.v1.success(contact);
+	},
+});
