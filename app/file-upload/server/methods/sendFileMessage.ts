@@ -225,20 +225,22 @@ Meteor.methods({
 			...msgData,
 		});
 
-		// 只处理存在图片的 message，视频交由阿里云视频点播服务回调处理
-		if (hasPost && !hasWhitelist && attachments.filter((a) => 'image_url' in a).length > 0) {
-			Meteor.call('kameoMNSSend', {
-				EventType: 'KameoImageAudit',
-				Extend: {
-					messageId: msg._id,
-				},
-			});
-		}
+		if (msg) {
+			// 只处理存在图片的 message，视频交由阿里云视频点播服务回调处理
+			if (hasPost && !hasWhitelist && attachments.filter((a) => 'image_url' in a).length > 0) {
+				Meteor.call('kameoMNSSend', {
+					EventType: 'KameoImageAudit',
+					Extend: {
+						messageId: msg._id,
+					},
+				});
+			}
 
-		// 处理白名单创作者发送的Post
-		if (hasPost && hasWhitelist && attachments.length !== 0) {
-			if (msg.t === 'post') {
-				sendPassPostCard(msg);
+			// 处理白名单创作者发送的Post
+			if (hasPost && hasWhitelist && attachments.length !== 0) {
+				if (msg.t === 'post') {
+					sendPassPostCard(msg);
+				}
 			}
 		}
 
