@@ -16,6 +16,41 @@ import { settings } from '../../../settings';
 import { findMentionedMessages, findStarredMessages, findSnippetedMessageById, findSnippetedMessages, findDiscussionsFromRoom } from '../lib/messages';
 import { updateMessage } from '../../../lib/server/functions';
 
+
+const getCoverUrl = (message) => {
+	const attachment = message?.attachments?.[0];
+	let coverUri = attachment.video_cover_url || attachment.image_url || '';
+	// 如果有video_cover_url   就用，没有就没有
+	if (coverUri && !coverUri.startsWith('https://')) {
+		// coverUri = formatAttachmentUrl(cover_url, user.id, user.token, baseUrl);
+		return coverUri;
+	}
+	if (attachment?.image_url) {
+		// 图片 is_cover
+		const coverOne = message?.attachments.find((i) => i.is_cover);
+		if (coverOne) {
+			coverUri = coverOne.image_url;
+		}
+	} else if (attachment?.video_url) {
+		// 视频
+		const { video_url } = attachment;
+		if (coverUri) {
+			// 有mp4 视频链接
+			if (coverUri.includes('.mp4')) {
+				coverUri = `${ video_url }?x-oss-process=video/snapshot,t_0,m_fast,ar_auto,f_png,w_208,h_276`;
+			} else {
+				// 阿里云图片 链接
+				coverUri = `${ coverUri }?x-oss-process=image/resize,w_208,h_276,limit_1`;
+			}
+		} else {
+			// 没有 video_cover_url 用视频url 拼接
+			coverUri = `${ video_url }?x-oss-process=video/snapshot,t_0,m_fast,ar_auto,f_png,w_208,h_276`;
+		}
+	}
+	coverUri = coverUri.replace('http://', 'https://');
+	return coverUri;
+};
+
 API.v1.addRoute('chat.delete', { authRequired: true }, {
 	post() {
 		check(this.bodyParams, Match.ObjectIncluding({
@@ -723,6 +758,7 @@ API.v1.addRoute('chat.getDiscussions', { authRequired: true }, {
 		return API.v1.success(messages);
 	},
 });
+
 API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 	get() {
 		const { messageId } = this.queryParams;
@@ -750,46 +786,120 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 			throw new Meteor.Error('error-message-not-found', 'Message not exists');
 		}
 		const serverUri = settings.get('Site_Url');
-		let t = null;
-		let coverUri = '';
 		const userName = msg?.u?.name || '';
 		let userAvatar = msg?.u?.username || '';
-		const attachment = msg?.attachments?.[0];
-		const mediaAttach = {
-			video_url: '',
-			video_width: 0,
-			video_height: 0,
-			image_width: 0,
-			image_height: 0,
-		};
-
-		if (attachment && auditState === 'pass') {
-			if (userAvatar) {
-				userAvatar = `${ serverUri }/avatar/${ userAvatar }`;
-			}
-			coverUri = attachment.video_cover_url || attachment.image_url || '';
-			if (coverUri && !coverUri.startsWith('http')) {
-				coverUri = `${ serverUri }${ coverUri }`;
-			}
-			['video_url', 'video_width', 'video_height', 'image_width', 'image_height'].forEach((key) => {
-				if (key in attachment) {
-					mediaAttach[key] = attachment[key];
+		const attachments = msg?.attachments;
+		const t = msg?.attachments[0].image_type || msg?.attachments[0].video_type || null;
+		const mediaAttachs = attachments.map((attachment) => {
+			const mediaAttach = {
+				video_url: '',
+				video_width: 0,
+				video_height: 0,
+				image_width: 0,
+				image_height: 0,
+			};
+			let coverUri = '';
+			let audio_url = '';
+			if (attachment && auditState === 'pass') {
+				if (userAvatar) {
+					userAvatar = `${ serverUri }/avatar/${ userAvatar }`;
 				}
-			});
-			t = attachment.image_type || attachment.video_type || null;
-		}
+				coverUri = attachment.video_cover_url || attachment.image_url || '';
+				audio_url = attachment.audio_url ?? '';
+				if (coverUri && !coverUri.startsWith('http')) {
+					coverUri = `${ serverUri }${ coverUri }`;
+				}
+				['video_url', 'video_width', 'video_height', 'image_width', 'image_height'].forEach((key) => {
+					if (key in attachment) {
+						mediaAttach[key] = attachment[key];
+					}
+				});
+			}
+			return { ...mediaAttach, coverUri, audio_url };
+		});
 		const data = {
 			userAvatar,
 			userName,
-			coverUri,
 			t,
-			...mediaAttach,
+			mediaAttachs,
 			auditState,
 		};
 		return API.v1.success({
 			data,
 		});
 	},
+});
+
+API.v1.addRoute('chat.getPublicUserInfo', { authRequired: false }, {
+	get() {
+		const secret = process.env.INTERNAL_X_SECRET || '';
+		const xSecret = this.request.headers['x-secret'] ?? '';
+		if (secret !== xSecret) {
+			throw new Meteor.Error('error-not-allowed', 'Not Allowed');
+		}
+		const { username } = this.requestParams();
+		if (!username) {
+			throw new Meteor.Error('error-invalid-params', 'The required "username" query param is missing.');
+		}
+		// 获取用户信息
+		const userInfo = Meteor.users.findOne({ username });
+		const serverUri = settings.get('Site_Url');
+		const name = userInfo?.name || '';
+		let userAvatar = userInfo?.username || '';
+		if (userAvatar) {
+			userAvatar = `${ serverUri }/avatar/${ userAvatar }`;
+		}
+		//  获取用户下的Message
+		console.info('messagtItemsmessagtItemsmessagtItems');
+
+		const cursor = Messages.find({
+			'u.username': username,
+			t: {
+				$in: ['post', 'story'],
+			},
+			attachments: {
+				$gt: { $size: 0 },
+			},
+			'metadata.audit.state': 'pass',
+			_hidden: {
+				$ne: true,
+			} }, {
+			sort: { ts: -1 },
+			limit: 5,
+			skip: 0,
+
+		});
+		const messagtItems = cursor.fetch();
+		// const messagtItems = Promise.await(aaa());
+		//  凭借post信息
+
+		const messageList = messagtItems.map((message) => {
+			const mediaAttach = {
+				video_width: 0,
+				video_height: 0,
+				image_width: 0,
+				image_height: 0,
+			};
+			const attachment = message?.attachments?.[0];
+			const coverUri = getCoverUrl(message);
+			['video_width', 'video_height', 'image_width', 'image_height'].forEach((key) => {
+				if (key in attachment) {
+					mediaAttach[key] = attachment[key];
+				}
+			});
+			return { ...mediaAttach, coverUri };
+		}).filter(Boolean);
+		const data = {
+			messageList,
+			name,
+			userAvatar,
+		};
+		return API.v1.success({
+			data,
+		});
+	},
+
+
 });
 
 API.v1.addRoute('chat.audit', { authRequired: true }, {
