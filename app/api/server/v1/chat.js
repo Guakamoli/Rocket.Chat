@@ -801,8 +801,11 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 			let coverUri = '';
 			let audio_url = '';
 			if (attachment && auditState === 'pass') {
+				console.info('userAvatar', userAvatar);
 				if (userAvatar) {
-					userAvatar = `${ serverUri }/avatar/${ userAvatar }`;
+					if (userAvatar.indexOf('avatar') === -1) {
+						userAvatar = `${ serverUri }/avatar/${ userAvatar }`;
+					}
 				}
 				coverUri = attachment.video_cover_url || attachment.image_url || '';
 				audio_url = attachment.audio_url ?? '';
@@ -882,12 +885,13 @@ API.v1.addRoute('chat.getPublicUserInfo', { authRequired: false }, {
 			};
 			const attachment = message?.attachments?.[0];
 			const coverUri = getCoverUrl(message);
+			const type = attachment.image_type || attachment.video_type || null;
 			['video_width', 'video_height', 'image_width', 'image_height'].forEach((key) => {
 				if (key in attachment) {
 					mediaAttach[key] = attachment[key];
 				}
 			});
-			return { ...mediaAttach, coverUri };
+			return { ...mediaAttach, coverUri, type };
 		}).filter(Boolean);
 		const data = {
 			messageList,
