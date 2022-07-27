@@ -801,7 +801,6 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 			let coverUri = '';
 			let audio_url = '';
 			if (attachment && auditState === 'pass') {
-				console.info('userAvatar', userAvatar);
 				if (userAvatar) {
 					if (userAvatar.indexOf('avatar') === -1) {
 						userAvatar = `${ serverUri }/avatar/${ userAvatar }`;
@@ -852,8 +851,6 @@ API.v1.addRoute('chat.getPublicUserInfo', { authRequired: false }, {
 		if (userAvatar) {
 			userAvatar = `${ serverUri }/avatar/${ userAvatar }`;
 		}
-		//  获取用户下的Message
-		console.info('messagtItemsmessagtItemsmessagtItems');
 
 		const cursor = Messages.find({
 			'u.username': username,
@@ -891,6 +888,7 @@ API.v1.addRoute('chat.getPublicUserInfo', { authRequired: false }, {
 					mediaAttach[key] = attachment[key];
 				}
 			});
+
 			return { ...mediaAttach, coverUri, type };
 		}).filter(Boolean);
 		const data = {
