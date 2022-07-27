@@ -891,6 +891,7 @@ API.v1.addRoute('chat.getPublicUserInfo', { authRequired: false }, {
 					mediaAttach[key] = attachment[key];
 				}
 			});
+
 			return { ...mediaAttach, coverUri, type };
 		}).filter(Boolean);
 		const data = {
