@@ -37,7 +37,14 @@ const getCoverUrl = (message) => {
 		const { video_url } = attachment;
 		if (coverUri) {
 			// 有mp4 视频链接
-			if (extname(coverUri) === '.mp4') {
+			let url = {};
+			try {
+				url = new URL(coverUri);
+			} catch (e) {
+				// 	兼容老数据
+				return '';
+			}
+			if (extname(url.pathname) === '.mp4') {
 				coverUri = `${ video_url }?x-oss-process=video/snapshot,t_0,m_fast,ar_auto,f_png,w_208,h_276`;
 			} else {
 				// 阿里云图片 链接
