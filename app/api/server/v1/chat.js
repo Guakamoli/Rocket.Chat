@@ -1,3 +1,5 @@
+import { extname } from 'path';
+
 import { escapeRegExp } from '@rocket.chat/string-helpers';
 import { Meteor } from 'meteor/meteor';
 import { Match, check } from 'meteor/check';
@@ -16,12 +18,11 @@ import { settings } from '../../../settings';
 import { findMentionedMessages, findStarredMessages, findSnippetedMessageById, findSnippetedMessages, findDiscussionsFromRoom } from '../lib/messages';
 import { updateMessage } from '../../../lib/server/functions';
 
-
 const getCoverUrl = (message) => {
 	const attachment = message?.attachments?.[0];
 	let coverUri = attachment.video_cover_url || attachment.image_url || '';
 	// 如果有video_cover_url   就用，没有就没有
-	if (coverUri && !coverUri.startsWith('https://')) {
+	if (!coverUri.startsWith('https://')) {
 		// coverUri = formatAttachmentUrl(cover_url, user.id, user.token, baseUrl);
 		return coverUri;
 	}
@@ -36,7 +37,7 @@ const getCoverUrl = (message) => {
 		const { video_url } = attachment;
 		if (coverUri) {
 			// 有mp4 视频链接
-			if (coverUri.includes('.mp4')) {
+			if (extname(coverUri) === '.mp4') {
 				coverUri = `${ video_url }?x-oss-process=video/snapshot,t_0,m_fast,ar_auto,f_png,w_208,h_276`;
 			} else {
 				// 阿里云图片 链接
@@ -789,7 +790,7 @@ API.v1.addRoute('chat.getPublicMessage', { authRequired: false }, {
 		const userName = msg?.u?.name || '';
 		let userAvatar = msg?.u?.username || '';
 		const attachments = msg?.attachments;
-		const t = msg?.attachments[0].image_type || msg?.attachments[0].video_type || null;
+		const t = msg?.attachments[0].image_type || msg?.attachments[0].video_type || '';
 		const mediaAttachs = attachments.map((attachment) => {
 			const mediaAttach = {
 				video_url: '',
@@ -870,26 +871,16 @@ API.v1.addRoute('chat.getPublicUserInfo', { authRequired: false }, {
 
 		});
 		const messagtItems = cursor.fetch();
-		// const messagtItems = Promise.await(aaa());
-		//  凭借post信息
-
+		//  拼接post信息
 		const messageList = messagtItems.map((message) => {
-			const mediaAttach = {
-				video_width: 0,
-				video_height: 0,
-				image_width: 0,
-				image_height: 0,
-			};
 			const attachment = message?.attachments?.[0];
 			const coverUri = getCoverUrl(message);
-			const type = attachment.image_type || attachment.video_type || null;
-			['video_width', 'video_height', 'image_width', 'image_height'].forEach((key) => {
-				if (key in attachment) {
-					mediaAttach[key] = attachment[key];
-				}
-			});
-
-			return { ...mediaAttach, coverUri, type };
+			const type = attachment.image_type || attachment.video_type || '';
+			const videoWidth = attachment?.video_width ?? 0;
+			const videoHeight = attachment?.video_height ?? 0;
+			const imageWidth = attachment?.image_width ?? 0;
+			const imageHeight = attachment?.image_height ?? 0;
+			return { videoWidth, videoHeight, imageWidth, imageHeight, coverUri, type };
 		}).filter(Boolean);
 		const data = {
 			messageList,
