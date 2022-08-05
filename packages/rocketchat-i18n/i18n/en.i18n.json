@@ -4536,7 +4536,7 @@
   "Viewing_room_administration": "Viewing room administration",
   "Visibility": "Visibility",
   "Visible": "Visible",
-  "Visit_Site_Url_and_try_the_best_open_source_chat_solution_available_today": "Visit __Site_URL__ and try the best open source chat solution available today!",
+  "Visit_Site_Url_and_try_the_best_open_source_chat_solution_available_today": "RΞVO is a Social-Fi video NFT platform that enables users to watch, create and invest in video NFTs while socializing with fans and friends. Users can get $R3VO by watching videos and inviting others. Creators can also get $R3VO if their contents are viewed or liked by users. Creators can monetize by selling video NFTs and earning trading royalties. RΞVO is 100% owned by community. All of our income will be given back to our users and creators. ",
   "Visitor": "Visitor",
   "Visitor_Email": "Visitor E-mail",
   "Visitor_Info": "Visitor Info",
@@ -4699,5 +4699,7 @@
   "Email_Register_login_title": "Verify login",
   "Email_Register_login_des1": "以下是您的验证码：",
   "Email_Register_login_expire": "验证码将于15分钟后过期",
-  "Email_Register_login_bottom": "如您未申请此验证码，请忽略此信息"
+  "Email_Register_login_bottom": "如您未申请此验证码，请忽略此信息",
+  "Welcome_to_title": "Welcome!"
+
 }

@@ -4167,7 +4167,7 @@
   "Viewing_room_administration": "正在查看聊天室管理",
   "Visibility": "可见性",
   "Visible": "可见",
-  "Visit_Site_Url_and_try_the_best_open_source_chat_solution_available_today": "访问 __Site_URL__ 并尝试最好的开源即时消息解决方案！",
+  "Visit_Site_Url_and_try_the_best_open_source_chat_solution_available_today": "RΞVO是一个Social-Fi视频NFT平台，允许用户在与粉丝和朋友社交的同时观看、创建和投资视频NFT。用户可以通过观看视频和邀请他人获得R3VO。创作者还可以获得R3VO，如果他们的内容被用户观看或点赞。创作者可以通过出售视频NFT和赚取交易版税来赚钱。RΞVO由社区100%拥有。我们所有的收入都将回馈给我们的用户和创作者。",
   "Visitor": "访客",
   "Visitor_Email": "访客电子邮件",
   "Visitor_Info": "访客信息",
@@ -4327,7 +4327,8 @@
   "Email_Register_login_title": "验证登录",
   "Email_Register_login_des1": "以下是您的验证码：",
   "Email_Register_login_expire": "验证码将于15分钟后过期",
-  "Email_Register_login_bottom": "如您未申请此验证码，请忽略此信息"
+  "Email_Register_login_bottom": "如您未申请此验证码，请忽略此信息",
+  "Welcome_to_title": "欢迎来到 __Site_Name__"
 
 
 }
