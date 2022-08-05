@@ -215,7 +215,6 @@ API.v1.addRoute('users.info', { authRequired: true }, {
 				},
 			}).fetch();
 		}
-
 		return API.v1.success({
 			user,
 		});
@@ -511,6 +510,7 @@ API.v1.addRoute('users.update', { authRequired: true, twoFactorRequired: true },
 				sendWelcomeEmail: Match.Maybe(Boolean),
 				verified: Match.Maybe(Boolean),
 				customFields: Match.Maybe(Object),
+				labels: Match.Maybe(Array),
 			}),
 		});
 

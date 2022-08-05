@@ -131,4 +131,8 @@ Meteor.methods({
 
 		Promise.await(sendMessage(sender, systemMessage, room, false));
 	},
+
+	kameoNumberOfPost(userId) {
+		return Messages.find({ 'u._id': userId, t: 'post' }).count();
+	},
 });
