@@ -26,6 +26,7 @@ import { resetUserE2EEncriptionKey } from '../../../../server/lib/resetUserE2EKe
 import { setUserStatus } from '../../../../imports/users-presence/server/activeUsers';
 import { resetTOTP } from '../../../2fa/server/functions/resetTOTP';
 import { Team } from '../../../../server/sdk';
+import { Messages } from '../../../models';
 
 API.v1.addRoute('users.create', { authRequired: true }, {
 	post() {
@@ -214,6 +215,17 @@ API.v1.addRoute('users.info', { authRequired: true }, {
 					name: 1,
 				},
 			}).fetch();
+		}
+		const cursor = Messages.find({
+			'u.username': username,
+			attachments: {
+				$gt: { $size: 0 },
+			},
+			t: 'post',
+		});
+		const postNumber = cursor.count() ?? 0;
+		if (postNumber) {
+			user.postNumber = postNumber;
 		}
 
 		return API.v1.success({
@@ -511,6 +523,7 @@ API.v1.addRoute('users.update', { authRequired: true, twoFactorRequired: true },
 				sendWelcomeEmail: Match.Maybe(Boolean),
 				verified: Match.Maybe(Boolean),
 				customFields: Match.Maybe(Object),
+				labels: Match.Maybe(Array),
 			}),
 		});
 
