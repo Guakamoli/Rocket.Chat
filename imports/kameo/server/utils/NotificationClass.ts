@@ -143,7 +143,7 @@ export default class NotificationClass {
 		}
 
 		const currentDate = new Date();
-		currentDate.setHours(currentDate.getHours() + 72); // 72小时后过期
+		currentDate.setHours(currentDate.getHours() + 24); // 24小时后过期
 		const expireTime = currentDate.toISOString().replace(/\.[0-9]{3}/, '');
 
 		const androidAppKey = currentProduct({
@@ -167,7 +167,7 @@ export default class NotificationClass {
 		if (title) {
 			androidRequest.title = title;
 		} else {
-			androidRequest.title = 'Revo';
+			androidRequest.title = 'R3VO';
 		}
 		androidRequest.androidPopupTitle = title;
 		androidRequest.androidExtParameters = JSON.stringify({ ejson: EJSON.stringify(payload) });
