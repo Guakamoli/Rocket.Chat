@@ -55,6 +55,45 @@ export async function getPushData({ room, message, userId, senderUsername, sende
 		messageText = notificationMessage;
 	}
 
+	const pushExtra = {
+		pushType: '',
+		pushCategory: '',
+		pushMetadata: message.metadata || {},
+	};
+	switch (message.t) {
+		case 'story':
+		case 'post':
+		{
+			pushExtra.pushType = 'post';
+			pushExtra.pushCategory = 'post';
+			break;
+		}
+		case 'activity':
+		{
+			pushExtra.pushType = 'activity';
+			if (message.metadata.category) {
+				pushExtra.pushCategory = message.metadata.category;
+			}
+			break;
+		}
+		default:
+		{
+			if (message.rid && message.msg) {
+				pushExtra.pushType = 'chat';
+				pushExtra.pushCategory = 'direct'; // TODO: 先不处理群聊问题
+				pushExtra.pushMetadata = {
+					messageId: message._id,
+					rid: message.rid,
+					prid: message.prid || '',
+					drid: message.drid || '',
+					tmid: message.tmid || '',
+					content: message.msg,
+				};
+			}
+			break;
+		}
+	}
+
 	return {
 		payload: {
 			sender: message.u,
@@ -64,6 +103,7 @@ export async function getPushData({ room, message, userId, senderUsername, sende
 			messageType: message.t,
 			tmid: message.tmid,
 			...message.t === 'e2e' && { msg: message.msg },
+			pushExtra,
 		},
 		roomName: settings.get('Push_show_username_room') && roomTypes.getConfig(room.t).isGroupChat(room) ? `#${ roomTypes.getRoomName(room.t, room) }` : '',
 		username,
