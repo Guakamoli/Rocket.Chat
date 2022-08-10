@@ -66,6 +66,14 @@ export async function getPushData({ room, message, userId, senderUsername, sende
 		{
 			pushExtra.pushType = 'post';
 			pushExtra.pushCategory = 'post';
+			pushExtra.pushMetadata = {
+				messageId: message._id,
+				rid: message.rid || '',
+				prid: message.prid || '',
+				drid: message.drid || '',
+				tmid: message.tmid || '',
+				content: message.msg,
+			};
 			break;
 		}
 		case 'activity':
