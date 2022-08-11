@@ -384,6 +384,9 @@ export const saveUser = function(userId, userData) {
 
 	handleName(updateUser, userData.name);
 
+	if (userData.labels) {
+		updateUser.$set.labels = userData.labels;
+	}
 	if (userData.roles) {
 		updateUser.$set.roles = userData.roles;
 	}
