@@ -60,6 +60,16 @@ export function checkInviteCodeAvailability(code) {
 	return true;
 }
 
+/**
+ * 安全的XML字符转义
+ * @param str {string}
+ * @return {string}
+ */
+export function safeXML(str) {
+	return str.replace(/\</g, '&lt;')
+		.replace(/\&/g, '&amp;');
+}
+
 export {
 	PRODUCT_CODE,
 	currentProduct,
