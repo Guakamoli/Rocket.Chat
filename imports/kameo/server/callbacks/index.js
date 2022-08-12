@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 
 import { callbacks } from '../../../../app/callbacks';
+import { safeXML } from '../utils/index';
 
 const messageTypePost = 'post';
 const messageTypeStory = 'story';
@@ -71,7 +72,7 @@ callbacks.add('afterSaveMessage', function(message, room = {}) {
 				ts: message.ts,
 				influencerId: message.u._id,
 				public: message.public || false, // 兼容没有免费作品的情况
-				msg: message.msg || '',
+				msg: safeXML(message.msg || ''),
 				plainText,
 				region: message?.metadata?.region || null,
 			});

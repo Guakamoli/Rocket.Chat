@@ -8,7 +8,7 @@ import { sendEmailFromData } from '../../../../app/lib/server/functions/notifica
 import { IUser } from '../../../../definition/IUser';
 import { settings } from '../../../../app/settings/server';
 import { metrics } from '../../../../app/metrics/server';
-import { currentProduct } from './index';
+import { currentProduct, safeXML } from './index';
 import { IAliyunPushRequest, IAliyunPushNotification } from '../definition/IAliyun';
 
 const {
@@ -118,7 +118,7 @@ export default class NotificationClass {
 
 		const idOnly = settings.get('Push_request_content_from_server');
 		const title = idOnly ? '' : payload.sender.name || username || roomName;
-		const message = originalMessage.replace('%s', title);
+		const message = safeXML(originalMessage.replace('%s', title));
 
 		const iOSAppKey = currentProduct({
 			PAIYA: Number(process.env.MPUSH_APPKEY_PAIYA_IOS),
@@ -134,7 +134,7 @@ export default class NotificationClass {
 			iOSBadge: badge,
 			body: message,
 		};
-		iOSRequest.iOSExtParameters = JSON.stringify({ ejson: EJSON.stringify(payload) });
+		iOSRequest.iOSExtParameters = JSON.stringify({ ejson: safeXML(EJSON.stringify(payload)) });
 		if (title) {
 			iOSRequest.title = title;
 		}
@@ -170,7 +170,7 @@ export default class NotificationClass {
 			androidRequest.title = 'R3VO';
 		}
 		androidRequest.androidPopupTitle = title;
-		androidRequest.androidExtParameters = JSON.stringify({ ejson: EJSON.stringify(payload) });
+		androidRequest.androidExtParameters = JSON.stringify({ ejson: safeXML(EJSON.stringify(payload)) });
 
 		// eslint-disable-next-line @typescript-eslint/camelcase
 		metrics.notificationsSent.inc({ notification_type: 'mobile' });

@@ -3,6 +3,7 @@ import MQHttpSDK from '@aliyunmq/mq-http-sdk';
 
 import { Users } from '../../../../app/models';
 import { Logger } from '../../../../app/logger';
+import { safeXML } from '../utils/index';
 
 const logger = new Logger('RocketMQ', {});
 
@@ -64,6 +65,15 @@ async function rocketmqSendLoginUser(userId) {
 	const props = {
 		id: userId,
 	};
+	if (user.name) {
+		user.name = safeXML(user.name);
+	}
+	if (user.bio) {
+		user.bio = safeXML(user.bio);
+	}
+	if (user?.customFields?.note) {
+		user.customFields.note = safeXML(user.customFields.note);
+	}
 
 	await rocketmqSend(topicIds.login, JSON.stringify({ ...user }), 'mqLoginUser', 'rocketchat', props);
 }
