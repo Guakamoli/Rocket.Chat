@@ -133,7 +133,14 @@ Meteor.methods({
 	},
 
 	kameoNumberOfPost(userId) {
-		const query = { 'u._id': userId, t: 'post' };
+		const query = {
+			'u._id': userId,
+			t: 'post',
+			attachments: {
+				$gt: { $size: 0 },
+			},
+			'metadata.audit.state': 'pass',
+		};
 		return Messages.find(query).count();
 	},
 });
