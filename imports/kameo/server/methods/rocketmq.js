@@ -22,6 +22,7 @@ const topicIds = {
 	creatorRole: process.env.MQ_TOPIC_ID_ROCKETCHAT_ROLE,
 	blockedUser: process.env.MQ_TOPIC_ID_ROCKETCHAT_BLOCKED,
 	invite: process.env.MQ_TOPIC_ID_DATA_INVITE,
+	updateGorseUser: process.env.MQ_TOPIC_ID_GORSE,
 };
 
 const mqClient = new MQClient(endpoint, accessKeyId, accessKeySecret);
@@ -136,6 +137,11 @@ async function rocketmqSendInvite(payload, tag = 'register') {
 	await rocketmqSend(topicIds.invite, JSON.stringify(payload), tag, 'rocketchat');
 }
 
+async function rocketmqSendGorseUser(payload, tag = 'user.update') {
+	logger.debug('rocketmqSendGorseUser', { ...payload });
+	await rocketmqSend(topicIds.updateGorseUser, JSON.stringify(payload), tag, 'rocketchat');
+}
+
 Meteor.methods({
 	kameoRocketmqSend: rocketmqSend,
 	kameoRocketmqSendLoginUser: rocketmqSendLoginUser,
@@ -146,4 +152,5 @@ Meteor.methods({
 	kameoRocketmqSendChangeRole: rocketmqSendChangeRole,
 	kameoRocketmqSendBlocked: rocketmqSendBlocked,
 	kameoRocketmqSendInvite: rocketmqSendInvite,
+	kameoRocketmqSendGorseUser: rocketmqSendGorseUser,
 });

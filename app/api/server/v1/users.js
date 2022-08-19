@@ -517,7 +517,13 @@ API.v1.addRoute('users.update', { authRequired: true, twoFactorRequired: true },
 		const userData = _.extend({ _id: this.bodyParams.userId }, this.bodyParams.data);
 
 		Meteor.runAsUser(this.userId, () => saveUser(this.userId, userData));
-
+		// 判断是否labels 传入
+		if (Array.isArray(this?.bodyParams?.data?.labels)) {
+			Meteor.call('kameoRocketmqSendGorseUser', {
+				labels: this?.bodyParams?.data?.labels || [],
+				userId: this?.bodyParams?.userId,
+			});
+		}
 		// if (this.bodyParams.data.customFields) {
 		// 	saveCustomFields(this.bodyParams.userId, this.bodyParams.data.customFields);
 		// }
@@ -580,7 +586,6 @@ API.v1.addRoute('users.updateOwnBasicInfo', { authRequired: true }, {
 
 		Meteor.runAsUser(this.userId, () => Meteor.call('saveUserProfile', userData, this.bodyParams.customFields, twoFactorOptions));
 		Meteor.call('kameoRocketmqSendLoginUser', this.userId);
-
 		return API.v1.success({ user: Users.findOneById(this.userId, { fields: API.v1.defaultFieldsToExclude }) });
 	},
 });
