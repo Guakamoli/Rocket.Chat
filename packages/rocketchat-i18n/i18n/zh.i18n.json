@@ -4328,7 +4328,10 @@
   "Email_Register_login_des1": "以下是您的验证码：",
   "Email_Register_login_expire": "验证码将于15分钟后过期",
   "Email_Register_login_bottom": "如您未申请此验证码，请忽略此信息",
-  "Welcome_to_title": "欢迎来到 __Site_Name__"
-
+  "Welcome_to_title": "欢迎来到 __Site_Name__",
+  "Welcome_to_En": "Welcome to __Site_Name__",
+  "Welcome_to_Revo_Desc!":"Feel free to invite your friends to REVO as well! ",
+  "Feel_Free_To_Invite_Your_Friends_To_REVO_As_Well":"Feel free to invite your friends to REVO as well! ",
+  "See_You_In_Revo":"See you in REVO!"
 
 }
