@@ -13,7 +13,7 @@ const config = {};
 // const { default: Vod20170321 } = $vod20170321;
 
 export class OSSClient {
-	static ACCELERATE_ENDPOINT = config.OSS_ENDPOINT;
+	static ACCELERATE_ENDPOINT = 'oss-accelerate.aliyuncs.com';
 
 	/**
 	 * @param {String} accessKeyId -
@@ -95,8 +95,30 @@ export class OSSClient {
 	}
 }
 
+const getConfig = (region) => {
+	let zone = '_SG';
+	if (/^zh-(CN|TW|HK|SG)|zh|cn|undefined$/.test(String(region))) {
+		zone = '';
+	}
+
+	const config = {};
+	const keys = ['Bucket', 'AccessKeyId', 'AccessKeySecret', 'Region', 'Endpoint', 'Domain', 'WorkFlowId', 'CateIdVideo', 'CateIdCover'];
+	for (const key of keys) {
+		let ossKey = key.replace(/^\S/, (s) => s.toLowerCase());
+		ossKey = ossKey
+			.replace(/([A-Z])/g, '_$1')
+			.trim()
+			.toUpperCase();
+		const ossValue = settings.get(`FileUpload_AliOSS${ zone }_${ key }`);
+		const vodValue = settings.get(`FileUpload_AliOSS${ zone }_Video_${ key }`);
+		config[`OSS_${ ossKey }`] = ossValue;
+		config[`VOD_${ ossKey }`] = vodValue;
+	}
+	return config;
+};
+
 export class VodClient {
-	static ENDPOINT = config.VOD_ENDPOINT;
+	static ENDPOINT = OSSClient.ACCELERATE_ENDPOINT;
 
 	static USER_DATA = {
 		AccelerateConfig: {
@@ -208,6 +230,7 @@ export class VodClient {
 	 * @returns {Promise} -
 	 */
 	async signature(options = {}) {
+		const config = getConfig(options.region);
 		const { filename, coverURL = '', description = '', tags = '', title = '', workflowId = config.VOD_WORK_FLOW_ID, userData = {}, imageType = 'default', imageExt = 'jpg', type } = options;
 		let resp = null;
 		switch (type) {
@@ -264,6 +287,7 @@ export class VodClient {
  * @returns {Object} -
  */
 export async function vodPreSignature(options = {}) {
+	const config = getConfig(options?.region);
 	const accessKeyId = config.VOD_ACCESS_KEY_ID;
 	const accessKeySecret = config.VOD_ACCESS_KEY_SECRET;
 	const opts = {
@@ -280,7 +304,7 @@ export async function vodPreSignature(options = {}) {
 		}
 	}
 
-	const vod = new VodClient(accessKeyId, accessKeySecret);
+	const vod = new VodClient(accessKeyId, accessKeySecret, { endpoint: config.VOD_ENDPOINT });
 	const {
 		body: { UploadAddress = {}, UploadAuth = {}, RequestId: requestId = '', VideoId: videoId = '', VideoURL: videoURL = '', ImageId: imageId = '', ImageURL: imageURL = '' },
 	} = await vod.signature(opts);
@@ -340,6 +364,7 @@ export function ossComposeURL(filename, https = true) {
  * @returns {Object} -
  */
 export async function ossPreSignature(options = {}) {
+	const config = getConfig(options?.region);
 	const { filename, imageType = 'default' } = options;
 	const accessKeyId = config.OSS_ACCESS_KEY_ID;
 	const accessKeySecret = config.OSS_ACCESS_KEY_SECRET;
@@ -360,26 +385,7 @@ export async function ossPreSignature(options = {}) {
 		fileURL: oss.signature(ossFilename, options),
 	};
 }
-/**
- * @description 获取所有oss码率视频地址
- * @param {String} videoId 视频唯一ID
- * @returns {Object} -
- */
-export async function ossGetPlayList(videoId) {
-	const accessKeyId = config.VOD_ACCESS_KEY_ID;
-	const accessKeySecret = config.VOD_ACCESS_KEY_SECRET;
-	const vod = new VodClient(accessKeyId, accessKeySecret);
-	const resp = await vod.getPlayInfo(videoId);
-	const {
-		PlayInfoList: { PlayInfo },
-	} = resp.body;
-	return PlayInfo.filter((video) => video.Status === 'Normal').reduce((previous, video) => {
-		if (video.Status === 'Normal') {
-			previous[video.Definition] = video.PlayURL;
-		}
-		return previous;
-	}, {});
-}
+
 const configure = _.debounce(function() {
 	const keys = ['Bucket', 'AccessKeyId', 'AccessKeySecret', 'Region', 'Endpoint', 'Domain', 'WorkFlowId', 'CateIdVideo', 'CateIdCover'];
 	for (const key of keys) {

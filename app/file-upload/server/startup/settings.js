@@ -188,6 +188,119 @@ settings.addGroup('FileUpload', function() {
 				value: 'AliyunOSS',
 			},
 		});
+
+
+		// 新增新加坡存储
+		this.add('FileUpload_AliOSS_SG_Bucket', '', {
+			type: 'string',
+			enableQuery: {
+				_id: 'FileUpload_Storage_Type',
+				value: 'AliyunOSS',
+			},
+		});
+		this.add('FileUpload_AliOSS_SG_Endpoint', '', {
+			type: 'string',
+			enableQuery: {
+				_id: 'FileUpload_Storage_Type',
+				value: 'AliyunOSS',
+			},
+		});
+		this.add('FileUpload_AliOSS_SG_AccessKeyId', '', {
+			type: 'string',
+			enableQuery: {
+				_id: 'FileUpload_Storage_Type',
+				value: 'AliyunOSS',
+			},
+			secret: true,
+		});
+		this.add('FileUpload_AliOSS_SG_AccessKeySecret', '', {
+			type: 'string',
+			enableQuery: {
+				_id: 'FileUpload_Storage_Type',
+				value: 'AliyunOSS',
+			},
+			secret: true,
+		});
+		this.add('FileUpload_AliOSS_SG_Region', '', {
+			type: 'string',
+			enableQuery: {
+				_id: 'FileUpload_Storage_Type',
+				value: 'AliyunOSS',
+			},
+		});
+		this.add('FileUpload_AliOSS_SG_Domain', '', {
+			type: 'string',
+			enableQuery: {
+				_id: 'FileUpload_Storage_Type',
+				value: 'AliyunOSS',
+			},
+		});
+		this.add('FileUpload_AliOSS_SG_Video_AccessKeyId', '', {
+			type: 'string',
+			enableQuery: {
+				_id: 'FileUpload_Storage_Type',
+				value: 'AliyunOSS',
+			},
+			secret: true,
+		});
+		this.add('FileUpload_AliOSS_SG_Video_AccessKeySecret', '', {
+			type: 'string',
+			enableQuery: {
+				_id: 'FileUpload_Storage_Type',
+				value: 'AliyunOSS',
+			},
+			secret: true,
+		});
+		this.add('FileUpload_AliOSS_SG_Video_Bucket', '', {
+			type: 'string',
+			enableQuery: {
+				_id: 'FileUpload_Storage_Type',
+				value: 'AliyunOSS',
+			},
+		});
+		this.add('FileUpload_AliOSS_SG_Video_Endpoint', '', {
+			type: 'string',
+			enableQuery: {
+				_id: 'FileUpload_Storage_Type',
+				value: 'AliyunOSS',
+			},
+		});
+
+		this.add('FileUpload_AliOSS_SG_Video_Region', '', {
+			type: 'string',
+			enableQuery: {
+				_id: 'FileUpload_Storage_Type',
+				value: 'AliyunOSS',
+			},
+		});
+		this.add('FileUpload_AliOSS_SG_Video_Domain', '', {
+			type: 'string',
+			enableQuery: {
+				_id: 'FileUpload_Storage_Type',
+				value: 'AliyunOSS',
+			},
+		});
+		this.add('FileUpload_AliOSS_SG_Video_WorkFlowId', '', {
+			type: 'string',
+			enableQuery: {
+				_id: 'FileUpload_Storage_Type',
+				value: 'AliyunOSS',
+			},
+		});
+		this.add('FileUpload_AliOSS_SG_Video_CateIdVideo', '', {
+			type: 'string',
+			enableQuery: {
+				_id: 'FileUpload_Storage_Type',
+				value: 'AliyunOSS',
+			},
+		});
+		this.add('FileUpload_AliOSS_SG_Video_CateIdCover', '', {
+			type: 'string',
+			enableQuery: {
+				_id: 'FileUpload_Storage_Type',
+				value: 'AliyunOSS',
+			},
+		});
 	});
 	this.section('Amazon S3', function() {
 		this.add('FileUpload_S3_Bucket', '', {
