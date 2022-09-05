@@ -160,6 +160,7 @@ API.v1.addRoute('rooms.getAliyunUploadPaths', { authRequired: true }, {
 					userData: {
 						Extend: {
 							messageId: fileItem.extra.message_id,
+							region: region || '',
 						},
 					},
 				};

@@ -232,6 +232,7 @@ Meteor.methods({
 					EventType: 'KameoImageAudit',
 					Extend: {
 						messageId: msg._id,
+						region: msg?.region || 'cn',
 					},
 				});
 			}
