@@ -139,6 +139,10 @@ async function rocketmqSendInvite(payload, tag = 'register') {
 
 async function rocketmqSendGorseUser(payload, tag = 'user.update') {
 	logger.debug('rocketmqSendGorseUser', { ...payload });
+	const user = Users.findOneById(payload.userId);
+	if (user?.region) {
+		payload.labels.push(`region:${ user.region }`);
+	}
 	await rocketmqSend(topicIds.updateGorseUser, JSON.stringify(payload), tag, 'rocketchat');
 }
 
