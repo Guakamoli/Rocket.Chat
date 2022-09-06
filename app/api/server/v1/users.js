@@ -134,9 +134,9 @@ API.v1.addRoute('users.setActiveStatus', { authRequired: true }, {
 			confirmRelinquish: Match.Maybe(Boolean),
 		});
 
-		if (!hasPermission(this.userId, 'edit-other-user-active-status')) {
-			return API.v1.unauthorized();
-		}
+		// if (!hasPermission(this.userId, 'edit-other-user-active-status')) {
+		// 	return API.v1.unauthorized();
+		// }
 
 		Meteor.runAsUser(this.userId, () => {
 			const { userId, activeStatus, confirmRelinquish = false } = this.bodyParams;
