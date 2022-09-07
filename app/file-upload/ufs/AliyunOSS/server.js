@@ -103,6 +103,8 @@ export class AliyunOSSStore extends UploadFS.Store {
 		 * @return {*}
 		 */
 		this.getWriteStream = function(fileId, file/* , options*/) {
+			// 假设 file 中存在 region
+			const region = file.region || '';
 			const writeStream = new stream.PassThrough();
 			writeStream.length = file.size;
 			writeStream.on('newListener', (event, listener) => {
@@ -114,7 +116,8 @@ export class AliyunOSSStore extends UploadFS.Store {
 				}
 			});
 			this.oss = null;
-			let ossConfig = this.options.commonConfig;
+			// let ossConfig = this.options.commonConfig;
+			let ossConfig = region === 'cn' ? this.options.commonConfig : this.options.sgCommonConfig;
 			let filename = file.name;
 			if (file.type.startsWith('video')) {
 				// 视频需要先获取到视频的上传凭证, 然后中传给oss继续处理
@@ -127,7 +130,7 @@ export class AliyunOSSStore extends UploadFS.Store {
 					contentType: file.type,
 					contentDisposition: true,
 				};
-				ossConfig = Promise.await(preSignature(options));
+				ossConfig = Promise.await(preSignature({ ...options, region }));
 				filename = ossConfig.filename;
 				this.url = ossConfig.videoURL;
 			} else {

@@ -127,6 +127,8 @@ const configure = _.debounce(function() {
 	const config = {
 		commonConfig: {},
 		videoConfig: {},
+		sgCommonConfig: {},
+		sgVideoConfig: {},
 	};
 	for (const key of keys) {
 		const lowKey = key.replace(/^\S/, (s) => s.toLowerCase());
@@ -134,10 +136,15 @@ const configure = _.debounce(function() {
 		config.videoConfig[lowKey] = settings.get(
 			`FileUpload_AliOSS_Video_${ key }`,
 		);
+		config.sgCommonConfig[lowKey] = settings.get(`FileUpload_AliOSS_SG_${ key }`);
+		config.sgVideoConfig[lowKey] = settings.get(
+			`FileUpload_AliOSS_SG_Video_${ key }`,
+		);
 	}
 	for (const key of videoKeys) {
 		const lowKey = key.replace(/^\S/, (s) => s.toLowerCase());
 		config.videoConfig[lowKey] = settings.get(`FileUpload_AliOSS_Video_${ key }`);
+		config.sgVideoConfig[lowKey] = settings.get(`FileUpload_AliOSS_SG_Video_${ key }`);
 	}
 	AliyunOSSUploads.store = FileUpload.configureUploadsStore(
 		'AliyunOSS',

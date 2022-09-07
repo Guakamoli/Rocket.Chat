@@ -140,7 +140,7 @@ API.v1.addRoute('rooms.getAliyunUploadPaths', { authRequired: true }, {
 	// 1. 到阿里云去拿签名, 但是要注意签名是会过期的，太久没上传链接就传不了, 前端重传机制
 	// 2. 这里要如果已经有file条目，不需要创建直接更新即可
 	post() {
-		const { fileList } = this.bodyParams;
+		const { fileList, region } = this.bodyParams;
 		if (!fileList?.length) {
 			throw new Meteor.Error('error-fileList-param-invalid', 'The "fileList" query parameter must be a valid list.');
 		}
@@ -160,6 +160,7 @@ API.v1.addRoute('rooms.getAliyunUploadPaths', { authRequired: true }, {
 					userData: {
 						Extend: {
 							messageId: fileItem.extra.message_id,
+							region: region || '',
 						},
 					},
 				};
@@ -171,7 +172,7 @@ API.v1.addRoute('rooms.getAliyunUploadPaths', { authRequired: true }, {
 					contentDisposition: true,
 				};
 			}
-			const signatureItem = Promise.await(aliyunPreSignature(options));
+			const signatureItem = Promise.await(aliyunPreSignature({ ...options, region }));
 			result.push({
 				filename,
 				uploadFileUrl: signatureItem.fileURL,
