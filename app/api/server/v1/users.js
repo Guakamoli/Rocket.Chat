@@ -518,12 +518,10 @@ API.v1.addRoute('users.update', { authRequired: true, twoFactorRequired: true },
 
 		Meteor.runAsUser(this.userId, () => saveUser(this.userId, userData));
 		// 判断是否labels 传入
-		if (Array.isArray(this?.bodyParams?.data?.labels)) {
-			Meteor.call('kameoRocketmqSendGorseUser', {
-				labels: this?.bodyParams?.data?.labels || [],
-				userId: this?.bodyParams?.userId,
-			});
+		if (this.bodyParams.userId) {
+			Meteor.call('kameoRocketmqSendGorseUser', { userId: this.bodyParams.userId });
 		}
+
 		// if (this.bodyParams.data.customFields) {
 		// 	saveCustomFields(this.bodyParams.userId, this.bodyParams.data.customFields);
 		// }

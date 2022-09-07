@@ -77,6 +77,7 @@ Meteor.methods({
 		}
 
 		Users.setPreferences(user._id, settings);
+		Meteor.call('kameoRocketmqSendGorseUser', { userId: user._id });
 
 		// propagate changed notification preferences
 		Meteor.defer(() => {
