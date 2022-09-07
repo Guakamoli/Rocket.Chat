@@ -144,7 +144,7 @@ async function rocketmqSendGorseUser(payload, tag = 'user.update') {
 			await rocketmqSend(topicIds.updateGorseUser, JSON.stringify({ username: user.username }), tag, 'rocketchat');
 		}
 	} catch (err) {
-		logger.error('rocketmqSendGorseUser Execute Error:', { ...payload });
+		logger.error('rocketmqSendGorseUser Execute Error:', err);
 	}
 }
 
