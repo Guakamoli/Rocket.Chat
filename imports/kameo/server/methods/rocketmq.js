@@ -138,8 +138,14 @@ async function rocketmqSendInvite(payload, tag = 'register') {
 }
 
 async function rocketmqSendGorseUser(payload, tag = 'user.update') {
-	logger.debug('rocketmqSendGorseUser', { ...payload });
-	await rocketmqSend(topicIds.updateGorseUser, JSON.stringify(payload), tag, 'rocketchat');
+	try {
+		const user = Users.findOneById(payload.userId);
+		if (user) {
+			await rocketmqSend(topicIds.updateGorseUser, JSON.stringify({ username: user.username }), tag, 'rocketchat');
+		}
+	} catch (err) {
+		logger.error('rocketmqSendGorseUser Execute Error:', err);
+	}
 }
 
 Meteor.methods({
