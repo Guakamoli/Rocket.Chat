@@ -84,7 +84,6 @@ export class AliyunOSSStore extends UploadFS.Store {
 		 * @return {*}
 		 */
 		this.getReadStream = function(fileId) {
-			console.info(options, '=================options options============');
 			let url = this.getFileURL(fileId);
 			if (!url) {
 				const file = this.getCollection().findOne({ _id: fileId });
@@ -105,7 +104,6 @@ export class AliyunOSSStore extends UploadFS.Store {
 		 */
 		this.getWriteStream = function(fileId, file/* , options*/) {
 			// 假设 file 中存在 region
-			console.info(file.region, options, '===========file.region options============');
 			const region = file.region || '';
 			const writeStream = new stream.PassThrough();
 			writeStream.length = file.size;
