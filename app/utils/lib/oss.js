@@ -96,8 +96,8 @@ export class OSSClient {
 }
 
 const getConfig = (region) => {
-	let zone = '_SG';
-	if (/^zh-(CN|TW|HK|SG)|zh|cn|undefined$/.test(String(region))) {
+	let zone = '_SG';	
+	if (/^cn|undefined$/i.test(String(region))) {
 		zone = '';
 	}
 
