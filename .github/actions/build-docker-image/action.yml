@@ -34,17 +34,14 @@ runs:
       run: |
         cd ${{ inputs.root-dir }}
 
-        ls -alh
-        echo '-------------------------------'
-        ls -alh ../
-        echo '-------------------------------'
-
         IMAGE_NAME="${{ inputs.registry }}/paiya/rocketchat:${{ inputs.docker-tag }}"
 
         echo "Build Docker image ${IMAGE_NAME}"
 
         DOCKER_PATH="${GITHUB_WORKSPACE}/apps/meteor/.docker"
+        DOCKERFILE_PATH="${DOCKER_PATH}/Dockerfile"
 
+        cp $DOCKERFILE_PATH ./Dockerfile
         if [ -e ${DOCKER_PATH}/entrypoint.sh ]; then
           cp ${DOCKER_PATH}/entrypoint.sh .
         fi;
