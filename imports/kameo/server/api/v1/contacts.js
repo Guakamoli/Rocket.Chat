@@ -16,12 +16,12 @@ const fields = {
 };
 
 const getContactUserCached = mem(({ userId, username }) => {
-	const user = Meteor.users.findOne({ _id: userId, username }, {
-		projection: { name: 1, 'customFields.note': 1 },
+	const user = Meteor.users.findOne({ _id: userId }, {
+		projection: { name: 1, 'customFields.note': 1, username: 1 },
 	});
 	return {
 		_id: userId,
-		username,
+		username: user?.username || username,
 		name: user?.name,
 		note: user?.customFields?.note || '',
 	};

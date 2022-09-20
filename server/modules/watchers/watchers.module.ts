@@ -112,12 +112,12 @@ export function initWatchers(models: IModelsParam, broadcast: BroadcastCallback,
 	}, { maxAge: 10000 });
 
 	const getContactUserCached = mem(async (userId: string, username: string): Promise<IContactUser> => {
-		const user = await Users.findOne<Pick<IContactUser, any>>({ _id: userId, username }, {
-			projection: { name: 1, 'customFields.note': 1 },
+		const user = await Users.findOne<Pick<IContactUser, any>>({ _id: userId }, {
+			projection: { name: 1, 'customFields.note': 1, username: 1 },
 		});
 		return {
 			_id: userId,
-			username,
+			username: user?.username || username,
 			name: user?.name,
 			note: user?.customFields?.note || '',
 		};
