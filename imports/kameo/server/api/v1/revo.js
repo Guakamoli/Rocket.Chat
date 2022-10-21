@@ -41,6 +41,7 @@ API.v1.addRoute('chat.updateNftMessage', { authRequired: false }, {
 			tokenId: Match.Optional(String),
 			mintAddress: Match.Optional(String),
 			tokenAccount: Match.Optional(String),
+			blockTime: Match.Optional(Number),
 		});
 
 		const msg = Messages.findOneById(this.bodyParams.postId);
