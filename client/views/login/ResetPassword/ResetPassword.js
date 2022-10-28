@@ -151,7 +151,6 @@ const ResetPassword = () => {
 					className={`rc-button rc-button--nude login${isSubmitDisabled ? '' : ' active'}`}
 					style={{
 						width: '100%',
-						color: 'white',
 						marginTop: '20px',
 					}}
 					onClick={handleSubmit}
@@ -179,7 +178,7 @@ const ResetPassword = () => {
 				<button
 					type='button'
 					className='rc-button rc-button--nude register'
-					style={{ color: '#651FFF', padding: '0px' }}
+					style={{ color: '#8EF902', padding: '0px' }}
 					onClick={goLogin}
 				>
 					{t('Login_go_register')}

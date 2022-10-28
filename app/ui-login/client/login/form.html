@@ -1,5 +1,5 @@
 <template name="loginForm">
-    <form id="login-card" class="content-background-color color-primary-font-color" method='/' novalidate>
+    <form id="login-card" class="aaa content-background-color color-primary-font-color" method='/' novalidate>
         {{#if state 'wait-activation'}}
             <header>
                 <h2 data-i18n="Registration_Succeeded">{{{_ "Registration_Succeeded"}}}</h2>
@@ -149,14 +149,14 @@
                 {{#if state 'login'}}
                     {{#if showFormLogin}}
                         <div class="rc-button__group rc-button__group--vertical">
-                            <button class='rc-button rc-button--primary login'>{{btnLoginSave}}</button>
+                            <button class='rc-button rc-button--primary login' style="color: #000">{{btnLoginSave}}</button>
                         </div>
 
-                        <button type="button" class="rc-button rc-button--nude email-login" style="color: #651FFF; margin-top: 27px;">{{_ 'SignIn_with_email'}}</button>
+                        <button type="button" class="rc-button rc-button--nude email-login" style="color: #8EF902; margin-top: 27px;">{{_ 'SignIn_with_email'}}</button>
                     {{/if}}
                 {{else}}
                     <div class="rc-button__group rc-button__group--vertical">
-                        <button class='rc-button rc-button--primary login'>{{btnLoginSave}}</button>
+                        <button class='rc-button rc-button--primary login' style="color: #000">{{btnLoginSave}}</button>
                     </div>
                 {{/if}}
 
@@ -170,13 +170,13 @@
                             {{else}}
                                 <div></div>
                             {{/if}}
-                            <button type="button" class="rc-button rc-button--nude forgot-password" style="align-self: flex-end;color: #651FFF;padding:0">{{_ 'Forgot_password'}}</button>
+                            <button type="button" class="rc-button rc-button--nude forgot-password" style="align-self: flex-end;color: #8EF902;padding:0">{{_ 'Forgot_password'}}</button>
                         </div>
                     {{/if}}
                     {{#if showFormLogin}}
                         <div style="{{#with bottomStyle}}{{.}}{{/with}}">
                             <div style="{{#with bottomLabelStyle}}{{.}}{{/with}}">{{_ "Login_has_not_account"}}</div>
-                            <button type="button" class="rc-button rc-button--nude register" style="color: #651FFF;padding: 0px">{{_ 'Login_go_register'}}</button>
+                            <button type="button" class="rc-button rc-button--nude register" style="color: #8EF902;padding: 0px">{{_ 'Login_go_register'}}</button>
                         </div>
                     {{else}}
                         {{#if linkReplacementText}}
@@ -189,7 +189,7 @@
                 {{#if state 'register' 'email-verification' 'forgot-password'}}
                     <div style="{{#with bottomStyle}}{{.}}{{/with}}">
                         <div style="{{#with bottomLabelStyle}}{{.}}{{/with}}">{{_ "Register_has_account"}}</div>
-                        <button type="button" class="rc-button rc-button--nude goEmailLogin" style="color: #651FFF;padding: 0px">{{_ 'Register_go_login'}}</button>
+                        <button type="button" class="rc-button rc-button--nude goEmailLogin" style="color: #8EF902;padding: 0px">{{_ 'Register_go_login'}}</button>
                     </div>
                 {{/if}}
             </div>

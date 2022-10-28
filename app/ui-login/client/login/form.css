@@ -1,7 +1,7 @@
 .btn-code {
 	display: flex;
 
-	color: #651fff;
+	color: #8ef902;
 
 	font-size: 13px;
 	font-weight: 500;
@@ -36,12 +36,19 @@ input {
 }
 
 .login {
+	color: var(--color-black);
 	border-radius: 22px !important;
-	background-color: rgba(101, 31, 255, 0.4) !important;
+
+	/* background-color: rgba(101, 31, 255, 0.4) !important; */
+	background-color: #8ef902 !important;
+}
+
+.aaa {
+	background-color: #0d0d0e;
 }
 
 .active {
-	background-color: #651fff !important;
+	background-color: #8ef902 !important;
 }
 
 .input-error {

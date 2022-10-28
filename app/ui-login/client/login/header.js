@@ -5,7 +5,7 @@ import { settings } from '../../../settings';
 
 Template.loginHeader.helpers({
 	productCodeWidth() {
-		return Meteor.settings.public.PRODUCT_CODE === 'GODUCK' ? '' : '125px';
+		return Meteor.settings.public.PRODUCT_CODE === 'GODUCK' ? '' : '';
 	},
 	logoUrl() {
 		const asset = settings.get('Assets_logo');
