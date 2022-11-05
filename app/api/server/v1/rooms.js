@@ -72,7 +72,6 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 		if (!room) {
 			return API.v1.unauthorized();
 		}
-
 		const { file, ...fields } = Promise.await(getUploadFormData({
 			request: this.request,
 		}));
