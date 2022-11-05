@@ -1603,12 +1603,6 @@ settings.addGroup('Layout', function() {
 });
 
 settings.addGroup('Kameo_Config', function() {
-	this.section('SOLANA', function() {
-		this.add('SOLANA_REVO_WALLET', '6TGVoJJo6S379akay5QFSWcQfnssJo32ZSzLjJdJxZpe', {
-			type: 'string',
-			public: true,
-		});
-	});
 	return this.section('Point', function() {
 		this.add('Point_Vote_Consume', '0.5', {
 			type: 'string',

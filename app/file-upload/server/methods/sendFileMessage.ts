@@ -24,6 +24,9 @@ Meteor.methods({
 			throw new Meteor.Error('error-invalid-user', 'Invalid user', { method: 'sendFileMessage' } as any);
 		}
 		const room = await Rooms.findOneById(roomId);
+		if (room.individualMain && room?.u?._id && user._id !== room?.u?._id) {
+			throw new Meteor.Error('error-invalid-operation', 'Invalid operation', { method: 'sendFileMessage' } as any);
+		}
 		if (user?.type !== 'app' && !canAccessRoom(room, user)) {
 			return false;
 		}
