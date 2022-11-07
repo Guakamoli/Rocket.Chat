@@ -36,7 +36,7 @@ Meteor.methods({
 					roles: 1,
 				},
 			});
-			if (Array.isArray(currentUser?.roles) && !currentUser.roles.includes('creator')) {
+			if (!currentUser?.roles?.includes('creator')) {
 				throw new Meteor.Error('error-invalid-operation', 'Invalid operation', { method: 'sendFileMessage' } as any);
 			}
 		}
