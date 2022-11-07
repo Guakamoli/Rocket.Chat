@@ -6,7 +6,7 @@ import { Match, check } from 'meteor/check';
 import _ from 'underscore';
 
 import { Uploads } from '../../../models/server';
-import { Rooms } from '../../../models/server/raw';
+import { Rooms, Users } from '../../../models/server/raw';
 import { callbacks } from '../../../callbacks/server';
 import { FileUpload } from '../lib/FileUpload';
 import { canAccessRoom } from '../../../authorization/server/functions/canAccessRoom';
@@ -26,6 +26,19 @@ Meteor.methods({
 		const room = await Rooms.findOneById(roomId);
 		if (room.individualMain && room?.u?._id && user._id !== room?.u?._id) {
 			throw new Meteor.Error('error-invalid-operation', 'Invalid operation', { method: 'sendFileMessage' } as any);
+		}
+		if (room.individualMain && room?.u?._id) {
+			const currentUser: any = await Users.findOneById(user._id, {
+				fields: {
+					username: 1,
+					type: 1,
+					name: 1,
+					roles: 1,
+				},
+			});
+			if (!currentUser?.roles?.includes('creator')) {
+				throw new Meteor.Error('error-invalid-operation', 'Invalid operation', { method: 'sendFileMessage' } as any);
+			}
 		}
 		if (user?.type !== 'app' && !canAccessRoom(room, user)) {
 			return false;
