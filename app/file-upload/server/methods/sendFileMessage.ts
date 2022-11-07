@@ -27,7 +27,7 @@ Meteor.methods({
 		if (room.individualMain && room?.u?._id && user._id !== room?.u?._id) {
 			throw new Meteor.Error('error-invalid-operation', 'Invalid operation', { method: 'sendFileMessage' } as any);
 		}
-		if (room.individualMain && user._id === room?.u?._id) {
+		if (room.individualMain && room?.u?._id) {
 			const currentUser: any = await Users.findOneById(user._id, {
 				fields: {
 					username: 1,

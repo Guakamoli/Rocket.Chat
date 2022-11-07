@@ -79,7 +79,7 @@ export function executeSendMessage(uid, message) {
 			throw new Error('You can\'t send messages because the room is readonly.');
 		}
 
-		if (room.individualMain && !user?.roles?.includes('creator') && user._id === room?.u?._id) {
+		if (room.individualMain && !user?.roles?.includes('creator') && room?.u?._id) {
 			throw new Error('No creator permission.');
 		}
 		metrics.messagesSent.inc(); // TODO This line needs to be moved to it's proper place. See the comments on: https://github.com/RocketChat/Rocket.Chat/pull/5736
