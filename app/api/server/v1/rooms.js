@@ -72,9 +72,6 @@ API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 		if (!room) {
 			return API.v1.unauthorized();
 		}
-		if (room.individualMain && this.userId !== room?.u?._id) {
-			throw new Error('You can\'t send messages because the room is readonly.');
-		}
 		const { file, ...fields } = Promise.await(getUploadFormData({
 			request: this.request,
 		}));
