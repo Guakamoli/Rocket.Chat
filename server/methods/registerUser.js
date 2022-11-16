@@ -8,6 +8,7 @@ import { settings } from '../../app/settings';
 import { validateEmailDomain, passwordPolicy } from '../../app/lib';
 import { validateInviteToken } from '../../app/invites/server/functions/validateInviteToken';
 import { defaultUsernameSuggestion } from '../../app/lib/server/functions/getUsernameSuggestion';
+import { recaptchaSiteVerify } from '../../imports/kameo/server/utils/recaptchaSiteVerify';
 
 Meteor.methods({
 	registerUser(formData) {
@@ -33,6 +34,7 @@ Meteor.methods({
 			// name: String,
 			secretURL: Match.Optional(String),
 			reason: Match.Optional(String),
+			recaptchaToken: Match.Optional(String),
 		}));
 
 		if (!formData.name) {
@@ -66,6 +68,7 @@ Meteor.methods({
 		passwordPolicy.validate(formData.pass);
 
 		validateEmailDomain(formData.email);
+		recaptchaSiteVerify(formData.recaptchaToken);
 
 		const userData = {
 			email: s.trim(formData.email.toLowerCase()),

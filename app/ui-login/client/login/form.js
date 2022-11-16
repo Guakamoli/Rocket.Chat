@@ -11,6 +11,7 @@ import toastr from 'toastr';
 import { settings } from '../../../settings';
 import { callbacks } from '../../../callbacks';
 import { t, handleError, isEmail } from '../../../utils';
+import '../../../utils/client/lib/coverMeteorPasswordLogin.js';
 
 Template.loginForm.helpers({
 	userName() {
@@ -28,6 +29,12 @@ Template.loginForm.helpers({
 	},
 	state(...state) {
 		return state.indexOf(Template.instance().state.get()) > -1;
+	},
+	recaptchaVisibilityStyle() {
+		if (Template.instance().showRecaptchaFlag.get()) {
+			return 'visibility: visible;';
+		}
+		return 'visibility: hidden;';
 	},
 	bottomStyle() {
 		return Meteor.settings.public.PRODUCT_CODE === 'PAIYA' ? 'display: flex;flex-direction:row;justify-content:center;align-items:center;margin-top: 100px' : 'display: flex;flex-direction:column;justify-content:center;align-items:center;margin-top: 100px';
@@ -142,26 +149,30 @@ Template.loginForm.events({
 				return;
 			}
 			if (state === 'register') {
-				formData.email = formData.email.toLocaleLowerCase();
-				formData.name = '';
-				formData.secretURL = FlowRouter.getParam('hash');
-				return Meteor.call('registerUser', formData, function(error) {
-					instance.loading.set(false);
-					if (error != null) {
-						if (error.reason === 'Email already exists.') {
-							toastr.error(t('Email_already_exists'));
-						} else {
-							handleError(error);
+				instance.showRecaptcha((recaptchaToken = '') => {
+					formData.email = formData.email.toLocaleLowerCase();
+					formData.name = '';
+					formData.recaptchaToken = recaptchaToken;
+					formData.secretURL = FlowRouter.getParam('hash');
+					return Meteor.call('registerUser', formData, function(error) {
+						instance.loading.set(false);
+						if (error != null) {
+							if (error.reason === 'Email already exists.') {
+								toastr.error(t('Email_already_exists'));
+							} else if (error.error === 'Rechaptcha error') {
+								toastr.error(t('Rechaptcha_error'));
+							} else {
+								handleError(error);
+							}
+							return;
 						}
-						return;
-					}
-					callbacks.run('userRegistered');
-					toastr.success(t('We_have_sent_registration_email'));
-					// eslint-disable-next-line no-return-assign
-					instance.state.set('email-login');
-					setTimeout(() => {
-						$('#email-login-account').val(formData.email);
-					}, 100);
+						callbacks.run('userRegistered');
+						toastr.success(t('We_have_sent_registration_email'));
+						// eslint-disable-next-line no-return-assign
+						instance.state.set('email-login');
+						setTimeout(() => {
+							$('#email-login-account').val(formData.email);
+						}, 100);
 					// return window.location.href = Meteor.settings.public.LOGIN_ACTIVE_SUCCESS_URL;
 					// return Meteor.loginWithPassword(s.trim(formData.email), formData.pass, function(error) {
 					// 	if (error && error.error === 'error-invalid-email') {
@@ -172,6 +183,7 @@ Template.loginForm.events({
 					// 	}
 					// 	Session.set('forceLogin', false);
 					// });
+					});
 				});
 			}
 			let loginMethod = 'loginWithPassword';
@@ -206,31 +218,34 @@ Template.loginForm.events({
 					Session.set('forceLogin', false);
 				});
 			}
-
-			return Meteor[loginMethod](s.trim(formData.email.toLocaleLowerCase()), formData['email-login-password'], function(error) {
-				instance.loading.set(false);
-				if (error != null) {
-					if (error.error === 'error-user-is-not-activated') {
-						return toastr.error(t('Wait_activation_warning'));
+			return instance.showRecaptcha((recaptchaToken = '') => {
+				Meteor[loginMethod](s.trim(formData.email.toLocaleLowerCase()), formData['email-login-password'], recaptchaToken, function(error) {
+					instance.loading.set(false);
+					if (error != null) {
+						if (error.error === 'error-user-is-not-activated') {
+							return toastr.error(t('Wait_activation_warning'));
+						}
+						if (error.error === 'error-invalid-email') {
+							instance.typedEmail = formData['email-login-account'];
+							return instance.state.set('email-verification');
+						}
+						if (error.error === 'error-user-is-not-activated') {
+							toastr.error(t('Wait_activation_warning'));
+						} else if (error.error === 'error-app-user-is-not-allowed-to-login') {
+							toastr.error(t('App_user_not_allowed_to_login'));
+						} else if (error.error === 'error-login-blocked-for-ip') {
+							toastr.error(t('Error_login_blocked_for_ip'));
+						} else if (error.error === 'error-login-blocked-for-user') {
+							toastr.error(t('Error_login_blocked_for_user'));
+						} else if (error.error === 'Rechaptcha error') {
+							toastr.error(t('Rechaptcha_error'));
+						} else {
+							return toastr.error(t('User_not_found_or_incorrect_password'));
+						}
 					}
-					if (error.error === 'error-invalid-email') {
-						instance.typedEmail = formData['email-login-account'];
-						return instance.state.set('email-verification');
-					}
-					if (error.error === 'error-user-is-not-activated') {
-						toastr.error(t('Wait_activation_warning'));
-					} else if (error.error === 'error-app-user-is-not-allowed-to-login') {
-						toastr.error(t('App_user_not_allowed_to_login'));
-					} else if (error.error === 'error-login-blocked-for-ip') {
-						toastr.error(t('Error_login_blocked_for_ip'));
-					} else if (error.error === 'error-login-blocked-for-user') {
-						toastr.error(t('Error_login_blocked_for_user'));
-					} else {
-						return toastr.error(t('User_not_found_or_incorrect_password'));
-					}
-				}
-				$('.login').removeClass('active');
-				Session.set('forceLogin', false);
+					$('.login').removeClass('active');
+					Session.set('forceLogin', false);
+				});
 			});
 		}
 	},
@@ -352,8 +367,12 @@ Template.loginForm.onCreated(function() {
 	const PHONE_MATCHER = /^(\+?86)?1[3-9]\d{9}$/;
 	const CODE_MATCHER = /^\d{6}$/;
 	this.loading = new ReactiveVar(false);
-	this.secs = new ReactiveVar(0);
+	this.token = new ReactiveVar(null);
+	this.showRecaptchaFlag = new ReactiveVar(false);
 
+	this.secs = new ReactiveVar(0);
+	this.recaptchaPubkey = settings.get('Accounts_Recaptcha_Pubkey');
+	this.enableRecaptcha = settings.get('Accounts_EnableRecaptcha');
 	if (Session.get('loginDefaultState')) {
 		this.state = new ReactiveVar(Session.get('loginDefaultState'));
 	} else {
@@ -514,6 +533,36 @@ Template.loginForm.onCreated(function() {
 	if (FlowRouter.getParam('hash')) {
 		return Meteor.call('checkRegistrationSecretURL', FlowRouter.getParam('hash'), () => this.validSecretURL.set(true));
 	}
+	this.recaptchaOnExpire = function() {
+		toastr.error(t('Rechaptcha_expire'));
+	};
+	this.recaptchaOnError = function() {
+		toastr.error(t('Rechaptcha_error'));
+	};
+
+	this.showRecaptcha = function(callback) {
+		if (!this.enableRecaptcha || !this.recaptchaPubkey) {
+			return callback();
+		}
+		const _this = this;
+		const recaptchaOnVerify = function(token) {
+			_this.showRecaptchaFlag.set(false);
+			callback(token);
+		};
+		this.showRecaptchaFlag.set(true);
+		if (document.getElementById('recaptcha-container').children[0]) {
+			window.grecaptcha.enterprise.reset();
+		} else {
+			window.grecaptcha.enterprise.render('recaptcha-container',
+				{	sitekey: this.recaptchaPubkey,
+					size: 'normal',
+					theme: 'dark',
+					callback: recaptchaOnVerify,
+					'expired-callback': this.recaptchaOnExpire,
+					'error-callback': this.recaptchaOnError,
+				});
+		}
+	};
 });
 
 Template.loginForm.onRendered(function() {

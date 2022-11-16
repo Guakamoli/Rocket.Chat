@@ -4343,6 +4343,12 @@
   "Email_Register_login_des1": "以下是您的验证码：",
   "Email_Register_login_expire": "验证码将于15分钟后过期",
   "Email_Register_login_bottom": "如您未申请此验证码，请忽略此信息",
-  "Welcome_to_title": "欢迎来到 __Site_Name__"
+  "Welcome_to_title": "欢迎来到 __Site_Name__",
+  "Rechaptcha_Label": "Rechaptcha私钥",
+  "Recaptcha": "验证码",
+  "Rechaptcha_PubKey": "Rechaptcha公钥",
+  "Rechaptcha_error": "验证码错误",
+  "Rechaptcha_expire": "验证码超时"
+
 
 }
