@@ -7,12 +7,28 @@ import { hasPermission } from '../../../authorization';
 import { metrics } from '../../../metrics';
 import { settings } from '../../../settings';
 import { messageProperties } from '../../../ui-utils';
-import { Users, Messages } from '../../../models';
+import { Users, Messages, Rooms } from '../../../models';
 import { sendMessage } from '../functions';
 import { RateLimiter } from '../lib';
 import { canSendMessage } from '../../../authorization/server';
 import { SystemLogger } from '../../../logger/server';
 import { api } from '../../../../server/sdk/api';
+import { isOverLimit } from '../../../../imports/kameo/server/functions/ratelimit';
+
+function overrunMessageRequest(userId, room) {
+	if (room.t === 'c' && room.prid) {
+		const parentRoom = Rooms.findOneById(room.prid);
+		if (parentRoom.individualMain) {
+			return Promise.await(isOverLimit(userId, 'discussion'));
+		}
+	}
+
+	if (room.t === 'd' && room.uids && room.uids.length === 2) {
+		return Promise.await(isOverLimit(userId, 'direct'));
+	}
+
+	return false;
+}
 
 export function executeSendMessage(uid, message) {
 	if (message.tshow && !message.tmid) {
@@ -82,6 +98,12 @@ export function executeSendMessage(uid, message) {
 		if (room.individualMain && !user?.roles?.includes('creator') && room?.u?._id) {
 			throw new Error('No creator permission.');
 		}
+
+		// ratelimit
+		if (overrunMessageRequest(uid, room)) {
+			throw new Meteor.Error(`overrun message request. uid=${ uid } rid=${ room._id }`);
+		}
+
 		metrics.messagesSent.inc(); // TODO This line needs to be moved to it's proper place. See the comments on: https://github.com/RocketChat/Rocket.Chat/pull/5736
 		return sendMessage(user, message, room, false);
 	} catch (error) {

@@ -11,6 +11,7 @@ import { settings } from '../../../settings/server/index';
 import { getUploadFormData } from '../lib/getUploadFormData';
 import { SystemLogger } from '../../../logger/server';
 import { preSignature as aliyunPreSignature } from '../../../utils/lib/ossUtils';
+import { isOverLimit } from '../../../../imports/kameo/server/functions/ratelimit';
 
 function findRoomByIdOrName({ params, checkedArchived = true }) {
 	if ((!params.roomId || !params.roomId.trim()) && (!params.roomName || !params.roomName.trim())) {
@@ -67,6 +68,13 @@ API.v1.addRoute('rooms.get', { authRequired: true }, {
 
 API.v1.addRoute('rooms.upload/:rid', { authRequired: true }, {
 	post() {
+		// ratelimit request
+		const overLimit = Promise.await(isOverLimit(this.userId, 'post'));
+		if (overLimit) {
+			console.log(`超过作品发布频率限制 rid=${ this.urlParams.rid } userId=${ this.userId }`);
+			throw new Meteor.Error('invalid-request');
+		}
+
 		const room = Meteor.call('canAccessRoom', this.urlParams.rid, this.userId);
 
 		if (!room) {
