@@ -1616,27 +1616,27 @@ settings.addGroup('Kameo_Config', function() {
 	this.section('Send_Message_Ratelimit', function() {
 		this.add('Send_Message_Ratelimit_Post_Per_Limit', 1, {
 			type: 'int',
-			public: true,
+			private: true,
 		});
 		this.add('Send_Message_Ratelimit_Post_Key_Expire', 6, {
 			type: 'int',
-			public: true,
+			private: true,
 		});
 		this.add('Send_Message_Ratelimit_Discussion_Per_Limit', 1, {
 			type: 'int',
-			public: true,
+			private: true,
 		});
 		this.add('Send_Message_Ratelimit_Discussion_Key_Expire', 2, {
 			type: 'int',
-			public: true,
+			private: true,
 		});
 		this.add('Send_Message_Ratelimit_Direct_Per_Limit', 3, {
 			type: 'int',
-			public: true,
+			private: true,
 		});
 		this.add('Send_Message_Ratelimit_Direct_Key_Expire', 2, {
 			type: 'int',
-			public: true,
+			private: true,
 		});
 	});
 });
