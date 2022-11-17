@@ -3,7 +3,7 @@ import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
 
 import { settings } from '../../../settings';
-import { recaptchaSiteVerify } from '../../../../imports/kameo/server/utils/recaptchaSiteVerify.js';
+import { recaptchaSiteVerify } from '../../../../imports/kameo/server/utils/recaptchaSiteVerify';
 
 const { _runLoginHandlers } = Accounts;
 Accounts._runLoginHandlers = function(methodInvocation, options) {
