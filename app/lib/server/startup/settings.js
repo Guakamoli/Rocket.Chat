@@ -1603,12 +1603,38 @@ settings.addGroup('Layout', function() {
 });
 
 settings.addGroup('Kameo_Config', function() {
-	return this.section('Point', function() {
+	this.section('Point', function() {
 		this.add('Point_Vote_Consume', '0.5', {
 			type: 'string',
 			public: true,
 		});
 		this.add('Point_Invite_Reward', 100, {
+			type: 'int',
+			public: true,
+		});
+	});
+	this.section('Send_Message_Ratelimit', function() {
+		this.add('Send_Message_Ratelimit_Post_Per_Limit', 1, {
+			type: 'int',
+			public: true,
+		});
+		this.add('Send_Message_Ratelimit_Post_Key_Expire', 6, {
+			type: 'int',
+			public: true,
+		});
+		this.add('Send_Message_Ratelimit_Discussion_Per_Limit', 1, {
+			type: 'int',
+			public: true,
+		});
+		this.add('Send_Message_Ratelimit_Discussion_Key_Expire', 2, {
+			type: 'int',
+			public: true,
+		});
+		this.add('Send_Message_Ratelimit_Direct_Per_Limit', 3, {
+			type: 'int',
+			public: true,
+		});
+		this.add('Send_Message_Ratelimit_Direct_Key_Expire', 2, {
 			type: 'int',
 			public: true,
 		});
