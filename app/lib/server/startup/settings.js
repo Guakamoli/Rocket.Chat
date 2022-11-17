@@ -254,7 +254,8 @@ settings.addGroup('Accounts', function() {
 		});
 		this.add('Accounts_Recaptcha_Secret', '', {
 			type: 'string',
-			public: false,
+			private: true,
+			secret: true,
 			i18nLabel: 'Rechaptcha_Label',
 		});
 	});
