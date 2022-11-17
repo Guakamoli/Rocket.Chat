@@ -242,6 +242,24 @@ settings.addGroup('Accounts', function() {
 		});
 	});
 
+	this.section('Recaptcha', function() {
+		this.add('Accounts_EnableRecaptcha', false, {
+			type: 'boolean',
+			public: true,
+		});
+		this.add('Accounts_Recaptcha_Pubkey', '', {
+			type: 'string',
+			public: true,
+			i18nLabel: 'Rechaptcha_PubKey',
+		});
+		this.add('Accounts_Recaptcha_Secret', '', {
+			type: 'string',
+			private: true,
+			secret: true,
+			i18nLabel: 'Rechaptcha_Label',
+		});
+	});
+
 	this.section('Accounts_Default_User_Preferences', function() {
 		this.add('Accounts_Default_User_Preferences_enableAutoAway', true, {
 			type: 'boolean',

@@ -4700,5 +4700,13 @@
   "Email_Register_login_des1": "Verification code",
   "Email_Register_login_expire": "Verification code expires in 15 minutes",
   "Email_Register_login_bottom": "If you haven't applied for this code, please ignore this message",
-  "Welcome_to_title": "Welcome!"
+  "Welcome_to_title": "Welcome!",
+  "Rechaptcha_Label": "Recaptcha secret",
+  "Recaptcha": "Recaptcha",
+  "Rechaptcha_PubKey": "Recaptcha pubkey",
+  "Rechaptcha_error": "Recaptcha error",
+  "Rechaptcha_expire": "Recaptcha expire"
+
+
+
 }
