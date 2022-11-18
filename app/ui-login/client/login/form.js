@@ -278,32 +278,35 @@ Template.loginForm.events({
 		event.preventDefault();
 		const formData = instance.validatePhoneNumber();
 		if (formData) {
-			const phoneNumber = s.trim(formData.phoneNumber);
-			const phone = {
-				phoneNumber,
-				countryCode: '86',
-			};
-			return Meteor.kameoSendCode(phone, (error) => {
-				if (error) {
-					if (error.error === 'Incorrect number format') {
-						toastr.error(t('Mobile_format_error'));
-					} else if (error.error === 'Minute limit') {
-						toastr.error(t('Retry_send'));
-					} else {
-						toastr.error(t('Code_send_fail'));
-					}
-					return;
-				}
-				toastr.success(t('Code_send_success'));
-				instance.secs.set(60);
-				const timer = setInterval(() => {
-					if (instance.secs.get() < 1) {
-						clearInterval(timer);
+			instance.showRecaptcha((recaptchaToken = '') => {
+				const phoneNumber = s.trim(formData.phoneNumber);
+				const phone = {
+					phoneNumber,
+					countryCode: '86',
+					recaptchaToken,
+				};
+				return Meteor.kameoSendCode(phone, (error) => {
+					if (error) {
+						if (error.error === 'Incorrect number format') {
+							toastr.error(t('Mobile_format_error'));
+						} else if (error.error === 'Minute limit') {
+							toastr.error(t('Retry_send'));
+						} else {
+							toastr.error(t('Code_send_fail'));
+						}
 						return;
 					}
+					toastr.success(t('Code_send_success'));
+					instance.secs.set(60);
+					const timer = setInterval(() => {
+						if (instance.secs.get() < 1) {
+							clearInterval(timer);
+							return;
+						}
 
-					instance.secs.set(instance.secs.get() - 1);
-				}, 1000);
+						instance.secs.set(instance.secs.get() - 1);
+					}, 1000);
+				});
 			});
 		}
 	},
@@ -374,10 +377,14 @@ Template.loginForm.onCreated(function() {
 	this.recaptchaPubkey = settings.get('Accounts_Recaptcha_Pubkey');
 	this.enableRecaptcha = settings.get('Accounts_EnableRecaptcha');
 	if (Session.get('loginDefaultState')) {
-		this.state = new ReactiveVar(Session.get('loginDefaultState'));
+		this.state = new ReactiveVar(Session.get('loginDefaultState'), () => {
+			this.showRecaptchaFlag.set(false);
+		});
 	} else {
 		const page = Meteor.settings.public.PRODUCT_CODE === 'GODUCK' ? 'email-login' : 'login';
-		this.state = new ReactiveVar(page);
+		this.state = new ReactiveVar(page, () => {
+			this.showRecaptchaFlag.set(false);
+		});
 	}
 
 	Tracker.autorun(() => {
