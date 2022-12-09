@@ -246,6 +246,19 @@ settings.addGroup('Accounts', function() {
 		this.add('Accounts_EnableRecaptcha', false, {
 			type: 'boolean',
 			public: true,
+			i18nLabel: 'Rechaptcha_Enable',
+
+		});
+		this.add('Accounts_Recaptcha_Mandatory', false, {
+			type: 'boolean',
+			secret: true,
+			i18nLabel: 'Recaptcha_Mandatory',
+
+		});
+		this.add('Accounts_Recaptcha_Domain', 'https://www.recaptcha.net', {
+			type: 'string',
+			public: true,
+			i18nLabel: 'Recaptcha_Domain',
 		});
 		this.add('Accounts_Recaptcha_Pubkey', '', {
 			type: 'string',
@@ -257,6 +270,26 @@ settings.addGroup('Accounts', function() {
 			private: true,
 			secret: true,
 			i18nLabel: 'Rechaptcha_Label',
+		});
+		this.add('Accounts_Recaptcha_Score_Threshold', 0, {
+			type: 'int',
+			private: true,
+			secret: true,
+			i18nLabel: 'Recaptcha_Score_Threshold',
+		});
+		this.add('Accounts_Recaptcha_Version', 'v3', {
+			type: 'select',
+			public: true,
+			readonly: true,
+			values: [
+				{
+					key: 'v2',
+					i18nLabel: 'v2',
+				}, {
+					key: 'v3',
+					i18nLabel: 'v3',
+				},
+			],
 		});
 	});
 

@@ -4348,7 +4348,9 @@
   "Recaptcha": "验证码",
   "Rechaptcha_PubKey": "Rechaptcha公钥",
   "Rechaptcha_error": "验证码错误",
-  "Rechaptcha_expire": "验证码超时"
-
-
+  "Rechaptcha_expire": "验证码超时",
+  "Rechaptcha_Enable": "打开验证码",
+  "Recaptcha_Mandatory": "强制需要验证码",
+  "Recaptcha_Domain": "验证码域名",
+  "Recaptcha_Score_Threshold": "验证码v3版本分数门槛(0-100)"
 }

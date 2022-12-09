@@ -7,6 +7,17 @@ Template.loginHeader.helpers({
 	productCodeWidth() {
 		return Meteor.settings.public.PRODUCT_CODE === 'GODUCK' ? '' : '';
 	},
+	grecaptchaUrl() {
+		const domain = settings.get('Accounts_Recaptcha_Domain');
+		const version = settings.get('Accounts_Recaptcha_Version');
+
+		const pubkey = settings.get('Accounts_Recaptcha_Pubkey');
+		if (version === 'v3') {
+			return `${ domain }/recaptcha/enterprise.js?render=${ pubkey }`;
+		}
+
+		return `${ domain }/recaptcha/enterprise.js`;
+	},
 	logoUrl() {
 		const asset = settings.get('Assets_logo');
 		const productCode = Meteor.settings.public.PRODUCT_CODE;
