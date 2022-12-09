@@ -184,7 +184,7 @@ Template.loginForm.events({
 					// 	Session.set('forceLogin', false);
 					// });
 					});
-				});
+				}, 'register');
 			}
 			let loginMethod = 'loginWithPassword';
 			if (settings.get('LDAP_Enable')) {
@@ -283,28 +283,33 @@ Template.loginForm.events({
 				phoneNumber,
 				countryCode: '86',
 			};
-			return Meteor.kameoSendCode(phone, (error) => {
-				if (error) {
-					if (error.error === 'Incorrect number format') {
-						toastr.error(t('Mobile_format_error'));
-					} else if (error.error === 'Minute limit') {
-						toastr.error(t('Retry_send'));
-					} else {
-						toastr.error(t('Code_send_fail'));
-					}
-					return;
-				}
-				toastr.success(t('Code_send_success'));
-				instance.secs.set(60);
-				const timer = setInterval(() => {
-					if (instance.secs.get() < 1) {
-						clearInterval(timer);
+			return instance.showRecaptcha((recaptchaToken = '') => {
+				phone.recaptchaToken = recaptchaToken;
+				Meteor.kameoSendCode(phone, (error) => {
+					if (error) {
+						if (error.error === 'Incorrect number format') {
+							toastr.error(t('Mobile_format_error'));
+						} else if (error.error === 'Rechaptcha error') {
+							toastr.error(t('Rechaptcha_error'));
+						} else if (error.error === 'Minute limit') {
+							toastr.error(t('Retry_send'));
+						} else {
+							toastr.error(t('Code_send_fail'));
+						}
 						return;
 					}
+					toastr.success(t('Code_send_success'));
+					instance.secs.set(60);
+					const timer = setInterval(() => {
+						if (instance.secs.get() < 1) {
+							clearInterval(timer);
+							return;
+						}
 
-					instance.secs.set(instance.secs.get() - 1);
-				}, 1000);
-			});
+						instance.secs.set(instance.secs.get() - 1);
+					}, 1000);
+				});
+			}, 'sned_phone_code');
 		}
 	},
 	'keyup #email-login-account'(event) {
@@ -372,7 +377,10 @@ Template.loginForm.onCreated(function() {
 
 	this.secs = new ReactiveVar(0);
 	this.recaptchaPubkey = settings.get('Accounts_Recaptcha_Pubkey');
-	this.enableRecaptcha = settings.get('Accounts_EnableRecaptcha');
+	this.enableRecaptcha = settings.get('Accounts_Recaptcha_Enable');
+	this.recaptchaVersion = settings.get('Accounts_Recaptcha_Version');
+	this.recaptchaDomain = settings.get('Accounts_Recaptcha_Domain');
+
 	if (Session.get('loginDefaultState')) {
 		this.state = new ReactiveVar(Session.get('loginDefaultState'));
 	} else {
@@ -533,22 +541,33 @@ Template.loginForm.onCreated(function() {
 	if (FlowRouter.getParam('hash')) {
 		return Meteor.call('checkRegistrationSecretURL', FlowRouter.getParam('hash'), () => this.validSecretURL.set(true));
 	}
-	this.recaptchaOnExpire = function() {
-		toastr.error(t('Rechaptcha_expire'));
-	};
-	this.recaptchaOnError = function() {
-		toastr.error(t('Rechaptcha_error'));
-	};
 
-	this.showRecaptcha = function(callback) {
-		if (!this.enableRecaptcha || !this.recaptchaPubkey) {
+
+	this.showRecaptcha = function(callback, action = 'login') {
+		const recaptchaOnExpire = function() {
+			toastr.error(t('Rechaptcha_expire'));
+			return callback();
+		};
+		const recaptchaOnError = function() {
+			toastr.error(t('Rechaptcha_error'));
+			return callback();
+		};
+		if (!this.enableRecaptcha || !this.recaptchaPubkey || !this.recaptchaDomain) {
 			return callback();
 		}
 		const _this = this;
+		if (this.recaptchaVersion === 'v3') {
+			const recaptchaOnVerify = function(token) {
+				callback(token);
+			};
+			window.grecaptcha.enterprise.execute(this.recaptchaPubkey, { action }).then(recaptchaOnVerify);
+			return;
+		}
 		const recaptchaOnVerify = function(token) {
 			_this.showRecaptchaFlag.set(false);
 			callback(token);
 		};
+
 		this.showRecaptchaFlag.set(true);
 		if (document.getElementById('recaptcha-container').children[0]) {
 			window.grecaptcha.enterprise.reset();
@@ -557,9 +576,10 @@ Template.loginForm.onCreated(function() {
 				{	sitekey: this.recaptchaPubkey,
 					size: 'normal',
 					theme: 'dark',
+					action,
 					callback: recaptchaOnVerify,
-					'expired-callback': this.recaptchaOnExpire,
-					'error-callback': this.recaptchaOnError,
+					'expired-callback': recaptchaOnExpire,
+					'error-callback': recaptchaOnError,
 				});
 		}
 	};

@@ -17,11 +17,8 @@ Accounts._runLoginHandlers = function(methodInvocation, options) {
 
 	if (options.password) {
 		const secret = settings.get('Accounts_Recaptcha_Secret');
-		const EnableRecaptcha = settings.get('Accounts_EnableRecaptcha');
+		const EnableRecaptcha = settings.get('Accounts_Recaptcha_Enable');
 		if (EnableRecaptcha && secret) {
-			if (!recaptchaToken) {
-				throw new Meteor.Error('Rechaptcha error', 'Rechaptcha_error');
-			}
 			recaptchaSiteVerify(recaptchaToken);
 		}
 	}

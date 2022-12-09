@@ -4705,8 +4705,11 @@
   "Recaptcha": "Recaptcha",
   "Rechaptcha_PubKey": "Recaptcha pubkey",
   "Rechaptcha_error": "Recaptcha error",
-  "Rechaptcha_expire": "Recaptcha expire"
-
+  "Rechaptcha_expire": "Recaptcha expire",
+  "Rechaptcha_Enable": "Rechaptcha enable",
+  "Recaptcha_Mandatory": "Recaptcha mandatory",
+  "Recaptcha_Domain": "Recaptcha domain",
+  "Recaptcha_Score_Threshold": "Recaptcha v3 score threshold(0-100)"
 
 
 }
