@@ -34,7 +34,7 @@ Meteor.methods({
 			// name: String,
 			secretURL: Match.Optional(String),
 			reason: Match.Optional(String),
-			recaptchaToken: Match.Optional(String),
+			recaptchaToken: Match.Maybe(String),
 		}));
 
 		if (!formData.name) {

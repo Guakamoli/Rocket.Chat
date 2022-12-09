@@ -243,7 +243,7 @@ settings.addGroup('Accounts', function() {
 	});
 
 	this.section('Recaptcha', function() {
-		this.add('Accounts_EnableRecaptcha', false, {
+		this.add('Accounts_Recaptcha_Enable', false, {
 			type: 'boolean',
 			public: true,
 			i18nLabel: 'Rechaptcha_Enable',

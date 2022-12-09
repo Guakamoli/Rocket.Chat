@@ -8,18 +8,18 @@ const NonEmptyString = Match.Where((str) => {
 	return str.length > 0;
 });
 
-Meteor.methods({
-	kameoSendCode: (phone) => {
-		check(
-			phone,
-			{
-				phoneNumber: String,
-				countryCode: String,
-			},
-		);
-		return Accounts.kameoSms.sendCode(phone);
-	},
-});
+// Meteor.methods({
+// 	kameoSendCode: (phone) => {
+// 		check(
+// 			phone,
+// 			{
+// 				phoneNumber: String,
+// 				countryCode: String,
+// 			},
+// 		);
+// 		return Accounts.kameoSms.sendCode(phone);
+// 	},
+// });
 
 // Handler to login with a phone number and code.
 

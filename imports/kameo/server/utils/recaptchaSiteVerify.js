@@ -4,7 +4,7 @@ import { HTTP } from 'meteor/http';
 import { settings } from '../../../../app/settings/index.js';
 
 export const recaptchaSiteVerify = (token) => {
-	const EnableRecaptcha = settings.get('Accounts_EnableRecaptcha');
+	const EnableRecaptcha = settings.get('Accounts_Recaptcha_Enable');
 	const secret = settings.get('Accounts_Recaptcha_Secret');
 	const domain = settings.get('Accounts_Recaptcha_Domain');
 	const mandatory = settings.get('Accounts_Recaptcha_Mandatory');

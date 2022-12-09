@@ -12,7 +12,6 @@ import { settings } from '../../../settings';
 import { callbacks } from '../../../callbacks';
 import { t, handleError, isEmail } from '../../../utils';
 import '../../../utils/client/lib/coverMeteorPasswordLogin.js';
-import '../../../utils/client/lib/coverMeteorSendCode.js';
 
 Template.loginForm.helpers({
 	userName() {
@@ -310,7 +309,7 @@ Template.loginForm.events({
 						instance.secs.set(instance.secs.get() - 1);
 					}, 1000);
 				});
-			}, 'phone-code');
+			}, 'sned_phone_code');
 		}
 	},
 	'keyup #email-login-account'(event) {
@@ -378,7 +377,7 @@ Template.loginForm.onCreated(function() {
 
 	this.secs = new ReactiveVar(0);
 	this.recaptchaPubkey = settings.get('Accounts_Recaptcha_Pubkey');
-	this.enableRecaptcha = settings.get('Accounts_EnableRecaptcha');
+	this.enableRecaptcha = settings.get('Accounts_Recaptcha_Enable');
 	this.recaptchaVersion = settings.get('Accounts_Recaptcha_Version');
 	this.recaptchaDomain = settings.get('Accounts_Recaptcha_Domain');
 
