@@ -27,7 +27,8 @@ Meteor.startup(function() {
 		nodeVersion: process.version,
 	};
 
-	InstanceStatus.registerInstance('rocket.chat', instance);
+	const hostname = os.hostname() || 'rocket.chat';
+	InstanceStatus.registerInstance(hostname, instance);
 
 	return startStreamBroadcast();
 });
