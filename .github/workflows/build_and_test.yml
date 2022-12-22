@@ -18,7 +18,7 @@ env:
 
 jobs:
   check-alicr:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       alicr-uid-exist: ${{ steps.alicr-uid-env.outputs.defined }}
       alicr-pwd-exist: ${{ steps.alicr-pwd-env.outputs.defined }}
@@ -27,16 +27,16 @@ jobs:
         env:
           ALICR_UID: ${{ secrets.ALICR_UID }}
         if: "${{ env.ALICR_UID != '' }}"
-        run: echo "::set-output name=defined::true"
+        run: echo "defined=true" >> $GITHUB_OUTPUT
       - id: alicr-pwd-env
         env:
           ALICR_PWD: ${{ secrets.ALICR_PWD }}
         if: "${{ env.ALICR_PWD != '' }}"
-        run: echo "::set-output name=defined::true"
+        run: echo "defined=true" >> $GITHUB_OUTPUT
   meteor-build:
     needs: [check-alicr]
     if: startsWith(github.ref, 'refs/pull/') != true && needs.check-alicr.outputs.alicr-uid-exist == 'true' && needs.check-alicr.outputs.alicr-pwd-exist == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
 
     - name: Github Info
@@ -302,7 +302,7 @@ jobs:
   #       for i in $(seq 1 5); do (docker exec mongo mongo rocketchat --eval 'db.dropDatabase()') && npm run testci && s=0 && break || s=$? && sleep 1; done; (exit $s)
 
 #   notification:
-#     runs-on: ubuntu-latest
+#     runs-on: ubuntu-22.04
 #     needs: test
 
 #     steps:
@@ -316,7 +316,7 @@ jobs:
 #         token: ${{ secrets.GITHUB_TOKEN }}
 
   # build-image-pr:
-  #   runs-on: ubuntu-latest
+  #   runs-on: ubuntu-22.04
   #   if: github.event.pull_request.head.repo.full_name == github.repository
 
   #   strategy:
@@ -443,7 +443,7 @@ jobs:
   #       docker push $IMAGE_NAME
 
   # deploy:
-  #   runs-on: ubuntu-latest
+  #   runs-on: ubuntu-22.04
   #   if: github.event_name == 'release' || github.ref == 'refs/heads/develop'
   #   needs: test
 
@@ -521,13 +521,13 @@ jobs:
   #       fi
 
   docker-publish:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: meteor-build
     
     steps:
     - uses: actions/checkout@v2
     - name: Login to Aliyun Container Registry
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         registry: ${{ env.ALIYUN_CR }}
         username: ${{ secrets.ALICR_UID }}
@@ -578,7 +578,7 @@ jobs:
         docker push ${IMAGE}
 
   # image-build:
-  #   runs-on: ubuntu-latest
+  #   runs-on: ubuntu-22.04
   #   needs: deploy
 
   #   strategy:
@@ -655,7 +655,7 @@ jobs:
   #       docker push ${IMAGE}:develop
 
   # services-image-build:
-  #   runs-on: ubuntu-latest
+  #   runs-on: ubuntu-22.04
   #   needs: deploy
 
   #   strategy:
