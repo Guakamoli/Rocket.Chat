@@ -118,6 +118,26 @@ API.v1.addRoute('chat.addWallets', { authRequired: false }, {
 	},
 });
 
+API.v1.addRoute('chat.getWallets', { authRequired: false }, {
+	post() {
+		const xSecret = this.request.headers['x-secret'] ?? '';
+		if (SECRET !== xSecret) {
+			return API.v1.failure('User not found');
+		}
+
+		check(this.bodyParams, {
+			chain: String,
+			address: String,
+		});
+
+		const { chain, address } = this.bodyParams;
+
+		const users = Meteor.users.find({ [`wallets.${ chain }`]: address }).fetch();
+
+		return API.v1.success({ users });
+	},
+});
+
 API.v1.addRoute('chat.updateOGPassOwner', { authRequired: false }, {
 	post() {
 		const xSecret = this.request.headers['x-secret'] ?? '';
@@ -163,8 +183,8 @@ API.v1.addRoute('chat.updateOGPassOwner', { authRequired: false }, {
 			selector['nft.OGPassV1Id'] = token.id;
 			modifier.$unset = OGPassV1fields;
 		}
-		Meteor.users.update(selector, modifier);
+		const updated = Meteor.users.update(selector, modifier);
 
-		return API.v1.success();
+		return API.v1.success({ updated });
 	},
 });
