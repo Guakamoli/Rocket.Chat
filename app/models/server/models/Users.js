@@ -50,6 +50,8 @@ export class Users extends Base {
 		this.tryEnsureIndex({ region: 1 }, { sparse: true });
 		this.tryEnsureIndex({ gender: 1 }, { sparse: true });
 		this.tryEnsureIndex({ labels: 1 }, { sparse: true });
+		this.tryEnsureIndex({ 'wallets.bsc': 1 }, { sparse: true });
+		this.tryEnsureIndex({ 'nft.OGPassV1Id': 1 }, { sparse: true });
 	}
 
 	getLoginTokensByUserId(userId) {
