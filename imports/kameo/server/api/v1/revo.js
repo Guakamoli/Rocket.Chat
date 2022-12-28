@@ -88,6 +88,28 @@ API.v1.addRoute('chat.fetchOGPassV1', { authRequired: false }, {
 	},
 });
 
+API.v1.addRoute('chat.fetchOGPassV1ByTokenIds', { authRequired: false }, {
+	post() {
+		const xSecret = this.request.headers['x-secret'] ?? '';
+		if (SECRET !== xSecret) {
+			return API.v1.failure('User not found');
+		}
+
+		check(this.bodyParams, {
+			tokenIds: [String],
+		});
+
+		const selector = {
+			'nft.OGPassV1Id': {
+				$exists: true,
+				$in: this.bodyParams.tokenIds || [],
+			},
+		};
+		const users = Meteor.users.find(selector).fetch();
+		return API.v1.success({ users });
+	},
+});
+
 API.v1.addRoute('chat.addWallets', { authRequired: false }, {
 	post() {
 		const xSecret = this.request.headers['x-secret'] ?? '';
