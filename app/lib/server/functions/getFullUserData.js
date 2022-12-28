@@ -23,6 +23,7 @@ const defaultFields = {
 	gender: 1,
 	labels: 1,
 	nft: 1,
+	wallets: 1,
 };
 
 const fullFields = {
@@ -39,6 +40,7 @@ const fullFields = {
 	gender: 1,
 	labels: 1,
 	nft: 1,
+	wallets: 1,
 };
 
 let publicCustomFields = {};
