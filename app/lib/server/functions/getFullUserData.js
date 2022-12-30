@@ -22,6 +22,8 @@ const defaultFields = {
 	avatarETag: 1,
 	gender: 1,
 	labels: 1,
+	nft: 1,
+	wallets: 1,
 };
 
 const fullFields = {
@@ -37,6 +39,8 @@ const fullFields = {
 	roles: 1,
 	gender: 1,
 	labels: 1,
+	nft: 1,
+	wallets: 1,
 };
 
 let publicCustomFields = {};
