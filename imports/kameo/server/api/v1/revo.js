@@ -125,14 +125,15 @@ API.v1.addRoute('chat.addWallets', { authRequired: false }, {
 
 		const { accountId, chain, address } = this.bodyParams;
 
-		const modifier = {
-			$set: {},
-			$unset: {},
-		};
+		const modifier = {};
 		if (address) {
-			modifier.$set[`wallets.${ chain }`] = address;
+			modifier.$set = {
+				[`wallets.${ chain }`]: address,
+			};
 		} else {
-			modifier.$unset[`wallets.${ chain }`] = 1;
+			modifier.$unset = {
+				[`wallets.${ chain }`]: 1,
+			};
 		}
 		Meteor.users.update({ _id: accountId }, modifier);
 
