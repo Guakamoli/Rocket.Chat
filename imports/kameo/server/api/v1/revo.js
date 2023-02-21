@@ -36,12 +36,15 @@ API.v1.addRoute('chat.updateNftMessage', { authRequired: false }, {
 
 		check(this.bodyParams, {
 			postId: String,
-			signature: Match.Maybe(String),
+			commited: Match.Maybe(String),
 			wallet: Match.Maybe(String),
+			holder: Match.Optional(String),
+			tokenHash: Match.Optional(String),
 			tokenId: Match.Optional(String),
-			mintAddress: Match.Optional(String),
-			tokenAccount: Match.Optional(String),
-			blockTime: Match.Optional(Number),
+			tokenURI: Match.Optional(String),
+			blockNumber: Match.Optional(String),
+			normalizeMetadata: Match.Optional(Object),
+			deleted: Match.Optional(Boolean),
 		});
 
 		const msg = Messages.findOneById(this.bodyParams.postId);
@@ -54,6 +57,9 @@ API.v1.addRoute('chat.updateNftMessage', { authRequired: false }, {
 			...this.bodyParams,
 		};
 		delete nft.postId;
+		if (!this.bodyParams?.wallet) {
+			delete nft.wallet;
+		}
 
 		const newMsg = {
 			...msg,
@@ -62,6 +68,10 @@ API.v1.addRoute('chat.updateNftMessage', { authRequired: false }, {
 				nft,
 			},
 		};
+
+		if (this.bodyParams.deleted && Boolean(this.bodyParams.deleted)) {
+			newMsg.metadata.nft = {};
+		}
 
 		const user = Meteor.users.findOne(newMsg.u._id);
 		updateMessage(newMsg, user, msg);
