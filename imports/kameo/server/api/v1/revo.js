@@ -37,6 +37,7 @@ API.v1.addRoute('chat.updateNftMessage', { authRequired: false }, {
 		check(this.bodyParams, {
 			postId: String,
 			commited: Match.Maybe(String),
+			name: Match.Maybe(String),
 			wallet: Match.Maybe(String),
 			holder: Match.Optional(String),
 			tokenHash: Match.Optional(String),
