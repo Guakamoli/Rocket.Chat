@@ -399,12 +399,8 @@ Accounts.validateNewUser(function(user) {
 export const MAX_RESUME_LOGIN_TOKENS = parseInt(process.env.MAX_RESUME_LOGIN_TOKENS) || 50;
 
 Accounts.onLogin(async ({ user }) => {
-	if (!user?._id) {
-		console.log('Accounts.onLogin user ---->', user);
-		return;
-	}
-
 	if (user && user?._id) {
+		console.log('Accounts.onLogin user ---->', user);
 		try {
 			Meteor.call('kameoRocketmqSendLoginUser', user._id);
 		} catch(err) {
