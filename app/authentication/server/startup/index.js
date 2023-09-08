@@ -404,8 +404,12 @@ Accounts.onLogin(async ({ user }) => {
 		return;
 	}
 
-	if (user) {
-		Meteor.call('kameoRocketmqSendLoginUser', user._id);
+	if (user && user?._id) {
+		try {
+			Meteor.call('kameoRocketmqSendLoginUser', user._id);
+		} catch(err) {
+			console.log('Accounts.onLogin Error ---->', err);
+		}
 	}
 
 	if (!user || !user.services || !user.services.resume || !user.services.resume.loginTokens) {
